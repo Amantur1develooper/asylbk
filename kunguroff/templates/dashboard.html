@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Дашборд - Kunguroff & Partners{% endblock %}
+
+{% block page_title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Статистика -->
+    <div class="col-md-3">
+        <div class="card bg-primary text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">{{ cases_count }}</h5>
+                        <p class="card-text">Всего дел</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-folder2-open display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="{% url 'cases:case_list' %}">Подробнее</a>
+                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">{{ active_cases }}</h5>
+                        <p class="card-text">Активных дел</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-check-circle display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="{% url 'cases:case_list' %}?status=in_progress">Подробнее</a>
+                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">{{ clients_count }}</h5>
+                        <p class="card-text">Доверителей</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-dark stretched-link" href="{% url 'clients:client_list' %}">Подробнее</a>
+                <div class="small text-dark"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">{{ today_events }}</h5>
+                        <p class="card-text">Событий сегодня</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-calendar-event display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a class="small text-white stretched-link" href="#">Подробнее</a>
+                <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Активные дела -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Недавние дела</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                              
+                                <th>Статус</th>
+                                <th>Прогресс</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for case in recent_cases %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'cases:case_detail' case.pk %}">{{ case.title }}</a>
+                                    </td>
+                                    
+                                    <td>
+                                        <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
+                                            {{ case.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                                                <div class="progress-bar" role="progressbar" style="width: {{ case.progress }}%;" 
+                                                     aria-valuenow="{{ case.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small>{{ case.progress }}%</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Нет активных дел</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'cases:case_list' %}" class="btn btn-outline-primary btn-sm">Все дела</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ближайшие события -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Ближайшие события</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_events %}
+                    <div class="list-group list-group-flush">
+                        {% for event in upcoming_events %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <h6 class="mb-1">{{ event.title }}</h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> {{ event.start_time|date:"H:i" }}
+                                        {% if event.case %}
+                                            · <a href="{% url 'cases:case_detail' event.case.pk %}">{{ event.case.title|truncatewords:3 }}</a>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if event.priority == 'high' %}danger{% else %}primary{% endif %} rounded-pill">
+                                    {{ event.get_priority_display }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Нет предстоящих событий</p>
+                {% endif %}
+                <div class="text-end mt-3">
+                    <a href="#" class="btn btn-outline-primary btn-sm">Все события</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Быстрые действия -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Быстрые действия</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'cases:case_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Создать дело
+                    </a>
+                    <a href="{% url 'clients:client_create' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus"></i> Добавить доверитель
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-plus"></i> Создать событие
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- График прогресса дел -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Прогресс дел по категориям</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="casesProgressChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация графика прогресса дел
+    const ctx = document.getElementById('casesProgressChart').getContext('2d');
+    
+    // Данные для графика (заглушка)
+    const chartData = {
+        labels: ['Гражданские', 'Административные', 'Уголовные', 'Правонарушения'],
+        datasets: [{
+            label: 'Средний прогресс (%)',
+            data: [75, 60, 45, 85],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(75, 192, 192, 0.2)'
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    const config = {
+        type: 'bar',
+        data: chartData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.raw + '%';
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    new Chart(ctx, config);
+});
+</script>
+{% endblock %}

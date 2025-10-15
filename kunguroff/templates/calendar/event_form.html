@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} события - Kunguroff & Partners{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} события</span>
+            </div>
+            <div class="app-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Название события</label>
+                                {{ form.title }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Тип события</label>
+                                {{ form.event_type }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Дата и время начала</label>
+                                {{ form.start_time }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Дата и время окончания</label>
+                                {{ form.end_time }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        {{ form.description }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Место проведения</label>
+                                {{ form.location }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Приоритет</label>
+                                {{ form.priority }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Связанное дело</label>
+                                {{ form.case }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Клиент</label>
+                                {{ form.client }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Участники</label>
+                        {{ form.participants }}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'calendar:calendar' %}" class="btn btn-secondary me-md-2">Отмена</a>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

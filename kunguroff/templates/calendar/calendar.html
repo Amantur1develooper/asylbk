@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Календарь - Kunguroff & Partners{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Фильтры</span>
+            </div>
+            <div class="app-card-body">
+                <div class="mb-3">
+                    <label class="form-label">Тип события</label>
+                    <select class="form-select">
+                        <option>Все события</option>
+                        <option>Заседания суда</option>
+                        <option>Встречи с клиентами</option>
+                        <option>Внутренние совещания</option>
+                        <option>Дедлайны</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Юрист</label>
+                    <select class="form-select">
+                        <option>Все юристы</option>
+                        {% for lawyer in lawyers %}
+                        <option value="{{ lawyer.id }}">{{ lawyer.get_full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Важность</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="highPriority" checked>
+                        <label class="form-check-label" for="highPriority">Высокая</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mediumPriority" checked>
+                        <label class="form-check-label" for="mediumPriority">Средняя</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="lowPriority" checked>
+                        <label class="form-check-label" for="lowPriority">Низкая</label>
+                    </div>
+                </div>
+                <button class="btn btn-primary w-100">Применить фильтры</button>
+            </div>
+        </div>
+        
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Ближайшие события</span>
+            </div>
+            <div class="app-card-body">
+                {% for event in upcoming_events %}
+                <div class="d-flex border-bottom pb-3 mb-3">
+                    <div class="text-center me-3">
+                        <div class="fw-bold text-primary">{{ event.start_time|date:"D" }}</div>
+                        <div class="fs-5 fw-bold">{{ event.start_time|date:"d" }}</div>
+                        <small>{{ event.start_time|date:"H:i" }}</small>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ event.title }}</div>
+                        <small class="text-muted">{{ event.location|default:"Место не указано" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">Нет предстоящих событий</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>{{ current_month }}</span>
+                <div>
+                    <a href="?month={{ prev_month }}" class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-chevron-left"></i></a>
+                    <a href="?month={{ next_month }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-chevron-right"></i></a>
+                </div>
+            </div>
+            <div class="app-card-body">
+                <div class="row mb-3">
+                    <div class="col text-center"><strong>Пн</strong></div>
+                    <div class="col text-center"><strong>Вт</strong></div>
+                    <div class="col text-center"><strong>Ср</strong></div>
+                    <div class="col text-center"><strong>Чт</strong></div>
+                    <div class="col text-center"><strong>Пт</strong></div>
+                    <div class="col text-center"><strong>Сб</strong></div>
+                    <div class="col text-center"><strong>Вс</strong></div>
+                </div>
+                
+                {% for week in calendar %}
+                <div class="row mb-2">
+                    {% for day in week %}
+                    <div class="col calendar-day {% if day.is_today %}bg-light{% endif %} {% if not day.is_current_month %}text-muted{% endif %}">
+                        <div class="date">{{ day.day }}</div>
+                        {% for event in day.events %}
+                        <div class="calendar-event {% if event.priority == 'high' %}important{% endif %}" data-bs-toggle="tooltip" title="{{ event.title }} - {{ event.start_time|time }}">
+                            {{ event.title|truncatechars:15 }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{% url 'calendar:event_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i> Добавить событие</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Инициализация тултипов
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

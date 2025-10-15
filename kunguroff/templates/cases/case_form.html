@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if object %}Редактирование дела{% else %}Создание дела{% endif %} - Kunguroff & Partners
+{% endblock %}
+
+{% block page_title %}
+    {% if object %}Редактирование дела{% else %}Создание нового дела{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post" id="caseForm" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.title.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.status.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.description.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.category.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.client.id_for_label }}" class="form-label">{{ form.client.label }}</label>
+                        {{ form.client }}
+                        {% if form.client.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.client.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="{{ form.current_stage.id_for_label }}" class="form-label">{{ form.current_stage.label }}</label>
+                        {{ form.current_stage }}
+                        {% if form.current_stage.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.current_stage.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.responsible_lawyer.id_for_label }}" class="form-label">{{ form.responsible_lawyer.label }}</label>
+                        {{ form.responsible_lawyer }}
+                        {% if form.responsible_lawyer.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.responsible_lawyer.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.manager.id_for_label }}" class="form-label">{{ form.manager.label }}</label>
+                        {{ form.manager }}
+                        {% if form.manager.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.manager.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% if object %}{% url 'cases:case_detail' object.pk %}{% else %}{% url 'cases:case_list' %}{% endif %}" 
+                   class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}Сохранить изменения{% else %}Создать дело{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('{{ form.category.id_for_label }}');
+    const stageSelect = document.getElementById('{{ form.current_stage.id_for_label }}');
+    const currentStageId = "{{ form.instance.current_stage.id|default:'' }}";
+
+    function loadStages(categoryId) {
+        if (!categoryId) {
+            stageSelect.innerHTML = '<option value="">Сначала выберите категорию</option>';
+            return;
+        }
+
+        stageSelect.innerHTML = '<option value="">Загрузка этапов...</option>';
+        stageSelect.disabled = true;
+
+        fetch(`/cases/ajax/load-stages/?category_id=${categoryId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.stages && data.stages.length > 0) {
+                    stageSelect.innerHTML = '<option value="">Выберите этап</option>';
+                    data.stages.forEach(stage => {
+                        const selected = (stage.id == currentStageId) ? 'selected' : '';
+                        stageSelect.innerHTML += `<option value="${stage.id}" ${selected}>${stage.order}. ${stage.name}</option>`;
+                    });
+                } else {
+                    stageSelect.innerHTML = '<option value="">Нет доступных этапов</option>';
+                }
+                stageSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки этапов:', error);
+                stageSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                stageSelect.disabled = false;
+            });
+    }
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            loadStages(this.value);
+        });
+
+        if (categorySelect.value) {
+            loadStages(categorySelect.value);
+        }
+    }
+
+    const form = document.getElementById('caseForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+});
+</script>
+
+{% endblock %}

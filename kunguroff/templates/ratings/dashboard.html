@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Рейтинги - Kunguroff & Partners{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Параметры рейтинга</span>
+            </div>
+            <div class="app-card-body">
+                <form method="get">
+                    <div class="mb-3">
+                        <label class="form-label">Период</label>
+                        <select class="form-select" name="period">
+                            <option value="current_month" {% if period == "current_month" %}selected{% endif %}>Текущий месяц</option>
+                            <option value="last_month" {% if period == "last_month" %}selected{% endif %}>Прошлый месяц</option>
+                            <option value="quarter" {% if period == "quarter" %}selected{% endif %}>Квартал</option>
+                            <option value="year" {% if period == "year" %}selected{% endif %}>Год</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Критерий оценки</label>
+                        <select class="form-select" name="criterion">
+                            <option value="overall" {% if criterion == "overall" %}selected{% endif %}>Общий рейтинг</option>
+                            <option value="revenue" {% if criterion == "revenue" %}selected{% endif %}>Доход на юриста</option>
+                            <option value="cases" {% if criterion == "cases" %}selected{% endif %}>Количество дел</option>
+                            <option value="success" {% if criterion == "success" %}selected{% endif %}>Успешность дел</option>
+                            <option value="satisfaction" {% if criterion == "satisfaction" %}selected{% endif %}>Удовлетворенность клиентов</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Отдел</label>
+                        <select class="form-select" name="department">
+                            <option value="">Все отделы</option>
+                            {% for dep in departments %}
+                            <option value="{{ dep.id }}" {% if department_id == dep.id %}selected{% endif %}>{{ dep.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100">Применить</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Моя статистика</span>
+            </div>
+            <div class="app-card-body">
+                <div class="text-center mb-4">
+                    <div class="fw-bold fs-4">{{ my_rating.position }} место</div>
+                    <div class="text-muted">в общем рейтинге</div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Доходность</span>
+                        <span>{{ my_rating.revenue_score }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ my_rating.revenue_score }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Завершенные дела</span>
+                        <span>{{ my_rating.completion_rate }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ my_rating.completion_rate }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Удовлетворенность клиентов</span>
+                        <span>{{ my_rating.satisfaction_score }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ my_rating.satisfaction_score }}%"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Соблюдение сроков</span>
+                        <span>{{ my_rating.timeliness_score }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ my_rating.timeliness_score }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Рейтинг юристов</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-download me-1"></i> Экспорт</button>
+                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-printer me-1"></i> Печать</button>
+                </div>
+            </div>
+            <div class="app-card-body">
+                {% for lawyer in lawyer_ratings %}
+                <div class="rating-item {% if forloop.counter <= 3 %}top-3{% endif %}">
+                    <div class="rating-number">{{ forloop.counter }}</div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">{{ lawyer.lawyer.get_full_name }}</div>
+                        <div class="text-muted">{{ lawyer.lawyer.position }}, {{ lawyer.lawyer.department }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold fs-5">{{ lawyer.total_score|floatformat:1 }}</div>
+                        <div class="text-muted small">из 10</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="app-card">
+                    <div class="app-card-header">
+                        <span>Распределение по отделам</span>
+                    </div>
+                    <div class="app-card-body">
+                        <canvas id="departmentChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="app-card">
+                    <div class="app-card-header">
+                        <span>Динамика рейтинга</span>
+                    </div>
+                    <div class="app-card-body">
+                        <canvas id="trendChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // График по отделам
+        const departmentCtx = document.getElementById('departmentChart').getContext('2d');
+        const departmentChart = new Chart(departmentCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for stat in department_stats %}'{{ stat.department__name }}',{% endfor %}],
+                datasets: [{
+                    label: 'Средний рейтинг',
+                    data: [{% for stat in department_stats %}{{ stat.avg_score }},{% endfor %}],
+                    backgroundColor: '#2c3e50'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 10
+                    }
+                }
+            }
+        });
+        
+        // График динамики
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: [{% for item in trend_data %}'{{ item.period }}',{% endfor %}],
+                datasets: [{
+                    label: 'Мой рейтинг',
+                    data: [{% for item in trend_data %}{{ item.my_score }},{% endfor %}],
+                    borderColor: '#2c3e50',
+                    tension: 0.2,
+                    fill: false
+                }, {
+                    label: 'Средний по фирме',
+                    data: [{% for item in trend_data %}{{ item.avg_score }},{% endfor %}],
+                    borderColor: '#3498db',
+                    tension: 0.2,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 10
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

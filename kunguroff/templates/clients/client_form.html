@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}
+    {% if object %}Редактирование клиента{% else %}Добавление клиента{% endif %} - Kunguroff & Partners
+{% endblock %}
+
+{% block page_title %}
+    {% if object %}Редактирование клиента{% else %}Добавление клиента{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Основная информация</h5>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                        {% render_field form.last_name class="form-control" %}
+                        {% if form.last_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.last_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                        {% render_field form.first_name class="form-control" %}
+                        {% if form.first_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.first_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.middle_name.id_for_label }}" class="form-label">{{ form.middle_name.label }}</label>
+                        {% render_field form.middle_name class="form-control" %}
+                        {% if form.middle_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.middle_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label">{{ form.phone.label }}</label>
+                        {% render_field form.phone class="form-control" %}
+                        {% if form.phone.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.phone.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                        {% render_field form.email class="form-control" %}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.email.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="mb-3">Паспортные данные</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.passport_series.id_for_label }}" class="form-label">{{ form.passport_series.label }}</label>
+                            {% render_field form.passport_series class="form-control" %}
+                            {% if form.passport_series.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.passport_series.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.passport_number.id_for_label }}" class="form-label">{{ form.passport_number.label }}</label>
+                            {% render_field form.passport_number class="form-control" %}
+                            {% if form.passport_number.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.passport_number.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.passport_issued_by.id_for_label }}" class="form-label">{{ form.passport_issued_by.label }}</label>
+                        {% render_field form.passport_issued_by class="form-control" rows="2" %}
+                        {% if form.passport_issued_by.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.passport_issued_by.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.passport_issue_date.id_for_label }}" class="form-label">{{ form.passport_issue_date.label }}</label>
+                        {% render_field form.passport_issue_date class="form-control" %}
+                        {% if form.passport_issue_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.passport_issue_date.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.registration_address.id_for_label }}" class="form-label">{{ form.registration_address.label }}</label>
+                        {% render_field form.registration_address class="form-control" rows="2" %}
+                        {% if form.registration_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.registration_address.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.residence_address.id_for_label }}" class="form-label">{{ form.residence_address.label }}</label>
+                        {% render_field form.residence_address class="form-control" rows="2" %}
+                        {% if form.residence_address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.residence_address.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.inn.id_for_label }}" class="form-label">{{ form.inn.label }}</label>
+                        {% render_field form.inn class="form-control" %}
+                        {% if form.inn.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.inn.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.primary_contact.id_for_label }}" class="form-label">{{ form.primary_contact.label }}</label>
+                        {% render_field form.primary_contact class="form-select" %}
+                        {% if form.primary_contact.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.primary_contact.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
+                {% render_field form.notes class="form-control" rows="3" %}
+                {% if form.notes.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.notes.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% if object %}{% url 'clients:trustor_detail' object.pk %}{% else %}{% url 'clients:client_list' %}{% endif %}" 
+                   class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}Сохранить изменения{% else %}Добавить клиента{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Добавляем валидацию форм
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+    });
+});
+</script>
+{% endblock %}

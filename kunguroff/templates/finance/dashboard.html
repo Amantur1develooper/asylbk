@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Финансы - Kunguroff & Partners{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Общая статистика</span>
+            </div>
+            <div class="app-card-body">
+                <div class="stat-card mb-3" style="background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);">
+                    <i class="bi bi-cash-stack"></i>
+                    <div class="number">{{ total_income|add:total_expense|intcomma }} сом</div>
+                    <div class="label">ОБОРОТ ЗА МЕСЯЦ</div>
+                </div>
+                
+                <div class="stat-card mb-3" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">
+                    <i class="bi bi-arrow-up-circle"></i>
+                    <div class="number">{{ total_income|intcomma }} сом</div>
+                    <div class="label">ДОХОД</div>
+                </div>
+                
+                <div class="stat-card mb-3" style="background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);">
+                    <i class="bi bi-arrow-down-circle"></i>
+                    <div class="number">{{ total_expense|intcomma }} сом</div>
+                    <div class="label">РАСХОДЫ</div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);">
+                    <i class="bi bi-graph-up"></i>
+                    <div class="number">{{ growth_rate }}%</div>
+                    <div class="label">РОСТ К ПРОШЛОМУ МЕСЯЦУ</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Фильтры</span>
+            </div>
+            <div class="app-card-body">
+                <form method="get">
+                    <div class="mb-3">
+                        <label class="form-label">Период</label>
+                        <select class="form-select" name="period">
+                            <option value="current_month" {% if period == "current_month" %}selected{% endif %}>Текущий месяц</option>
+                            <option value="last_month" {% if period == "last_month" %}selected{% endif %}>Прошлый месяц</option>
+                            <option value="quarter" {% if period == "quarter" %}selected{% endif %}>Квартал</option>
+                            <option value="year" {% if period == "year" %}selected{% endif %}>Год</option>
+                            <option value="custom" {% if period == "custom" %}selected{% endif %}>Произвольный период</option>
+                        </select>
+                    </div>
+                    {% if period == "custom" %}
+                    <div class="mb-3">
+                        <label class="form-label">С</label>
+                        <input type="date" class="form-control" name="date_from" value="{{ date_from }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">По</label>
+                        <input type="date" class="form-control" name="date_to" value="{{ date_to }}">
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Тип операции</label>
+                        <select class="form-select" name="transaction_type">
+                            <option value="">Все операции</option>
+                            <option value="income" {% if transaction_type == "income" %}selected{% endif %}>Доходы</option>
+                            <option value="expense" {% if transaction_type == "expense" %}selected{% endif %}>Расходы</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Категория</label>
+                        <select class="form-select" name="category">
+                            <option value="">Все категории</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100">Применить фильтры</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="app-card">
+            <div class="app-card-header">
+                <span>Финансовые операции</span>
+                <a href="{% url 'finance:transaction_create' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle me-1"></i> Добавить операцию</a>
+            </div>
+            <div class="app-card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover finance-table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Описание</th>
+                                <th>Категория</th>
+                                <th>Клиент/Контрагент</th>
+                                <th class="text-end">Сумма</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in page_obj %}
+                            <tr>
+                                <td>{{ transaction.date|date:"d.m.Y" }}</td>
+                                <td>{{ transaction.description }}</td>
+                                <td>
+                                    {% if transaction.transaction_type == 'income' %}
+                                        {{ transaction.category.name }}
+                                    {% else %}
+                                        {{ transaction.expense_category.name }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if transaction.client %}
+                                        {{ transaction.client }}
+                                    {% elif transaction.case and transaction.case.client %}
+                                        {{ transaction.case.client }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="text-end {% if transaction.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if transaction.transaction_type == 'income' %}+{% else %}-{% endif %}{{ transaction.amount|intcomma }} сом
+                                </td>
+                                <td>
+                                    <a href="{% url 'finance:transaction_update' transaction.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                    <a href="{% url 'finance:transaction_delete' transaction.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Нет операций за выбранный период</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Назад</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Вперед</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="app-card">
+                    <div class="app-card-header">
+                        <span>Доходы по категориям</span>
+                    </div>
+                    <div class="app-card-body">
+                        <canvas id="incomeChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="app-card">
+                    <div class="app-card-header">
+                        <span>Расходы по категориям</span>
+                    </div>
+                    <div class="app-card-body">
+                        <canvas id="expensesChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // График доходов
+        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        const incomeChart = new Chart(incomeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in income_by_category %}'{{ item.category__name }}',{% endfor %}],
+                datasets: [{
+                    data: [{% for item in income_by_category %}{{ item.total }},{% endfor %}],
+                    backgroundColor: ['#2c3e50', '#3498db', '#e74c3c', '#2ecc71', '#f39c12']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // График расходов
+        const expensesCtx = document.getElementById('expensesChart').getContext('2d');
+        const expensesChart = new Chart(expensesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in expense_by_category %}'{{ item.expense_category__name }}',{% endfor %}],
+                datasets: [{
+                    data: [{% for item in expense_by_category %}{{ item.total }},{% endfor %}],
+                    backgroundColor: ['#2c3e50', '#3498db', '#e74c3c', '#2ecc71', '#f39c12']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
