@@ -7,7 +7,7 @@
 
 {% block page_actions %}
     <div class="btn-group">
-        <a href="{% url 'calendar:event_create' %}" class="btn btn-primary">
+        <a href="{% url 'calendar1:event_create' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Создать событие
         </a>
         <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
@@ -96,7 +96,7 @@
                 {% if today_events %}
                     <div class="list-group list-group-flush">
                         {% for event in today_events %}
-                            <a href="{% url 'calendar:event_detail' event.pk %}" class="list-group-item list-group-item-action">
+                            <a href="{% url 'calendar1:event_detail' event.pk %}" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1">{{ event.title }}</h6>
                                     <small class="text-muted">{{ event.start_time|time }}</small>
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             day: 'День',
             list: 'Список'
         },
-        events: '{% url "calendar:calendar_json" %}',
+        events: '{% url "calendar1:calendar_json" %}',
         eventClick: function(info) {
             window.location.href = info.event.extendedProps.url;
         },
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('end_time', document.getElementById('quickEventEnd').value);
         formData.append('event_type', 'meeting');
         
-        fetch('{% url "calendar:quick_event_create" %}', {
+        fetch('{% url "calendar1:quick_event_create" %}', {
             method: 'POST',
             body: formData,
             headers: {

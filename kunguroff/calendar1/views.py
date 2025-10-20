@@ -186,7 +186,7 @@ class EventCreateView(LawyerRequiredMixin, CreateView):
         'notify_3_hours', 'notify_1_hour', 'notify_30_minutes',
         'notify_10_minutes', 'notify_1_minute'
     ]
-    success_url = reverse_lazy('calendar:event_list')
+    success_url = reverse_lazy('calendar1:event_list')
     
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -225,7 +225,7 @@ class EventUpdateView(OwnerOrManagerMixin, UpdateView):
     ]
     
     def get_success_url(self):
-        return reverse_lazy('calendar:event_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('calendar1:event_detail', kwargs={'pk': self.object.pk})
     
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -254,7 +254,7 @@ class EventDetailView(LawyerRequiredMixin, DetailView):
 class EventDeleteView(OwnerOrManagerMixin, DeleteView):
     model = CalendarEvent
     template_name = 'calendar/event_confirm_delete.html'
-    success_url = reverse_lazy('calendar:event_list')
+    success_url = reverse_lazy('calendar1:event_list')
     
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'Событие успешно удалено!')
@@ -293,7 +293,7 @@ class CalendarJsonView(LawyerRequiredMixin, View):
                     'priority': event.priority,
                     'description': event.description,
                     'location': event.location,
-                    'url': reverse_lazy('calendar:event_detail', kwargs={'pk': event.pk})
+                    'url': reverse_lazy('calendar1:event_detail', kwargs={'pk': event.pk})
                 }
             })
         

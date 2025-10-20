@@ -7,11 +7,11 @@
 
 {% block page_actions %}
     <div class="btn-group">
-        <a href="{% url 'calendar:event_update' event.pk %}" class="btn btn-outline-primary">
+        <a href="{% url 'calendar1:event_update' event.pk %}" class="btn btn-outline-primary">
             <i class="bi bi-pencil"></i> Редактировать
         </a>
         {% if user == event.owner or user.role in 'director deputy_director manager' %}
-            <a href="{% url 'calendar:event_delete' event.pk %}" class="btn btn-outline-danger">
+            <a href="{% url 'calendar1:event_delete' event.pk %}" class="btn btn-outline-danger">
                 <i class="bi bi-trash"></i> Удалить
             </a>
         {% endif %}
