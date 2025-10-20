@@ -103,3 +103,67 @@ class TraineeProfile(models.Model):
     class Meta:
         verbose_name = "Профиль стажера"
         verbose_name_plural = "Профили стажеров"
+        
+class TelegramAccount(models.Model):
+    """Модель для привязки Telegram аккаунтов к пользователям"""
+    
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='telegram_account',
+        verbose_name="Пользователь"
+    )
+    telegram_id = models.BigIntegerField(
+        unique=True,
+        verbose_name="ID пользователя в Telegram"
+    )
+    username = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Username в Telegram"
+    )
+    first_name = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Имя в Telegram"
+    )
+    last_name = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Фамилия в Telegram"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Аккаунт активен"
+    )
+    notifications_enabled = models.BooleanField(
+        default=True,
+        verbose_name="Уведомления включены"
+    )
+    
+    # Настройки уведомлений
+    notify_1_day = models.BooleanField(default=True, verbose_name="За 1 день")
+    notify_12_hours = models.BooleanField(default=True, verbose_name="За 12 часов")
+    notify_3_hours = models.BooleanField(default=True, verbose_name="За 3 часа")
+    notify_1_hour = models.BooleanField(default=True, verbose_name="За 1 час")
+    notify_30_minutes = models.BooleanField(default=True, verbose_name="За 30 минут")
+    notify_10_minutes = models.BooleanField(default=True, verbose_name="За 10 минут")
+    notify_1_minute = models.BooleanField(default=True, verbose_name="За 1 минуту")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата привязки")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    
+    class Meta:
+        verbose_name = "Telegram аккаунт"
+        verbose_name_plural = "Telegram аккаунты"
+    
+    def __str__(self):
+        return f"@{self.username}" if self.username else f"ID: {self.telegram_id}"
+    
+    def get_full_name(self):
+        name_parts = []
+        if self.first_name:
+            name_parts.append(self.first_name)
+        if self.last_name:
+            name_parts.append(self.last_name)
+        return " ".join(name_parts) if name_parts else "Неизвестно"

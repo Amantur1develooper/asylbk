@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} - Kunguroff & Partners{% endblock %}
+
+{% block page_title %}{{ event.title }}{% endblock %}
+
+{% block page_actions %}
+    <div class="btn-group">
+        <a href="{% url 'calendar:event_update' event.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Редактировать
+        </a>
+        {% if user == event.owner or user.role in 'director deputy_director manager' %}
+            <a href="{% url 'calendar:event_delete' event.pk %}" class="btn btn-outline-danger">
+                <i class="bi bi-trash"></i> Удалить
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Основная информация</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Название:</div>
+                    <div class="col-sm-9">{{ event.title }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Тип:</div>
+                    <div class="col-sm-9">
+                        <span class="badge bg-secondary">{{ event.get_event_type_display }}</span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Время:</div>
+                    <div class="col-sm-9">
+                        <strong>{{ event.start_time|date:"d.m.Y" }}</strong><br>
+                        {{ event.start_time|time }} - {{ event.end_time|time }}
+                        {% if event.is_past %}
+                            <span class="badge bg-secondary ms-2">Завершено</span>
+                        {% elif event.is_ongoing %}
+                            <span class="badge bg-success ms-2">В процессе</span>
+                        {% else %}
+                            <span class="badge bg-primary ms-2">Предстоящее</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if event.location %}
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Место:</div>
+                    <div class="col-sm-9">{{ event.location }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Приоритет:</div>
+                    <div class="col-sm-9">
+                        <span class="badge bg-{% if event.priority == 'high' %}danger{% elif event.priority == 'medium' %}warning{% else %}success{% endif %}">
+                            {{ event.get_priority_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                {% if event.description %}
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Описание:</div>
+                    <div class="col-sm-9">{{ event.description|linebreaks }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Уведомления -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Настройки уведомлений</h5>
+            </div>
+            <div class="card-body">
+                {% if event.enable_notifications %}
+                    <p class="text-success">
+                        <i class="bi bi-bell-fill"></i> Уведомления включены
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Время напоминаний:</h6>
+                            <ul class="list-unstyled">
+                                {% if event.notify_1_day %}<li><i class="bi bi-check text-success"></i> За 1 день</li>{% endif %}
+                                {% if event.notify_12_hours %}<li><i class="bi bi-check text-success"></i> За 12 часов</li>{% endif %}
+                                {% if event.notify_3_hours %}<li><i class="bi bi-check text-success"></i> За 3 часа</li>{% endif %}
+                                {% if event.notify_1_hour %}<li><i class="bi bi-check text-success"></i> За 1 час</li>{% endif %}
+                                {% if event.notify_30_minutes %}<li><i class="bi bi-check text-success"></i> За 30 минут</li>{% endif %}
+                                {% if event.notify_10_minutes %}<li><i class="bi bi-check text-success"></i> За 10 минут</li>{% endif %}
+                                {% if event.notify_1_minute %}<li><i class="bi bi-check text-success"></i> За 1 минуту</li>{% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-muted">
+                        <i class="bi bi-bell-slash"></i> Уведомления отключены
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Связанные объекты -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Связанные объекты</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Владелец:</strong><br>
+                    {{ event.owner.get_full_name|default:event.owner.username }}
+                </div>
+                
+                {% if event.case %}
+                <div class="mb-3">
+                    <strong>Дело:</strong><br>
+                    <a href="{% url 'cases:case_detail' event.case.pk %}">{{ event.case.title }}</a>
+                </div>
+                {% endif %}
+                
+                {% if event.trustor %}
+                <div class="mb-3">
+                    <strong>Доверитель:</strong><br>
+                    <a href="{% url 'clients:trustor_detail' event.trustor.pk %}">{{ event.trustor.get_full_name }}</a>
+                </div>
+                {% endif %}
+                
+                {% if event.participants.all %}
+                <div class="mb-3">
+                    <strong>Участники:</strong><br>
+                    <div class="mt-2">
+                        {% for participant in event.participants.all %}
+                            <span class="badge bg-light text-dark me-1 mb-1">
+                                {{ participant.get_full_name|default:participant.username }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Системная информация -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Системная информация</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Создано:</strong><br>
+                    {{ event.created_at|date:"d.m.Y H:i" }}
+                </div>
+                <div class="mb-2">
+                    <strong>Обновлено:</strong><br>
+                    {{ event.updated_at|date:"d.m.Y H:i" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

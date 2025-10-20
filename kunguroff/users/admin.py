@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, PracticeType, TraineeProfile
+from .models import TelegramAccount, User, PracticeType, TraineeProfile
 
 class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'position', 'is_staff')
@@ -34,3 +34,4 @@ class TraineeProfileAdmin(admin.ModelAdmin):
     raw_id_fields = ('user', 'curator')
 
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(TelegramAccount)

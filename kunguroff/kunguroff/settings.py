@@ -51,6 +51,38 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'users.User'
 
+TELEGRAM_BOT_TOKEN = '7647322168:AAHC-VSVSS7qxrDCfJD2kaMHbeC9z2-l9R4'
+# Планировщик задач для уведомлений
+CELERY_BEAT_SCHEDULE = {
+    'send-telegram-notifications': {
+        'task': 'calendar.tasks.send_telegram_notifications',
+        'schedule': 60.0,  # Каждую минуту
+    },
+}
+
+
+#  Настройки логирования для отладки
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'your_app_name': {  # замените на имя вашего приложения
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

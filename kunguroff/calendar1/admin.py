@@ -1,163 +1,58 @@
-# admin.py
 from django.contrib import admin
-from django.utils.html import format_html
-from django.utils import timezone
-from .models import CalendarEvent
+from .models import CalendarEvent, EventNotification
 
 @admin.register(CalendarEvent)
 class CalendarEventAdmin(admin.ModelAdmin):
     list_display = [
-        'title', 
-        'event_type_display', 
-        'start_time', 
-        'end_time', 
-        'priority_display',
-        'case_link',
-        'client_display',
-        'owner_link',
-        'is_ongoing_display',
-        'is_past_display'
+        'title', 'event_type', 'start_time', 'end_time', 'priority', 
+        'trustor', 'case', 'owner', 'enable_notifications'
     ]
-    
     list_filter = [
-        'event_type',
-        'priority',
-        'start_time',
-        'end_time',
-        'created_at',
-        'owner'
+        'event_type', 'priority', 'start_time', 'enable_notifications',
+        'owner', 'trustor'
     ]
-    
     search_fields = [
-        'title',
-        'description',
-        'location',
-        'case__title',
-        'client__username',
-        'client__first_name',
-        'client__last_name'
-        'owner__username',
-        'owner__first_name',
-        'owner__last_name'
+        'title', 'description', 'trustor__first_name', 
+        'trustor__last_name', 'case__title'
     ]
-    
+    readonly_fields = ['created_at', 'updated_at']
     filter_horizontal = ['participants']
     
     fieldsets = (
-        ('Основная информация', {
-            'fields': (
-                'event_type',
-                'title',
-                'description',
-                'priority'
-            )
+        (None, {
+            'fields': ('event_type', 'title', 'description')
         }),
         ('Время и место', {
+            'fields': ('start_time', 'end_time', 'location')
+        }),
+        ('Дополнительная информация', {
+            'fields': ('priority', 'case', 'trustor', 'owner', 'participants')
+        }),
+        ('Уведомления', {
             'fields': (
-                'start_time',
-                'end_time',
-                'location'
+                'enable_notifications', 
+                'notify_1_day', 
+                'notify_12_hours', 
+                'notify_3_hours', 
+                'notify_1_hour', 
+                'notify_30_minutes', 
+                'notify_10_minutes', 
+                'notify_1_minute'
             )
         }),
-        ('Связи', {
-            'fields': (
-                'case',
-                'client',
-                'owner',
-                'participants'
-            )
+        ('Системная информация', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
         }),
     )
-    
-    readonly_fields = ['created_at', 'updated_at']
-    
-    def get_readonly_fields(self, request, obj=None):
-        if obj:  # editing an existing object
-            return self.readonly_fields + ['created_at', 'updated_at']
-        return self.readonly_fields
-    
-    def event_type_display(self, obj):
-        return dict(CalendarEvent.EVENT_TYPES).get(obj.event_type, obj.event_type)
-    event_type_display.short_description = 'Тип события'
-    
-    def priority_display(self, obj):
-        priority_classes = {
-            'low': 'secondary',
-            'medium': 'info',
-            'high': 'danger'
-        }
-        return format_html(
-            '<span class="badge bg-{}">{}</span>',
-            priority_classes.get(obj.priority, 'secondary'),
-            dict(CalendarEvent.PRIORITY_CHOICES).get(obj.priority, obj.priority)
-        )
-    priority_display.short_description = 'Приоритет'
-    
-    def case_link(self, obj):
-        if obj.case:
-            return format_html(
-                '<a href="/admin/cases/case/{}/change/">{}</a>',
-                obj.case.id,
-                obj.case.title
-            )
-        return '-'
-    case_link.short_description = 'Дело'
-    
-    def client_link(self, obj):
-        if obj.client:
-            return format_html(
-                '<a href="/admin/clients/client/{}/change/">{}</a>',
-                obj.client.id,
-                obj.client.name
-            )
-        return '-'
-    client_link.short_description = 'Клиент'
-    
-    def owner_link(self, obj):
-        if obj.owner:
-            return format_html(
-                '<a href="/admin/auth/user/{}/change/">{}</a>',
-                obj.owner.id,
-                obj.owner.get_full_name() or obj.owner.username
-            )
-        return '-'
-    owner_link.short_description = 'Владелец'
-    def client_display(self, obj):
-        if obj.client:
-            # Используем строковое представление клиента вместо поля name
-            return format_html(
-                '<a href="/admin/clients/client/{}/change/">{}</a>',
-                obj.client.id,
-                str(obj.client)  # Используем __str__ метод модели Client
-            )
-        return '-'
-    client_display.short_description = 'Клиент'
-    
-    def is_ongoing_display(self, obj):
-        now = timezone.now()
-        is_ongoing = obj.start_time <= now <= obj.end_time
-        return format_html(
-            '<span class="badge bg-{}">{}</span>',
-            'success' if is_ongoing else 'secondary',
-            'Активно' if is_ongoing else 'Неактивно'
-        )
-    is_ongoing_display.short_description = 'Статус'
-    
-    def is_past_display(self, obj):
-        is_past = obj.end_time < timezone.now()
-        return format_html(
-            '<span class="badge bg-{}">{}</span>',
-            'warning' if is_past else 'info',
-            'Завершено' if is_past else 'Предстоящее'
-        )
-    is_past_display.short_description = 'Состояние'
-    
+
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related(
-            'case', 'client', 'owner'
-        )
-    
-    class Media:
-        css = {
-            'all': ('css/admin_calendar.css',)
-        }
+        qs = super().get_queryset(request)
+        return qs.select_related('trustor', 'case', 'owner')
+
+@admin.register(EventNotification)
+class EventNotificationAdmin(admin.ModelAdmin):
+    list_display = ['event', 'user', 'notification_type', 'scheduled_time', 'sent', 'sent_at']
+    list_filter = ['sent', 'notification_type', 'scheduled_time']
+    readonly_fields = ['created_at']
+    search_fields = ['event__title', 'user__username']
