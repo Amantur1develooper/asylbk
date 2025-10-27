@@ -46,13 +46,13 @@ class ClientForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
             'passport_series': forms.TextInput(attrs={
                 'class': 'form-control',
-                'pattern': '[0-9]{4}',
-                'title': '4 цифры серии паспорта'
+                'pattern': '[0-9]{14}',
+                'title': '14 цифры серии паспорта'
             }),
             'passport_number': forms.TextInput(attrs={
                 'class': 'form-control',
-                'pattern': '[0-9]{6}',
-                'title': '6 цифр номера паспорта'
+                'pattern': '[0-9]{7}',
+                'title': '7 цифр номера паспорта'
             }),
             'passport_issued_by': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -76,7 +76,7 @@ class ClientForm(forms.ModelForm):
             }),
             'inn': forms.TextInput(attrs={
                 'class': 'form-control',
-                'pattern': '[0-9]{10,12}',
+                'pattern': '[0-9]{10,12,14}',
                 'title': '10 или 12 цифр ИНН'
             }),
             'notes': forms.Textarea(attrs={
@@ -126,6 +126,6 @@ class ClientForm(forms.ModelForm):
         data = self.cleaned_data['inn']
         if data and not data.isdigit():
             raise forms.ValidationError("ИНН должен содержать только цифры")
-        if data and len(data) not in [10, 12]:
+        if data and len(data) not in [10, 12, 14]:
             raise forms.ValidationError("ИНН должен содержать 10 или 12 цифр")
         return data
