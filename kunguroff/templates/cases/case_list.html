@@ -268,9 +268,21 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-sm me-2 bg-primary rounded-circle d-flex align-items-center justify-content-center text-white">
-                                        {{ case.responsible_lawyer.first_name|first|default:case.responsible_lawyer.username|first }}
+                                         {% if case.responsible_lawyer.all %}
+            <td class="list-group">
+                {% for lawyer in case.responsible_lawyer.all %}
+                    <li class="list-group-item">
+                        {{ lawyer.get_full_name|default:lawyer.username }} 
+                        ({{ lawyer.get_role_display }})
+                    </li>
+                {% endfor %}
+                </td>
+        {% else %}
+            <p class="text-muted">Ответственные не назначены</p>
+        {% endif %}
                                     </div>
-                                    {{ case.responsible_lawyer.get_full_name|default:case.responsible_lawyer.username }}
+
+                                    {% comment %} {{ case.responsible_lawyer.get_full_name|default:case.responsible_lawyer.username }} {% endcomment %}
                                 </div>
                             </td>
                             <td>{{ case.created_at|date:"d.m.Y" }}</td>

@@ -80,7 +80,7 @@ class Case(models.Model):
     STATUS_CHOICES = [
         ('open', 'Открыто'),
         ('in_progress', 'В работе'),
-        ('paused', 'На паузе'),
+        ('paused', 'Приостановлено'),
         ('completed', 'Завершено'),
         ('archived', 'Архив'),
     ]
@@ -93,9 +93,10 @@ class Case(models.Model):
         related_name='cases',
         verbose_name="Категория дела"
     )
-    responsible_lawyer = models.ForeignKey(
+    responsible_lawyer = models.ManyToManyField(
         User, 
-        on_delete=models.PROTECT, 
+        blank=True,
+        null=True,
         related_name='cases',
         verbose_name="Ответственный юрист/адвокат"
     )
@@ -154,7 +155,11 @@ class Case(models.Model):
         """Участники дела сгруппированные по ролям"""
         from django.db.models import Count
         return self.participants.values('role__role_name').annotate(count=Count('id'))
-
+    
+    def get_responsible_lawyers_names(self):
+        """Возвращает строку с именами ответственных юристов"""
+        return ", ".join([lawyer.get_full_name() or lawyer.username 
+                         for lawyer in self.responsible_lawyer.all()])
     def calculate_progress(self):
         """Метод для расчета прогресса дела на основе заполненных обязательных полей"""
         total_required = 0

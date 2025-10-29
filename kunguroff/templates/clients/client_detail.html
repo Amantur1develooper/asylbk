@@ -42,11 +42,23 @@
                 <div class="row mb-3">
                     <div class="col-sm-4 fw-bold">Ответственный:</div>
                     <div class="col-sm-8">
-                        {% if client.primary_contact %}
-                            {{ client.primary_contact.get_full_name|default:client.primary_contact.username }}
-                        {% else %}
+                         {% if client.primary_contact.all %}
+            <ul class="list-group">
+                {% for lawyer in client.primary_contact.all %}
+                    <li class="list-group-item">
+                        {{ lawyer.get_full_name|default:lawyer.username }} 
+                        ({{ lawyer.get_role_display }})
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Ответственные не назначены</p>
+        {% endif %}
+                        {% comment %} {% if client.primary_contact %} {% endcomment %}
+                            {% comment %} {{ client.primary_contact.get_full_name|default:client.primary_contact.username }} {% endcomment %}
+                        {% comment %} {% else %} {% endcomment %}
                             —
-                        {% endif %}
+                        {% comment %} {% endif %} {% endcomment %}
                     </div>
                 </div>
             </div>

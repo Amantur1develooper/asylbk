@@ -36,13 +36,14 @@ class Trustor(models.Model):
     notes = models.TextField(blank=True, verbose_name="Заметки")
     
     # Связи
-    primary_contact = models.ForeignKey(
+    
+    primary_contact = models.ManyToManyField(
         User, 
-        on_delete=models.SET_NULL, 
+        
         null=True, 
         blank=True,
         related_name='trustors',
-        verbose_name="Основной контакт (юрист/адвокат)"
+        verbose_name="Ответственные (юрист/адвокат)"
     )
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
@@ -58,4 +59,9 @@ class Trustor(models.Model):
     
     def get_full_name(self):
         return f"{self.last_name} {self.first_name} {self.middle_name or ''}".strip()
+    
+    def get_primary_contact_names(self):
+        """Возвращает строку с именами ответственных юристов"""
+        return ", ".join([lawyer.get_full_name() or lawyer.username 
+                         for lawyer in self.primary_contact.all()])
 # User = get_user_model()

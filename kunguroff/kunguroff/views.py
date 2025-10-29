@@ -36,3 +36,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['upcoming_events'] = []
         
         return context
+    
+
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+def user_logout(request):
+    logout(request)  # очищает сессию пользователя
+    return redirect('login')  # перенаправляем на страницу входа

@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.contrib import messages
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -11,7 +12,7 @@ from .models import Case, CaseCategory, CaseStage, CaseDocument
 from .forms import CaseForm, CaseDocumentForm
 
 # Список всех дел
-class CaseListView(LawyerRequiredMixin,ListView):
+class CaseListView(LawyerRequiredMixin, ListView):
     model = Case
     template_name = 'cases/case_list.html'
     context_object_name = 'cases'
@@ -25,11 +26,11 @@ class CaseListView(LawyerRequiredMixin,ListView):
         # Фильтрация по роли пользователя
         user = self.request.user
         if user.role in ['lawyer', 'advocate']:
-            # Юристы видят только свои дела
+            # ИЗМЕНЕНИЕ: Юристы видят дела, где они входят в ответственные
             return Case.objects.filter(responsible_lawyer=user)
         elif user.role == 'manager':
             # Менеджеры видят дела своей команды
-            # Здесь нужно доработать логику определения команды
+            
             return Case.objects.all()
         else:
             # Директора и админы видят все дела
@@ -40,6 +41,37 @@ class CaseListView(LawyerRequiredMixin,ListView):
         # Добавляем категории для фильтрации
         context['categories'] = CaseCategory.objects.all()
         return context
+    
+    
+# class CaseListView(LawyerRequiredMixin,ListView):
+#     model = Case
+#     template_name = 'cases/case_list.html'
+#     context_object_name = 'cases'
+#     paginate_by = 20
+    
+#     @method_decorator(login_required)
+#     def dispatch(self, *args, **kwargs):
+#         return super().dispatch(*args, **kwargs)
+    
+#     def get_queryset(self):
+#         # Фильтрация по роли пользователя
+#         user = self.request.user
+#         if user.role in ['lawyer', 'advocate']:
+#             # Юристы видят только свои дела
+#             return Case.objects.filter(responsible_lawyer=user)
+#         elif user.role == 'manager':
+#             # Менеджеры видят дела своей команды
+#             # Здесь нужно доработать логику определения команды
+#             return Case.objects.all()
+#         else:
+#             # Директора и админы видят все дела
+#             return Case.objects.all()
+    
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         # Добавляем категории для фильтрации
+#         context['categories'] = CaseCategory.objects.all()
+#         return context
 
 # Детальная информация о деле
 class CaseDetailView(DetailView):
@@ -55,6 +87,7 @@ class CaseDetailView(DetailView):
         # Проверка прав доступа
         user = self.request.user
         if user.role in ['lawyer', 'advocate']:
+            # ИЗМЕНЕНИЕ: Фильтруем по связи ManyToMany
             return Case.objects.filter(responsible_lawyer=user)
         return Case.objects.all()
     
@@ -70,8 +103,36 @@ class CaseDetailView(DetailView):
             )
         return context
 
+# class CaseDetailView(DetailView):
+#     model = Case
+#     template_name = 'cases/case_detail.html'
+#     context_object_name = 'case'
+    
+#     @method_decorator(login_required)
+#     def dispatch(self, *args, **kwargs):
+#         return super().dispatch(*args, **kwargs)
+    
+#     def get_queryset(self):
+#         # Проверка прав доступа
+#         user = self.request.user
+#         if user.role in ['lawyer', 'advocate']:
+#             return Case.objects.filter(responsible_lawyer=user)
+#         return Case.objects.all()
+    
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         # Добавляем форму для загрузки документов
+#         context['document_form'] = CaseDocumentForm()
+#         # Добавляем список документов по этапам
+#         context['documents_by_stage'] = {}
+#         for stage in self.object.category.stages.all():
+#             context['documents_by_stage'][stage] = CaseDocument.objects.filter(
+#                 case=self.object, stage=stage
+#             )
+#         return context
+
 # Создание нового дела
-class CaseCreateView(LawyerRequiredMixin,CreateView):
+class CaseCreateView(LawyerRequiredMixin, CreateView):
     model = Case
     form_class = CaseForm
     template_name = 'cases/case_form.html'
@@ -79,32 +140,73 @@ class CaseCreateView(LawyerRequiredMixin,CreateView):
     
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        # Только определе нные роли могут создавать дела
+        # Только определенные роли могут создавать дела
         allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
         if self.request.user.role not in allowed_roles:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+    
     def form_valid(self, form):
-        # Автоматически устанавливаем текущего пользователя как ответственного юриста
-        # если он юрист/адвокат
+        # Сохраняем объект сначала
+        response = super().form_valid(form)
+        
+        # ИЗМЕНЕНИЕ: Если пользователь - юрист/адвокат и он не выбран в форме,
+        # автоматически добавляем его в ответственные
         if self.request.user.role in ['lawyer', 'advocate']:
-            form.instance.responsible_lawyer = self.request.user
+            if self.request.user not in self.object.responsible_lawyer.all():
+                self.object.responsible_lawyer.add(self.request.user)
         
         # Устанавливаем первый этап в качестве текущего
-        response = super().form_valid(form)
         category = form.instance.category
         first_stage = category.stages.order_by('order').first()
         if first_stage:
-            form.instance.current_stage = first_stage
-            form.instance.save()
+            self.object.current_stage = first_stage
+            self.object.save()
+        
+        # Добавляем сообщение об успехе
+        messages.success(self.request, f'Дело "{self.object.title}" успешно создано.')
         
         return response
+# class CaseCreateView(LawyerRequiredMixin,CreateView):
+#     model = Case
+#     form_class = CaseForm
+#     template_name = 'cases/case_form.html'
+#     success_url = reverse_lazy('cases:case_list')
+    
+#     @method_decorator(login_required)
+#     def dispatch(self, *args, **kwargs):
+#         # Только определе нные роли могут создавать дела
+#         allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
+#         if self.request.user.role not in allowed_roles:
+#             return redirect('permission_denied')
+#         return super().dispatch(*args, **kwargs)
+    
+#     def form_valid(self, form):
+#         # Автоматически устанавливаем текущего пользователя как ответственного юриста
+#         # если он юрист/адвокат
+#         if self.request.user.role in ['lawyer', 'advocate']:
+#             form.instance.responsible_lawyer = self.request.user
+        
+#         # Устанавливаем первый этап в качестве текущего
+#         response = super().form_valid(form)
+#         category = form.instance.category
+#         first_stage = category.stages.order_by('order').first()
+#         if first_stage:
+#             form.instance.current_stage = first_stage
+#             form.instance.save()
+        
+#         return response
+
 
 # Редактирование дела
 class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
     model = Case
-    form_class =  CaseForm
+    form_class = CaseForm
     template_name = 'cases/case_form.html'
     
     @method_decorator(login_required)
@@ -114,8 +216,8 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
         user = self.request.user
         allowed_roles = ['manager', 'director', 'deputy_director']
         
-        # Юристы могут редактировать только свои дела
-        if user.role in ['lawyer', 'advocate'] and case.responsible_lawyer != user:
+        # ИЗМЕНЕНИЕ: Юристы могут редактировать только свои дела
+        if user.role in ['lawyer', 'advocate'] and user not in case.responsible_lawyer.all():
             return redirect('permission_denied')
         
         # Менеджеры и директора могут редактировать все дела
@@ -124,8 +226,42 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
             
         return super().dispatch(*args, **kwargs)
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+    
     def get_success_url(self):
         return reverse_lazy('cases:case_detail', kwargs={'pk': self.object.pk})
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Дело "{self.object.title}" успешно обновлено.')
+        return response
+# class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
+#     model = Case
+#     form_class =  CaseForm
+#     template_name = 'cases/case_form.html'
+    
+#     @method_decorator(login_required)
+#     def dispatch(self, *args, **kwargs):
+#         # Проверка прав доступа
+#         case = self.get_object()
+#         user = self.request.user
+#         allowed_roles = ['manager', 'director', 'deputy_director']
+        
+#         # Юристы могут редактировать только свои дела
+#         if user.role in ['lawyer', 'advocate'] and case.responsible_lawyer != user:
+#             return redirect('permission_denied')
+        
+#         # Менеджеры и директора могут редактировать все дела
+#         if user.role not in allowed_roles + ['lawyer', 'advocate']:
+#             return redirect('permission_denied')
+            
+#         return super().dispatch(*args, **kwargs)
+    
+#     def get_success_url(self):
+#         return reverse_lazy('cases:case_detail', kwargs={'pk': self.object.pk})
 
 # Удаление дела
 class CaseDeleteView(DirectorRequiredMixin, DeleteView):
@@ -149,7 +285,8 @@ class CaseDocumentCreateView(View):
         
         # Проверка прав доступа
         user = request.user
-        if user.role in ['lawyer', 'advocate'] and case.responsible_lawyer != user:
+        # ИЗМЕНЕНИЕ: Проверяем через ManyToMany связь
+        if user.role in ['lawyer', 'advocate'] and user not in case.responsible_lawyer.all():
             return redirect('permission_denied')
         
         form = CaseDocumentForm(request.POST, request.FILES)
@@ -170,6 +307,34 @@ class CaseDocumentCreateView(View):
             'document_form': form,
             'documents_by_stage': CaseDocument.objects.filter(case=case).group_by_stage()
         })
+# class CaseDocumentCreateView(View):
+#     @method_decorator(login_required)
+#     def post(self, request, *args, **kwargs):
+#         case = get_object_or_404(Case, pk=kwargs['pk'])
+        
+#         # Проверка прав доступа
+#         user = request.user
+#         if user.role in ['lawyer', 'advocate'] and case.responsible_lawyer != user:
+#             return redirect('permission_denied')
+        
+#         form = CaseDocumentForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             document = form.save(commit=False)
+#             document.case = case
+#             document.created_by = request.user
+#             document.save()
+            
+#             # Пересчитываем прогресс дела
+#             case.calculate_progress()
+            
+#             return redirect('cases:case_detail', pk=case.pk)
+        
+#         # Если форма невалидна, возвращаемся к деталям дела с ошибками
+#         return render(request, 'cases/case_detail.html', {
+#             'case': case,
+#             'document_form': form,
+#             'documents_by_stage': CaseDocument.objects.filter(case=case).group_by_stage()
+#         })
 
 # AJAX-представление для получения этапов категории
 class CategoryStagesView(View):
@@ -282,16 +447,7 @@ def ajax_load_stages(request):
     
 from django.http import JsonResponse
 
-# def field_info(request, field_id):
-#     try:
-#         field = CaseStageField.objects.get(id=field_id)
-#         return JsonResponse({
-#             'field_type': field.field_type,
-#             'is_required': field.is_required,
-#             'options': field.options
-#         })
-#     except CaseStageField.DoesNotExist:
-#         return JsonResponse({'error': 'Field not found'}, status=404)
+
 
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -348,14 +504,7 @@ class CaseParticipantDeleteView(OwnerOrManagerMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('cases:case_detail', kwargs={'pk': self.object.case.pk})
-# class CaseParticipantDeleteView(OwnerOrManagerMixin, DeleteView):
-#     model = CaseParticipant
-#     template_name = 'cases/participant_confirm_delete.html'
-    
-#     def get_success_url(self):
-#         return reverse_lazy('cases:case_detail', kwargs={'pk': self.object.case.pk})
 
-# AJAX-представление для загрузки ролей по категории
 def ajax_load_participant_roles(request):
     category_id = request.GET.get('category_id')
     if not category_id:

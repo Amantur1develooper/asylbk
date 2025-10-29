@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.contrib import admin
 from django.urls import path, include
-from .views import DashboardView
+from .views import DashboardView, user_logout
 from django.contrib.auth import views as auth_views
 
 
@@ -41,7 +41,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', DashboardView.as_view(), name='dashboard'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', user_logout, name='logout'),
     path('cases/', include('cases.urls')),
     path('clients/', include('clients.urls')),
     # path('users/', include('users.urls')),

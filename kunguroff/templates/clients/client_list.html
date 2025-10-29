@@ -35,7 +35,18 @@
                                 </td>
                                 <td>{{ client.phone }}</td>
                                 <td>{{ client.email|default:"—" }}</td>
-                                <td>{{ client.primary_contact.get_full_name|default:client.primary_contact.username }}</td>
+                                <td> {% if client.primary_contact.all %}
+            <ul class="list-group">
+                {% for lawyer in client.primary_contact.all %}
+                    <li class="list-group-item">
+                        {{ lawyer.get_full_name|default:lawyer.username }} 
+                        ({{ lawyer.get_role_display }})
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Ответственные не назначены</p>
+        {% endif %}</td>
                                 <td>{{ client.created_at|date:"d.m.Y" }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
