@@ -148,7 +148,7 @@
                                 <small>{{ case.progress }}%</small>
                             </div>
                         </td>
-                        <td>{{ case.responsible_lawyer.get_full_name|default:case.responsible_lawyer.username }}</td>
+                        {% comment %} <td>{{ case.responsible_lawyer.get_full_name|default:case.responsible_lawyer.username }}</td> {% endcomment %}
                         <td>
                             <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-eye"></i>

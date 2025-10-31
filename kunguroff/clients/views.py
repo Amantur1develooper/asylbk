@@ -80,7 +80,7 @@ class ClientDetailView(DetailView):
         # Получаем все дела через участников
         cases = (Case.objects
                  .filter(participants__trustor=trustor)
-                 .select_related("category", "responsible_lawyer"))
+                 .select_related("category", ))
         context["cases"] = cases
         return context
 # Детальная информация о клиенте
