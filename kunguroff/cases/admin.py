@@ -77,17 +77,13 @@ class CaseDocumentAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
         
-        
-        
-        
-
-
 
 @admin.register(CaseParticipantRole)
 class CaseParticipantRoleAdmin(admin.ModelAdmin):
     list_display = ('category', 'role_name', 'role_code', 'order')
     list_filter = ('category',)
     ordering = ('category', 'order')
+
 
 @admin.register(CaseParticipant)
 class CaseParticipantAdmin(admin.ModelAdmin):

@@ -62,11 +62,11 @@ class ClientForm(forms.ModelForm):
             }),
             'passport_series': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': '00 00'
+                'placeholder': 'ID/NC'
             }),
             'passport_number': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': '000000'
+                'placeholder': '1234567'
             }),
             'passport_issued_by': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -133,7 +133,7 @@ class ClientForm(forms.ModelForm):
     
     def clean_passport_series(self):
         data = self.cleaned_data.get('passport_series', '')
-        if data and not (2 <= len(data) <= 4):  # Увеличил до 4 символов
+        if data and not (2 == len(data) ):  # Увеличил до 4 символов
             raise forms.ValidationError("Серия паспорта должна содержать от 2 до 4 символов.")
         return data
     
@@ -141,14 +141,14 @@ class ClientForm(forms.ModelForm):
         data = self.cleaned_data['passport_number']
         if data and not data.isdigit():
             raise forms.ValidationError("Номер паспорта должен содержать только цифры")
-        if data and len(data) != 6:
-            raise forms.ValidationError("Номер паспорта должен содержать 6 цифр")
+        if data and len(data) != 7:
+            raise forms.ValidationError("Номер паспорта должен содержать 7 цифр")
         return data
     
     def clean_inn(self):
         data = self.cleaned_data['inn']
         if data and not data.isdigit():
             raise forms.ValidationError("ИНН должен содержать только цифры")
-        if data and len(data) not in [10, 12]:
+        if data and len(data) not in [10, 12, 14]:
             raise forms.ValidationError("ИНН должен содержать 10 или 12 цифр")
         return data
