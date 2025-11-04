@@ -79,7 +79,7 @@ class StageField(models.Model):
 class Case(models.Model):
     STATUS_CHOICES = [
         ('open', 'Открыто'),
-        ('in_progress', 'В работе'),
+        ('in_progress', 'В процессе'),
         ('paused', 'Приостановлено'),
         ('completed', 'Завершено'),
         ('archived', 'Архив'),
@@ -333,7 +333,7 @@ class CaseParticipant(models.Model):
     role = models.ForeignKey(
         CaseParticipantRole, 
         on_delete=models.CASCADE,
-        verbose_name="Роль в деле"
+        verbose_name="Статус в деле"
     )
     main_participant = models.BooleanField(
         default=False,

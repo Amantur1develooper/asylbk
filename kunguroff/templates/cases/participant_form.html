@@ -9,6 +9,11 @@
 {% if object %}Редактирование участника{% else %}Добавление нового участника{% endif %}
 {% endblock %}
 
+
+{% block linkk %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+{% endblock linkk %}
+    
 {% block content %}
 
 <div class="card">
@@ -16,7 +21,7 @@
         <form method="post" novalidate>
             {% csrf_token %}
 
-```
+
         {% if form.non_field_errors %}
             <div class="alert alert-danger">
                 {% for error in form.non_field_errors %}
@@ -84,12 +89,30 @@
             <a href="{% if object %}{% url 'cases:case_detail' object.case.pk %}{% else %}{% url 'cases:case_detail' case.pk %}{% endif %}" 
    class="btn btn-secondary">Отмена</a>
             <button type="submit" class="btn btn-primary">
-                {% if object %}Сохранить изменения{% else %}Добавить участника{% endif %}
+                {% if object %}Сохранить изменения{% else %}Сохранить{% endif %}
             </button>
         </div>
     </form>
 </div>
-```
+
 
 </div>
+{% endblock %}
+ {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(function () {
+    $('.js-trustor').select2({
+      width: '100%',
+      placeholder: $('.js-trustor').data('placeholder') || 'Выберите доверителя',
+      allowClear: true,
+      language: {
+        inputTooShort: () => 'Начните вводить имя',
+        noResults: () => 'Ничего не найдено',
+        searching: () => 'Поиск...'
+      }
+    });
+  });
+</script>
 {% endblock %}

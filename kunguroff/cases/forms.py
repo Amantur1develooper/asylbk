@@ -4,20 +4,75 @@ from clients.models import Trustor
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+# forms.py
+# cases/forms.py
+from django import forms
+# from trustors.models import Trustor  # поправь путь при необходимости
 
 class CaseParticipantForm(forms.ModelForm):
-    """Форма для добавления участника дела"""
-    
     class Meta:
         model = CaseParticipant
         fields = ['trustor', 'role', 'main_participant', 'representation_basis', 'powers_details']
         widgets = {
-            'trustor': forms.Select(attrs={'class': 'form-select'}),
+            'trustor': forms.Select(attrs={
+                'class': 'form-select js-trustor',
+                'data-placeholder': 'Начните вводить имя доверителя...'
+            }),
             'role': forms.Select(attrs={'class': 'form-select'}),
             'main_participant': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'representation_basis': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
             'powers_details': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def has_field(model, name):
+            try:
+                model._meta.get_field(name)
+                return True
+            except Exception:
+                return False
+
+        qs = Trustor.objects.all()
+        if all(has_field(Trustor, f) for f in ['last_name', 'first_name', 'middle_name']):
+            qs = qs.order_by('last_name', 'first_name', 'middle_name')
+        elif all(has_field(Trustor, f) for f in ['last_name', 'first_name']):
+            qs = qs.order_by('last_name', 'first_name')
+        elif has_field(Trustor, 'last_name'):
+            qs = qs.order_by('last_name')
+        else:
+            qs = qs.order_by('id')
+
+        # применяем queryset
+        self.fields['trustor'].queryset = qs
+
+        # подпись опций: "Фамилия Имя Отчество — телефон"
+        def label(obj):
+            parts = [
+                getattr(obj, 'last_name', None),
+                getattr(obj, 'first_name', None),
+                getattr(obj, 'middle_name', None),
+            ]
+            fio = " ".join([p for p in parts if p])
+            phone = getattr(obj, 'phone', None)
+            return f"{fio}{(' — ' + phone) if phone else ''}" or str(obj)
+
+        self.fields['trustor'].label_from_instance = label
+
+# class CaseParticipantForm(forms.ModelForm):
+#     """Форма для добавления участника дела"""
+    
+#     class Meta:
+#         model = CaseParticipant
+#         fields = ['trustor', 'role', 'main_participant', 'representation_basis', 'powers_details']
+#         widgets = {
+#             'trustor': forms.Select(attrs={'class': 'form-select'}),
+#             'role': forms.Select(attrs={'class': 'form-select'}),
+#             'main_participant': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+#             'representation_basis': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+#             'powers_details': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+#         }
    
 # forms.py
 class CaseForm(forms.ModelForm):
