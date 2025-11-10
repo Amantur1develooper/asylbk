@@ -1,7 +1,9 @@
 from django.urls import path
 from . import views
+from .views import CaseDocumentDeleteView
 
-app_name = 'cases'
+app_name = "cases"
+    
 
 urlpatterns = [
     path('', views.CaseListView.as_view(), name='case_list'),
@@ -17,7 +19,12 @@ urlpatterns = [
     path('ajax/load-stage-fields/', views.ajax_load_stage_fields, name='ajax_load_stage_fields'),
     path('ajax/load-field-info/<int:field_id>/', views.ajax_load_field_info, name='ajax_load_field_info'),
 
-    
+    path(
+        "<int:case_id>/stages/<int:stage_id>/fields/<int:field_id>/delete/",
+        CaseDocumentDeleteView.as_view(),
+        name="document_delete",
+    ),
+
     
     path('<int:case_pk>/participants/add/', views.CaseParticipantCreateView.as_view(), name='case_add_participant'),
     path('participants/<int:pk>/update/', views.CaseParticipantUpdateView.as_view(), name='case_update_participant'),

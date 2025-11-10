@@ -522,3 +522,79 @@ def ajax_load_participant_roles(request):
         return JsonResponse({'roles': roles_data})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    
+    
+    
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import transaction
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
+from django.views import View
+
+from .models import CaseDocument, Case
+
+def user_can_edit_case(user, case: Case) -> bool:
+    """Права: суперюзер / менеджер / любой из ответственных юристов."""
+    if not user.is_authenticated:
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+    if case.manager_id == user.id:
+        return True
+    # ManyToMany — корректная проверка принадлежности
+    if case.responsible_lawyer.filter(pk=user.pk).exists():
+        return True
+    return False
+
+
+class CaseDocumentDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """
+    Удаление CaseDocument по связке (case_id, stage_id, field_id).
+    Безопасно удаляет физический файл и пересчитывает прогресс дела.
+    GET  -> страница подтверждения
+    POST -> удаление и редирект на карточку дела
+    """
+    template_name = "cases/document_confirm_delete.html"
+
+    def get_object(self):
+        return get_object_or_404(
+            CaseDocument,
+            case_id=self.kwargs["case_id"],
+            stage_id=self.kwargs["stage_id"],
+            field_id=self.kwargs["field_id"],
+        )
+
+    # Проверка прав на основе связанного дела
+    def test_func(self):
+        doc = self.get_object()
+        return user_can_edit_case(self.request.user, doc.case)
+
+    def get(self, request, *args, **kwargs):
+        doc = self.get_object()
+        context = {
+            "object": doc,
+            "case": doc.case,
+            "stage": doc.stage,
+            "field": doc.field,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        doc = self.get_object()
+        case = doc.case
+
+        with transaction.atomic():
+            # 1) Удаляем физический файл, если был загружен
+            if doc.file_value:
+                # save=False, чтобы не трогать БД повторно
+                doc.file_value.delete(save=False)
+            # 2) Удаляем сам документ
+            doc.delete()
+            # 3) Пересчитываем прогресс дела
+            case.calculate_progress()
+
+        messages.success(request, "Документ успешно удалён.")
+        # Замените 'cases:detail' на ваш реальный name урла карточки дела
+        return redirect(reverse("cases:case_detail", args=[case.pk]))

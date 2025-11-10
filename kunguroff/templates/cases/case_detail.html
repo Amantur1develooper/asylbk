@@ -269,7 +269,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Поле</th>
-                                                <th>Тип</th>
+                                                <th>Тип</th
                                                 <th>Значение</th>
                                                 <th>Загружено</th>
                                                 <th>Действия</th>
@@ -300,19 +300,24 @@
                                                         <small class="text-muted">{{ document.created_by.get_full_name|default:document.created_by.username }}</small>
                                                     </td>
                                                     <td>
-                                                        <div class="btn-group btn-group-sm">
-                                                            {% if document.field.field_type == 'file' and document.file_value %}
-                                                                <a href="{{ document.file_value.url }}" target="_blank" class="btn btn-outline-primary">
-                                                                    <i class="bi bi-download"></i>
-                                                                </a>
-                                                            {% endif %}
-                                                            {% if user == document.created_by or user.role in 'director deputy_director manager' %}
-                                                                <a href="#" class="btn btn-outline-secondary">
-                                                                    <i class="bi bi-pencil"></i>
-                                                                </a>
-                                                            {% endif %}
-                                                        </div>
-                                                    </td>
+  <div class="btn-group btn-group-sm">
+    {% if document.field.field_type == 'file' and document.file_value %}
+      <a href="{{ document.file_value.url }}" target="_blank" class="btn btn-outline-primary" title="Скачать">
+        <i class="bi bi-download"></i>
+      </a>
+    {% endif %}
+
+    {# Показываем ведро только авторам и управленцам #}
+    {% if user == document.created_by or user.role in "director deputy_director manager" %}
+      <a href="{% url 'cases:document_delete' case.pk stage.id document.field.id %}"
+         class="btn btn-outline-danger"
+         title="Удалить (будет подтверждение)">
+        <i class="bi bi-trash"></i>
+      </a>
+    {% endif %}
+  </div>
+</td>
+
                                                 </tr>
                                             {% endfor %}
                                         </tbody>

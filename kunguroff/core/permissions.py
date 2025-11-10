@@ -69,7 +69,7 @@ class OwnerOrManagerMixin(UserPassesTestMixin):
         user = self.request.user
         
         # Владелец имеет доступ
-        if hasattr(obj, 'responsible_lawyer') and user == obj.responsible_lawyer:
+        if hasattr(obj, 'responsible_lawyer') and user in obj.responsible_lawyer.all():
             return True
         
         if hasattr(obj, 'primary_contact') and user == obj.primary_contact:
