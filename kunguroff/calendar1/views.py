@@ -58,57 +58,7 @@ class CalendarView(TemplateView):
             })
         
         return context
-# class CalendarView(LawyerRequiredMixin, TemplateView):
-#     template_name = 'calendar/calendar.html'
     
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         user = self.request.user
-        
-#         # Получаем параметры для календаря
-#         view = self.request.GET.get('view', 'month')
-#         date_str = self.request.GET.get('date')
-        
-#         if date_str:
-#             try:
-#                 current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-#             except ValueError:
-#                 current_date = timezone.now().date()
-#         else:
-#             current_date = timezone.now().date()
-        
-#         # События на сегодня
-#         today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-#         today_end = today_start + timedelta(days=1)
-        
-#         today_events = CalendarEvent.objects.filter(
-#             Q(owner=user) | Q(participants=user),
-#             start_time__range=[today_start, today_end]
-#         ).order_by('start_time')
-        
-#         # Доступные типы событий и приоритеты для фильтров
-#         from .models import CalendarEvent
-#         event_types = CalendarEvent.EVENT_TYPES
-#         priorities = CalendarEvent.PRIORITY_CHOICES
-        
-#         # Дела пользователя для фильтра
-#         if user.role in ['lawyer', 'advocate']:
-#             user_cases = Case.objects.filter(responsible_lawyer=user)
-#         else:
-#             user_cases = Case.objects.all()
-        
-#         context.update({
-#             'view': view,
-#             'current_date': current_date,
-#             'today': timezone.now().date(),
-#             'today_events': today_events,
-#             'event_types': event_types,
-#             'priorities': priorities,
-#             'user_cases': user_cases,
-#         })
-        
-#         return context
 
 class EventListView(LawyerRequiredMixin, ListView):
     model = CalendarEvent
@@ -175,43 +125,94 @@ class EventListView(LawyerRequiredMixin, ListView):
         ).count()
         
         return context
- 
+# calendar/views.py
+from datetime import timedelta
+from django.utils import timezone
+from django.urls import reverse_lazy
+from django.contrib import messages
+from django.views.generic import CreateView
+
+from .models import CalendarEvent
+from .forms import CalendarEventForm
+# from core.mixins import LawyerRequiredMixin  # как у тебя
+
+
 class EventCreateView(LawyerRequiredMixin, CreateView):
     model = CalendarEvent
+    form_class = CalendarEventForm
     template_name = 'calendar/event_form.html'
-    fields = [
-        'event_type', 'title', 'description', 'start_time', 'end_time',
-        'location', 'priority', 'case', 'trustor', 'participants',
-        'enable_notifications', 'notify_1_day', 'notify_12_hours',
-        'notify_3_hours', 'notify_1_hour', 'notify_30_minutes',
-        'notify_10_minutes', 'notify_1_minute'
-    ]
     success_url = reverse_lazy('calendar1:event_list')
-    
+
+    def get_initial(self):
+        """
+        По умолчанию: начало через 1 час, конец ещё через 1 час.
+        """
+        initial = super().get_initial()
+        now = timezone.localtime()
+        start = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+        end = start + timedelta(hours=1)
+        initial.setdefault('start_time', start)
+        initial.setdefault('end_time', end)
+        return initial
+
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        # Настройка виджетов для полей даты и времени
-        form.fields['start_time'].widget.attrs.update({'class': 'datetimepicker'})
-        form.fields['end_time'].widget.attrs.update({'class': 'datetimepicker'})
-        
+
         # Ограничиваем выбор участников сотрудниками фирмы
         form.fields['participants'].queryset = form.fields['participants'].queryset.exclude(
             role='external_lawyer'
         )
-        
+
         # Ограничиваем выбор дел только делами пользователя
         user = self.request.user
         if user.role in ['lawyer', 'advocate']:
             form.fields['case'].queryset = form.fields['case'].queryset.filter(
                 responsible_lawyer=user
             )
-        
+
         return form
-    
+
     def form_valid(self, form):
         form.instance.owner = self.request.user
         messages.success(self.request, 'Событие успешно создано!')
         return super().form_valid(form)
+
+# class EventCreateView(LawyerRequiredMixin, CreateView):
+#     model = CalendarEvent
+#     template_name = 'calendar/event_form.html'
+#     fields = [
+#         'event_type', 'title', 'description', 'start_time', 'end_time',
+#         'location', 'priority', 'case', 'trustor', 'participants',
+#         'enable_notifications', 'notify_1_day', 'notify_12_hours',
+#         'notify_3_hours', 'notify_1_hour', 'notify_30_minutes',
+#         'notify_10_minutes', 'notify_1_minute'
+#     ]
+#     success_url = reverse_lazy('calendar1:event_list')
+    
+#     def get_form(self, form_class=None):
+#         form = super().get_form(form_class)
+#         # Настройка виджетов для полей даты и времени
+#         form.fields['start_time'].widget.attrs.update({'class': 'datetimepicker'})
+#         form.fields['end_time'].widget.attrs.update({'class': 'datetimepicker'})
+        
+#         # Ограничиваем выбор участников сотрудниками фирмы
+#         form.fields['participants'].queryset = form.fields['participants'].queryset.exclude(
+#             role='external_lawyer'
+#         )
+        
+#         # Ограничиваем выбор дел только делами пользователя
+#         user = self.request.user
+#         if user.role in ['lawyer', 'advocate']:
+#             form.fields['case'].queryset = form.fields['case'].queryset.filter(
+#                 responsible_lawyer=user
+#             )
+        
+#         return form
+    
+#     def form_valid(self, form):
+#         form.instance.owner = self.request.user
+#         messages.success(self.request, 'Событие успешно создано!')
+#         return super().form_valid(form)
 
 class EventUpdateView(OwnerOrManagerMixin, UpdateView):
     model = CalendarEvent

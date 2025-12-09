@@ -46,30 +46,68 @@
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.start_time.id_for_label }}" class="form-label">{{ form.start_time.label }}</label>
-                                {{ form.start_time }}
-                                {% if form.start_time.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.start_time.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.end_time.id_for_label }}" class="form-label">{{ form.end_time.label }}</label>
-                                {{ form.end_time }}
-                                {% if form.end_time.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.end_time.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
+                   <div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label for="{{ form.start_time.id_for_label }}" class="form-label">
+                {{ form.start_time.label }}
+            </label>
+            <div class="d-flex align-items-center gap-2">
+                <div class="flex-grow-1">
+                    <div class="input-group">
+                        <span class="input-group-text">📅</span>
+                        {{ form.start_time }}
                     </div>
+                </div>
+            </div>
+            <div class="form-text">
+                Сначала выберите дату и время начала, окончание заполнится автоматически.
+            </div>
+            {% if form.start_time.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.start_time.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label for="{{ form.end_time.id_for_label }}" class="form-label">
+                {{ form.end_time.label }}
+            </label>
+            <div class="d-flex align-items-center gap-2">
+                <div class="flex-grow-1">
+                    <div class="input-group">
+                        <span class="input-group-text">⏱️</span>
+                        {{ form.end_time }}
+                    </div>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button"
+                            class="btn btn-outline-secondary js-duration-btn"
+                            data-duration="30">
+                        +30 мин
+                    </button>
+                    <button type="button"
+                            class="btn btn-outline-secondary js-duration-btn"
+                            data-duration="60">
+                        +1 час
+                    </button>
+                </div>
+            </div>
+            <div class="form-text">
+                Можно быстро изменить окончание кнопками справа.
+            </div>
+            {% if form.end_time.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.end_time.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
                     
                     <div class="mb-3">
                         <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
@@ -225,28 +263,26 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Динамическое включение/выключение настроек уведомлений
+    // ==== Уведомления ====
     const enableNotifications = document.getElementById('{{ form.enable_notifications.id_for_label }}');
     const notificationSettings = document.getElementById('notificationSettings');
-    
+
     function toggleNotificationSettings() {
-        if (enableNotifications.checked) {
-            notificationSettings.style.opacity = '1';
-            notificationSettings.querySelectorAll('input').forEach(input => {
-                input.disabled = false;
-            });
-        } else {
-            notificationSettings.style.opacity = '0.5';
-            notificationSettings.querySelectorAll('input').forEach(input => {
-                input.disabled = true;
-            });
-        }
+        if (!enableNotifications || !notificationSettings) return;
+
+        const disabled = !enableNotifications.checked;
+        notificationSettings.style.opacity = disabled ? '0.5' : '1';
+        notificationSettings.querySelectorAll('input').forEach(input => {
+            input.disabled = disabled;
+        });
     }
-    
-    enableNotifications.addEventListener('change', toggleNotificationSettings);
-    toggleNotificationSettings(); // Инициализация при загрузке
-    
-    // Валидация формы
+
+    if (enableNotifications) {
+        enableNotifications.addEventListener('change', toggleNotificationSettings);
+        toggleNotificationSettings(); // Инициализация при загрузке
+    }
+
+    // ==== Валидация формы ====
     const form = document.getElementById('eventForm');
     if (form) {
         form.addEventListener('submit', function(event) {
@@ -257,6 +293,59 @@ document.addEventListener('DOMContentLoaded', function() {
             form.classList.add('was-validated');
         });
     }
+
+    // ==== Удобная работа с датой/временем ====
+    const startInput = document.getElementById('{{ form.start_time.id_for_label }}');
+    const endInput   = document.getElementById('{{ form.end_time.id_for_label }}');
+
+    function formatForInput(date) {
+        if (!(date instanceof Date) || isNaN(date)) return '';
+        const pad = n => String(n).padStart(2, '0');
+        const y = date.getFullYear();
+        const m = pad(date.getMonth() + 1);
+        const d = pad(date.getDate());
+        const h = pad(date.getHours());
+        const min = pad(date.getMinutes());
+        return `${y}-${m}-${d}T${h}:${min}`;
+    }
+
+    function syncEndMin() {
+        if (!startInput || !endInput || !startInput.value) return;
+
+        // end_time не может быть раньше start_time
+        endInput.min = startInput.value;
+
+        // Если конец пустой или раньше начала — ставим +1 час
+        if (!endInput.value || endInput.value < startInput.value) {
+            const d = new Date(startInput.value);
+            if (!isNaN(d)) {
+                d.setHours(d.getHours() + 1);
+                endInput.value = formatForInput(d);
+            } else {
+                endInput.value = startInput.value;
+            }
+        }
+    }
+
+    if (startInput && endInput) {
+        startInput.addEventListener('change', syncEndMin);
+        syncEndMin();
+    }
+
+    // Кнопки "+30 мин" / "+1 час" для конца события
+    document.querySelectorAll('.js-duration-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            if (!startInput || !endInput || !startInput.value) return;
+
+            const base = new Date(startInput.value);
+            if (isNaN(base)) return;
+
+            const minutes = parseInt(this.dataset.duration || '0', 10);
+            base.setMinutes(base.getMinutes() + minutes);
+            endInput.value = formatForInput(base);
+            endInput.min = startInput.value;
+        });
+    });
 });
 </script>
 {% endblock %}
