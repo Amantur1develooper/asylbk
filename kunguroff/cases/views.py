@@ -12,7 +12,7 @@ from .models import Case, CaseCategory, CaseStage, CaseDocument
 from .forms import CaseForm, CaseDocumentForm
 
 # Список всех дел
-class CaseListView(LawyerRequiredMixin, ListView):
+class CaseListView(LawyerRequiredMixin,DirectorRequiredMixin, ListView):
     model = Case
     template_name = 'cases/case_list.html'
     context_object_name = 'cases'
