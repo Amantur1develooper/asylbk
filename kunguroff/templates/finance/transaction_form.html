@@ -1,128 +1,51 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} операции - Kunguroff & Partners{% endblock %}
+{% block title %}
+    {% if object %}Редактирование операции{% else %}Новая финансовая операция{% endif %} - Kunguroff & Partners
+{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
+<div class="row">
+    <div class="col-md-8 offset-md-2">
         <div class="app-card">
-            <div class="app-card-header">
-                <span>{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} финансовой операции</span>
+            <div class="app-card-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    {% if object %}Редактирование операции{% else %}Новая финансовая операция{% endif %}
+                </h2>
+                <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> К списку операций
+                </a>
             </div>
             <div class="app-card-body">
                 <form method="post">
                     {% csrf_token %}
-                    
+
                     {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
                     {% endif %}
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Тип операции</label>
-                                {{ form.transaction_type }}
-                                {% if form.transaction_type.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.transaction_type.errors }}</div>
-                                {% endif %}
-                            </div>
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Сумма</label>
-                                {{ form.amount }}
-                                {% if form.amount.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.amount.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Дата операции</label>
-                                {{ form.date }}
-                                {% if form.date.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.date.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3" id="income-category-field">
-                                <label class="form-label">Категория дохода</label>
-                                {{ form.category }}
-                                {% if form.category.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.category.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="mb-3" id="expense-category-field" style="display: none;">
-                                <label class="form-label">Категория расхода</label>
-                                {{ form.expense_category }}
-                                {% if form.expense_category.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.expense_category.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Описание</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                        <div class="alert alert-danger mt-1">{{ form.description.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Связанное дело</label>
-                                {{ form.case }}
-                                {% if form.case.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.case.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Этап дела</label>
-                                {{ form.stage }}
-                                {% if form.stage.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.stage.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Клиент</label>
-                                {{ form.client }}
-                                {% if form.client.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.client.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Сотрудник</label>
-                                {{ form.employee }}
-                                {% if form.employee.errors %}
-                                <div class="alert alert-danger mt-1">{{ form.employee.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'finance:dashboard' %}" class="btn btn-secondary me-md-2">Отмена</a>
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    {% endfor %}
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2-circle me-1"></i> Сохранить
+                        </button>
+                        <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary">
+                            Отмена
+                        </a>
                     </div>
                 </form>
             </div>
@@ -131,32 +54,4 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const transactionTypeSelect = document.getElementById('id_transaction_type');
-        const incomeCategoryField = document.getElementById('income-category-field');
-        const expenseCategoryField = document.getElementById('expense-category-field');
-        
-        function toggleCategoryFields() {
-            if (transactionTypeSelect.value === 'income') {
-                incomeCategoryField.style.display = 'block';
-                expenseCategoryField.style.display = 'none';
-            } else if (transactionTypeSelect.value === 'expense') {
-                incomeCategoryField.style.display = 'none';
-                expenseCategoryField.style.display = 'block';
-            } else {
-                // Если ничего не выбрано, скрываем оба
-                incomeCategoryField.style.display = 'none';
-                expenseCategoryField.style.display = 'none';
-            }
-        }
-        
-        // Инициализация при загрузке
-        toggleCategoryFields();
-        
-        // Обработчик изменения типа операции
-        transactionTypeSelect.addEventListener('change', toggleCategoryFields);
-    });
-</script>
-{% endblock %}
+

@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Финансы по делу #{{ case.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="app-card">
+      <div class="app-card-header d-flex justify-content-between align-items-center">
+        <h2>Финансы по делу #{{ case.id }}</h2>
+        <a href="{% url 'cases:case_detail' case.id %}" class="btn btn-outline-secondary btn-sm">
+          Назад к делу
+        </a>
+      </div>
+
+      <div class="app-card-body">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mb-3">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label fw-bold">Доверитель (основной)</label>
+              <input type="text"
+                     class="form-control"
+                     value="{{ case.main_trustor.full_name|default:'-' }}"
+                     disabled>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ form.agreement_number.label }}</label>
+              {{ form.agreement_number }}
+              {{ form.agreement_number.errors }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">{{ form.agreement_date.label }}</label>
+              {{ form.agreement_date }}
+              {{ form.agreement_date.errors }}
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-3">
+              <label class="form-label">{{ form.contract_amount.label }}</label>
+              <div class="input-group">
+                {{ form.contract_amount }}
+                <span class="input-group-text">сом</span>
+              </div>
+              {{ form.contract_amount.errors }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">{{ form.paid_amount.label }}</label>
+              <div class="input-group">
+                {{ form.paid_amount }}
+                <span class="input-group-text">сом</span>
+              </div>
+              {{ form.paid_amount.errors }}
+              <small class="text-muted d-block mt-1">
+                Оплачено: {{ finance.paid_ratio|floatformat:0 }} %
+              </small>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Фирма, %</label>
+              <div class="input-group">
+                {{ form.company_share_percent }}
+                <span class="input-group-text">%</span>
+              </div>
+              {{ form.company_share_percent.errors }}
+              <small class="text-muted d-block mt-1">
+                = {{ finance.company_share_amount|intcomma }} сом
+              </small>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Юристы, %</label>
+              <div class="input-group">
+                {{ form.lawyers_share_percent }}
+                <span class="input-group-text">%</span>
+              </div>
+              {{ form.lawyers_share_percent.errors }}
+              <small class="text-muted d-block mt-1">
+                = {{ finance.lawyers_pool_amount|intcomma }} сом
+              </small>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <h5 class="mb-3">
+            Распределение {{ finance.lawyers_share_percent }}% между сотрудниками
+          </h5>
+
+          {{ formset.non_form_errors }}
+          {{ formset.management_form }}
+
+          <div class="table-responsive mb-3">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>Сотрудник</th>
+                  <th>Доля 70%, %</th>
+                  <th>При полной оплате</th>
+                  <th>С учётом оплаты</th>
+                  <th>Ручная</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for share_form in formset %}
+                  <tr>
+                    {{ share_form.id }}
+                    <td>
+                      {{ share_form.employee }}
+                      {{ share_form.employee.errors }}
+                    </td>
+                    <td style="max-width: 140px;">
+                      {{ share_form.percent_of_pool }}
+                      {{ share_form.percent_of_pool.errors }}
+                    </td>
+                    <td>
+                      {% if share_form.instance.pk %}
+                        {{ share_form.instance.amount_full|intcomma }} сом
+                      {% else %}-{% endif %}
+                    </td>
+                    <td>
+                      {% if share_form.instance.pk %}
+                        {{ share_form.instance.amount_current|intcomma }} сом
+                      {% else %}-{% endif %}
+                    </td>
+                    <td class="text-center">
+                      <div class="form-check">
+                        {{ share_form.is_manual }}
+                      </div>
+                    </td>
+                    <td>
+                      {% if share_form.instance.pk %}
+                        <div class="form-check">
+                          {{ share_form.DELETE }}
+                          <label class="form-check-label">Удалить</label>
+                        </div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">
+                      Пока нет сотрудников для распределения
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <div class="small text-muted">
+              Сумма к распределению: <strong>{{ finance.lawyers_pool_amount|intcomma }} сом</strong><br>
+              Оплачено по договору:
+              <strong>{{ finance.paid_amount|intcomma }} / {{ finance.contract_amount|intcomma }} сом</strong>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i> Сохранить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

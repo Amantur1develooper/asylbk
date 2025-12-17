@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from clients.models import Trustor
+from decimal import Decimal
+from django.core.validators import MinValueValidator
+
 
 User = get_user_model()
 
@@ -123,6 +126,14 @@ class Case(models.Model):
     )
     progress = models.PositiveIntegerField(default=0, verbose_name="Прогресс (%)")
     
+    # НОВОЕ: полная стоимость дела (100%)
+    contract_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(0)],
+        verbose_name="Сумма договора (100%)"
+    )
     # Судебная информация
     court_name = models.CharField(max_length=300, blank=True, verbose_name="Наименование суда")
     case_number = models.CharField(max_length=100, blank=True, verbose_name="Номер дела в суде")

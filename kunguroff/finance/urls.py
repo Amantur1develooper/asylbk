@@ -10,4 +10,17 @@ urlpatterns = [
     path('transactions/<int:pk>/update/', views.TransactionUpdateView.as_view(), name='transaction_update'),
     path('transactions/<int:pk>/delete/', views.TransactionDeleteView.as_view(), name='transaction_delete'),
   path('transactions/export/', views.TransactionExportView.as_view(), name='transaction_export'),
-]
+
+
+   # Финансовые операции
+# 🔹 наша новая страница "Финансы дела"
+    path(
+        "cases/<int:case_id>/finance/",
+        views.CaseFinanceUpdateView.as_view(),
+        name="case_finance",
+    ),
+    # Финансы по делам (30/70 и распределение)
+    path('cases/<int:case_id>/finance/', views.CaseFinanceUpdateView.as_view(), name='case_finance_update'),
+    path('cases/export/', views.CaseFinanceExportView.as_view(), name='case_finance_export'),
+
+  ]

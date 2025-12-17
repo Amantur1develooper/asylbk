@@ -10,6 +10,8 @@ from django.urls import reverse_lazy
 from django.http import JsonResponse
 from .models import Case, CaseCategory, CaseStage, CaseDocument
 from .forms import CaseForm, CaseDocumentForm
+from django.shortcuts import render, get_object_or_404, redirect
+from finance.models import CaseFinance, CaseFinanceShare
 
 # Список всех дел
 class CaseListView(LawyerRequiredMixin,DirectorRequiredMixin, ListView):
@@ -132,12 +134,52 @@ class CaseDetailView(DetailView):
 #         return context
 
 # Создание нового дела
+# class CaseCreateView(LawyerRequiredMixin, CreateView):
+#     model = Case
+#     form_class = CaseForm
+#     template_name = 'cases/case_form.html'
+#     success_url = reverse_lazy('cases:case_list')
+    
+#     @method_decorator(login_required)
+#     def dispatch(self, *args, **kwargs):
+#         # Только определенные роли могут создавать дела
+#         allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
+#         if self.request.user.role not in allowed_roles:
+#             return redirect('permission_denied')
+#         return super().dispatch(*args, **kwargs)
+    
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         kwargs['user'] = self.request.user
+#         return kwargs
+    
+#     def form_valid(self, form):
+#         # Сохраняем объект сначала
+#         response = super().form_valid(form)
+        
+#         # ИЗМЕНЕНИЕ: Если пользователь - юрист/адвокат и он не выбран в форме,
+#         # автоматически добавляем его в ответственные
+#         if self.request.user.role in ['lawyer', 'advocate']:
+#             if self.request.user not in self.object.responsible_lawyer.all():
+#                 self.object.responsible_lawyer.add(self.request.user)
+        
+#         # Устанавливаем первый этап в качестве текущего
+#         category = form.instance.category
+#         first_stage = category.stages.order_by('order').first()
+#         if first_stage:
+#             self.object.current_stage = first_stage
+#             self.object.save()
+        
+#         # Добавляем сообщение об успехе
+#         messages.success(self.request, f'Дело "{self.object.title}" успешно создано.')
+        
+#         return response
 class CaseCreateView(LawyerRequiredMixin, CreateView):
     model = Case
     form_class = CaseForm
     template_name = 'cases/case_form.html'
     success_url = reverse_lazy('cases:case_list')
-    
+
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         # Только определенные роли могут создавать дела
@@ -145,33 +187,102 @@ class CaseCreateView(LawyerRequiredMixin, CreateView):
         if self.request.user.role not in allowed_roles:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
-    
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-    
+
     def form_valid(self, form):
-        # Сохраняем объект сначала
+        # Сохраняем дело
         response = super().form_valid(form)
-        
-        # ИЗМЕНЕНИЕ: Если пользователь - юрист/адвокат и он не выбран в форме,
+
+        # Если пользователь - юрист/адвокат и он не выбран в форме,
         # автоматически добавляем его в ответственные
         if self.request.user.role in ['lawyer', 'advocate']:
             if self.request.user not in self.object.responsible_lawyer.all():
                 self.object.responsible_lawyer.add(self.request.user)
-        
-        # Устанавливаем первый этап в качестве текущего
-        category = form.instance.category
-        first_stage = category.stages.order_by('order').first()
-        if first_stage:
-            self.object.current_stage = first_stage
-            self.object.save()
-        
-        # Добавляем сообщение об успехе
+
+        # Финансовая карточка создаётся сигналом post_save(Case),
+        # но подстрахуемся — если её нет, создадим вручную
+        finance, created = CaseFinance.objects.get_or_create(
+            case=self.object,
+            defaults={
+                'contract_amount': self.object.contract_amount or 0,
+                'paid_amount': 0,
+            }
+        )
+
+        # Если по делу есть ответственные юристы и пока нет долей — распределяем 70% поровну
+        if not finance.shares.exists():
+            from decimal import Decimal
+            lawyers = self.object.responsible_lawyer.all()
+            count = lawyers.count()
+            if count > 0:
+                base = (Decimal('100.00') / count).quantize(Decimal('0.01'))
+                remainder = Decimal('100.00') - base * count
+
+                for idx, lawyer in enumerate(lawyers):
+                    percent = base + remainder if idx == 0 else base
+                    CaseFinanceShare.objects.create(
+                        case_finance=finance,
+                        employee=lawyer,
+                        percent_of_pool=percent,
+                    )
+                finance.recalc_shares()
+
         messages.success(self.request, f'Дело "{self.object.title}" успешно создано.')
-        
         return response
+
+
+class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
+    model = Case
+    form_class = CaseForm
+    template_name = 'cases/case_form.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        # Проверка прав доступа
+        case = self.get_object()
+        user = self.request.user
+        allowed_roles = ['manager', 'director', 'deputy_director']
+
+        # Юристы могут редактировать только свои дела
+        if user.role in ['lawyer', 'advocate'] and user not in case.responsible_lawyer.all():
+            return redirect('permission_denied')
+
+        # Менеджеры и директора могут редактировать все дела
+        if user.role not in allowed_roles + ['lawyer', 'advocate']:
+            return redirect('permission_denied')
+
+        return super().dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('cases:case_detail', kwargs={'pk': self.object.pk})
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        # Обновляем сумму договора в финансовой карточке (если есть / создаём)
+        finance, created = CaseFinance.objects.get_or_create(
+            case=self.object,
+            defaults={
+                'contract_amount': self.object.contract_amount or 0,
+                'paid_amount': 0,
+            }
+        )
+        finance.contract_amount = self.object.contract_amount or 0
+        finance.recalc_shares()
+        finance.save()
+
+        messages.success(self.request, f'Дело "{self.object.title}" успешно обновлено.')
+        return response
+
 # class CaseCreateView(LawyerRequiredMixin,CreateView):
 #     model = Case
 #     form_class = CaseForm
@@ -204,43 +315,9 @@ class CaseCreateView(LawyerRequiredMixin, CreateView):
 
 
 # Редактирование дела
-class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
-    model = Case
-    form_class = CaseForm
-    template_name = 'cases/case_form.html'
-    
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        # Проверка прав доступа
-        case = self.get_object()
-        user = self.request.user
-        allowed_roles = ['manager', 'director', 'deputy_director']
-        
-        # ИЗМЕНЕНИЕ: Юристы могут редактировать только свои дела
-        if user.role in ['lawyer', 'advocate'] and user not in case.responsible_lawyer.all():
-            return redirect('permission_denied')
-        
-        # Менеджеры и директора могут редактировать все дела
-        if user.role not in allowed_roles + ['lawyer', 'advocate']:
-            return redirect('permission_denied')
-            
-        return super().dispatch(*args, **kwargs)
-    
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
-    
-    def get_success_url(self):
-        return reverse_lazy('cases:case_detail', kwargs={'pk': self.object.pk})
-    
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, f'Дело "{self.object.title}" успешно обновлено.')
-        return response
 # class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
 #     model = Case
-#     form_class =  CaseForm
+#     form_class = CaseForm
 #     template_name = 'cases/case_form.html'
     
 #     @method_decorator(login_required)
@@ -250,8 +327,8 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
 #         user = self.request.user
 #         allowed_roles = ['manager', 'director', 'deputy_director']
         
-#         # Юристы могут редактировать только свои дела
-#         if user.role in ['lawyer', 'advocate'] and case.responsible_lawyer != user:
+#         # ИЗМЕНЕНИЕ: Юристы могут редактировать только свои дела
+#         if user.role in ['lawyer', 'advocate'] and user not in case.responsible_lawyer.all():
 #             return redirect('permission_denied')
         
 #         # Менеджеры и директора могут редактировать все дела
@@ -260,8 +337,19 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
             
 #         return super().dispatch(*args, **kwargs)
     
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         kwargs['user'] = self.request.user
+#         return kwargs
+    
 #     def get_success_url(self):
 #         return reverse_lazy('cases:case_detail', kwargs={'pk': self.object.pk})
+    
+#     def form_valid(self, form):
+#         response = super().form_valid(form)
+#         messages.success(self.request, f'Дело "{self.object.title}" успешно обновлено.')
+#         return response
+
 
 # Удаление дела
 class CaseDeleteView(DirectorRequiredMixin, DeleteView):

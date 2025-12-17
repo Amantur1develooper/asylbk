@@ -91,7 +91,32 @@
                 {% endif %}
             </div>
         </div>
-        
+        {% if case.finance %}
+<div class="card mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Финансы по делу</h5>
+        <a href="{% url 'finance:case_finance_update' case.id %}" class="btn btn-sm btn-outline-primary">
+            Редактировать
+        </a>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Сумма договора (100%)</dt>
+            <dd class="col-sm-8">{{ case.finance.contract_amount }} сом</dd>
+
+            <dt class="col-sm-4">Оплачено по договору</dt>
+            <dd class="col-sm-8">{{ case.finance.paid_amount }} сом</dd>
+
+            <dt class="col-sm-4">30% компании</dt>
+            <dd class="col-sm-8">{{ case.finance.company_share_amount }} сом</dd>
+
+            <dt class="col-sm-4">70% юристов</dt>
+            <dd class="col-sm-8">{{ case.finance.lawyers_pool_amount }} сом</dd>
+        </dl>
+    </div>
+</div>
+{% endif %}
+
         <!-- Ответственные лица -->
         <div class="card mb-4">
             <div class="card-header">
