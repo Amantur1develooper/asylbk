@@ -29,17 +29,13 @@ from django.conf.urls.static import static
 from .views import DashboardView
 from django.contrib.auth import views as auth_views
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-   
-   
-  
-]
+
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', DashboardView.as_view(), name='dashboard'),
+    path('', include('public.urls')),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', user_logout, name='logout'),
     path('cases/', include('cases.urls')),

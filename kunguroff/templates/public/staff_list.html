@@ -1,0 +1,85 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Сотрудники — {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+  <div>
+    <h1 class="kp-section-title mb-1">Сотрудники</h1>
+    <div class="text-muted">Команда, которая защищает ваши интересы</div>
+  </div>
+  <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">
+    Консультация
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for s in staff %}
+    <div class="col-md-6 col-lg-4">
+      <div class="kp-card p-4 h-100">
+        <div class="d-flex gap-3">
+          {% if s.photo %}
+            <img src="{{ s.photo.url }}" alt="{{ s.full_name }}"
+                 style="width:72px;height:72px;object-fit:cover;border-radius:18px;border:1px solid rgba(16,144,240,.18);">
+          {% else %}
+            <div style="width:72px;height:72px;border-radius:18px;
+                        background: linear-gradient(135deg, rgba(16,144,240,.25), rgba(11,94,215,.20));
+                        border:1px solid rgba(16,144,240,.18);"
+                 class="d-flex align-items-center justify-content-center">
+              <i class="fa-solid fa-user-tie fs-4" style="color:var(--kp-primary)"></i>
+            </div>
+          {% endif %}
+
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2">
+              <div class="fw-bold fs-5">{{ s.full_name }}</div>
+              {% if s.is_partner %}
+                <span class="badge rounded-pill" style="background:rgba(16,144,240,.12);color:var(--kp-primary);border:1px solid rgba(16,144,240,.18);">
+                  Партнёр
+                </span>
+              {% endif %}
+            </div>
+            {% if s.position %}
+              <div class="text-muted">{{ s.position }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if s.bio %}
+          <div class="text-muted mt-3">{{ s.bio|truncatechars:220 }}</div>
+        {% else %}
+          <div class="text-muted mt-3">Описание сотрудника можно заполнить в админке.</div>
+        {% endif %}
+
+        <div class="mt-3 d-flex gap-2 flex-wrap">
+          {% if s.phone %}
+            <a class="btn btn-outline-primary kp-btn"
+               style="border-radius:999px;"
+               href="tel:{{ s.phone|cut:' ' }}">
+              <i class="fa-solid fa-phone me-1"></i> Позвонить
+            </a>
+          {% endif %}
+          {% if s.email %}
+            <a class="btn btn-outline-primary kp-btn"
+               style="border-radius:999px;"
+               href="mailto:{{ s.email }}">
+              <i class="fa-solid fa-envelope me-1"></i> Email
+            </a>
+          {% endif %}
+          <a class="btn kp-btn kp-btn-primary ms-auto" href="{% url 'public:contacts' %}#consult">
+            Записаться
+          </a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="kp-card p-4">
+        <div class="fw-bold">Пока нет сотрудников</div>
+        <div class="text-muted">Добавьте сотрудников в админке.</div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

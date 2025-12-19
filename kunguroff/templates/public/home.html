@@ -1,0 +1,110 @@
+{% extends "public/base.html" %}
+{% block title %}{{ site.company_name }} — Главная{% endblock %}
+{% block content %}
+
+<section class="kp-hero p-4 p-lg-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <h1 class="display-6 fw-black" style="font-weight:900;">
+        Защищаем ваши права — уверенно, быстро, профессионально
+      </h1>
+      <p class="text-muted fs-5 mt-3">
+        Консультации, сопровождение, представительство в суде и защита бизнеса.
+      </p>
+      <div class="d-flex gap-2 flex-wrap mt-3">
+        <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">Получить консультацию</a>
+        <a class="btn kp-btn btn-outline-primary" href="{% url 'public:cases' %}" style="border-radius:999px;">Смотреть дела</a>
+      </div>
+
+      <div class="d-flex gap-3 mt-4 flex-wrap">
+        <div class="kp-card p-3">
+          <div class="fw-bold">Сильная команда</div>
+          <div class="text-muted small">Опыт, практика, результат</div>
+        </div>
+        <div class="kp-card p-3">
+          <div class="fw-bold">Прозрачные условия</div>
+          <div class="text-muted small">Понятные этапы и сроки</div>
+        </div>
+        <div class="kp-card p-3">
+          <div class="fw-bold">Конфиденциальность</div>
+          <div class="text-muted small">Безопасность данных клиента</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="kp-card p-4">
+        <div class="fw-bold mb-2">Быстрая заявка</div>
+        <form method="post" action="{% url 'public:consultation_create' %}">
+          {% csrf_token %}
+          <div class="mb-2">{{ form.name.label_tag }}{{ form.name }}</div>
+          <div class="mb-2">{{ form.phone.label_tag }}{{ form.phone }}</div>
+          <div class="mb-2">{{ form.topic.label_tag }}{{ form.topic }}</div>
+          <button class="btn kp-btn kp-btn-primary w-100" type="submit">Отправить</button>
+          <div class="text-muted small mt-2">Ответим в ближайшее время.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mt-5">
+  <div class="d-flex align-items-end justify-content-between mb-3">
+    <h2 class="kp-section-title">Практики</h2>
+    <span class="text-muted">то, что делаем лучше всего</span>
+  </div>
+  <div class="row g-3">
+    {% for p in practices %}
+      <div class="col-md-6 col-lg-4">
+        <div class="kp-card p-4 h-100">
+          <div class="d-flex gap-2 align-items-center">
+            <i class="{{ p.icon|default:'fa-solid fa-scale-balanced' }} fs-4" style="color:var(--kp-primary)"></i>
+            <div class="fw-bold">{{ p.title }}</div>
+          </div>
+          <div class="text-muted mt-2">{{ p.description|default:"Описание практики заполните в админке." }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-5">
+  <div class="d-flex align-items-end justify-content-between mb-3">
+    <h2 class="kp-section-title">Дела</h2>
+    <a href="{% url 'public:cases' %}" class="text-decoration-none">Все дела →</a>
+  </div>
+  <div class="row g-3">
+    {% for c in cases %}
+      <div class="col-md-6 col-lg-4">
+        <a class="text-decoration-none" href="{{ c.get_absolute_url }}">
+          <div class="kp-card p-4 h-100">
+            <div class="fw-bold">{{ c.title }}</div>
+            <div class="text-muted small mt-1">{{ c.category }}</div>
+            <div class="text-muted mt-2">{{ c.excerpt|truncatechars:120 }}</div>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-5">
+  <div class="d-flex align-items-end justify-content-between mb-3">
+    <h2 class="kp-section-title">Новости</h2>
+    <a href="{% url 'public:news' %}" class="text-decoration-none">Все новости →</a>
+  </div>
+  <div class="row g-3">
+    {% for n in news %}
+      <div class="col-lg-4">
+        <a class="text-decoration-none" href="{{ n.get_absolute_url }}">
+          <div class="kp-card p-4 h-100">
+            <div class="fw-bold">{{ n.title }}</div>
+            <div class="text-muted mt-2">{{ n.excerpt|truncatechars:140 }}</div>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

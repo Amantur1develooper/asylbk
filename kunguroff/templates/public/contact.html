@@ -1,0 +1,171 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Контакты — {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<section class="kp-hero p-4 p-lg-5 mb-4">
+  <div class="row align-items-center g-3">
+    <div class="col-lg-8">
+      <h1 class="kp-section-title mb-2">Контакты</h1>
+      <div class="text-muted fs-5">
+        Свяжитесь с нами удобным способом или оставьте заявку на консультацию.
+      </div>
+    </div>
+    <div class="col-lg-4 d-flex justify-content-lg-end">
+      <a class="btn kp-btn kp-btn-primary w-100 w-lg-auto" href="#consult">
+        Консультация
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="kp-card p-4">
+      <div class="fw-bold fs-5 mb-3">Мы на связи</div>
+
+      <div class="kp-card p-3 mb-2">
+        <div class="d-flex gap-2 align-items-center">
+          <i class="fa-solid fa-location-dot fs-5" style="color:var(--kp-primary)"></i>
+          <div>
+            <div class="fw-bold">Адрес</div>
+            <div class="text-muted small">{{ site.address|default:"Укажите адрес в настройках сайта" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kp-card p-3 mb-2">
+        <div class="d-flex gap-2 align-items-center">
+          <i class="fa-solid fa-phone fs-5" style="color:var(--kp-primary)"></i>
+          <div class="flex-grow-1">
+            <div class="fw-bold">Телефон</div>
+            <div class="text-muted small">{{ site.phone|default:"Укажите телефон" }}</div>
+          </div>
+          {% if site.phone %}
+            <a class="btn btn-outline-primary kp-btn" style="border-radius:999px;" href="tel:{{ site.phone|cut:' ' }}">
+              Позвонить
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="kp-card p-3 mb-2">
+        <div class="d-flex gap-2 align-items-center">
+          <i class="fa-solid fa-envelope fs-5" style="color:var(--kp-primary)"></i>
+          <div>
+            <div class="fw-bold">Email</div>
+            <div class="text-muted small">{{ site.email|default:"Укажите email" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kp-card p-3">
+        <div class="d-flex gap-2 align-items-center">
+          <i class="fa-solid fa-clock fs-5" style="color:var(--kp-primary)"></i>
+          <div>
+            <div class="fw-bold">График</div>
+            <div class="text-muted small">{{ site.work_hours|default:"Укажите график работы" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 d-flex gap-2 flex-wrap">
+        {% if site.whatsapp %}
+          <a class="btn btn-outline-primary kp-btn" style="border-radius:999px;" href="{{ site.whatsapp }}">
+            <i class="fa-brands fa-whatsapp me-1"></i> WhatsApp
+          </a>
+        {% endif %}
+        {% if site.telegram %}
+          <a class="btn btn-outline-primary kp-btn" style="border-radius:999px;" href="{{ site.telegram }}">
+            <i class="fa-brands fa-telegram me-1"></i> Telegram
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="kp-card p-4 mt-3">
+      <div class="fw-bold mb-2">Карта</div>
+      <div class="text-muted small mb-2">Сюда можно вставить Google Maps / Яндекс.Карты iframe.</div>
+      <div style="height:220px;border-radius:18px;
+                  background:linear-gradient(135deg, rgba(16,144,240,.12), rgba(11,94,215,.10));
+                  border:1px solid rgba(16,144,240,.14);"
+           class="d-flex align-items-center justify-content-center">
+        <div class="text-muted">Карта будет здесь</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7" id="consult">
+    <div class="kp-card p-4 p-lg-5">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+          <div class="fw-bold fs-4">Заявка на консультацию</div>
+          <div class="text-muted">Опишите кратко ситуацию — мы свяжемся с вами.</div>
+        </div>
+        <span class="badge rounded-pill"
+              style="background:rgba(16,144,240,.12);color:var(--kp-primary);border:1px solid rgba(16,144,240,.18);">
+          Быстро и конфиденциально
+        </span>
+      </div>
+
+      <form method="post" action="{% url 'public:consultation_create' %}">
+        {% csrf_token %}
+
+        <div class="row g-2">
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-bold">Имя *</label>
+            <input class="form-control form-control-lg" name="name" required
+                   placeholder="Ваше имя" style="border-radius:18px;">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-bold">Телефон *</label>
+            <input class="form-control form-control-lg" name="phone" required
+                   placeholder="+996 ..." style="border-radius:18px;">
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-bold">Email</label>
+            <input class="form-control form-control-lg" name="email" type="email"
+                   placeholder="example@mail.com" style="border-radius:18px;">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label fw-bold">Тема</label>
+            <input class="form-control form-control-lg" name="topic"
+                   placeholder="Например: семейный спор / бизнес" style="border-radius:18px;">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-bold">Сообщение</label>
+            <textarea class="form-control" name="message" rows="5"
+                      placeholder="Коротко опишите ситуацию..."
+                      style="border-radius:18px;"></textarea>
+          </div>
+
+          <div class="col-12 d-grid d-md-flex gap-2 mt-2">
+            <button class="btn kp-btn kp-btn-primary flex-grow-1" type="submit">
+              Отправить заявку
+            </button>
+            <a class="btn btn-outline-primary kp-btn" style="border-radius:999px;" href="{% url 'public:home' %}">
+              На главную
+            </a>
+          </div>
+
+          <div class="col-12">
+            <div class="text-muted small mt-2">
+              Нажимая “Отправить”, вы соглашаетесь на обработку данных для связи по заявке.
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="kp-card p-4 mt-3">
+      <div class="fw-bold mb-1">Совет</div>
+      <div class="text-muted">
+        Если вопрос срочный — лучше сразу звонок. Если нужно приложить документы — напишите на email/мессенджер.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

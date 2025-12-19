@@ -1,0 +1,80 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Дела — {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<div class="kp-hero p-4 p-lg-5 mb-4">
+  <div class="row align-items-center g-3">
+    <div class="col-lg-8">
+      <h1 class="kp-section-title mb-2">Дела и кейсы</h1>
+      <div class="text-muted fs-5">
+        Реальные примеры нашей работы (без раскрытия персональных данных).
+      </div>
+    </div>
+    <div class="col-lg-4 d-flex justify-content-lg-end">
+      <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">
+        Нужна консультация
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for c in cases %}
+    <div class="col-md-6 col-lg-4">
+      <a class="text-decoration-none" href="{{ c.get_absolute_url }}">
+        <div class="kp-card h-100 overflow-hidden">
+          {% if c.cover %}
+            <img src="{{ c.cover.url }}" alt="{{ c.title }}"
+                 style="width:100%;height:170px;object-fit:cover;">
+          {% else %}
+            <div style="height:170px;background:
+              radial-gradient(900px 300px at 10% 10%, rgba(16,144,240,.35), transparent 55%),
+              radial-gradient(700px 250px at 90% 20%, rgba(11,94,215,.28), transparent 55%),
+              linear-gradient(180deg, #ffffff, var(--kp-soft));
+              border-bottom:1px solid rgba(16,144,240,.10);">
+            </div>
+          {% endif %}
+
+          <div class="p-4">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <div class="fw-bold fs-5">{{ c.title }}</div>
+              <i class="fa-solid fa-arrow-right" style="color:var(--kp-primary)"></i>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              {% if c.category %}
+                <span class="badge rounded-pill"
+                      style="background:rgba(16,144,240,.12);color:var(--kp-primary);border:1px solid rgba(16,144,240,.18);">
+                  {{ c.category }}
+                </span>
+              {% endif %}
+              <span class="text-muted small">
+                <i class="fa-regular fa-calendar me-1"></i>{{ c.published_at|date:"d.m.Y" }}
+              </span>
+            </div>
+
+            <div class="text-muted mt-3">
+              {{ c.excerpt|default:c.content|truncatechars:170 }}
+            </div>
+
+            <div class="mt-3">
+              <span class="btn btn-outline-primary kp-btn" style="border-radius:999px;">
+                Подробнее
+              </span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="kp-card p-4">
+        <div class="fw-bold">Пока нет опубликованных дел</div>
+        <div class="text-muted">Добавьте кейсы в админке и включите “Опубликован”.</div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
