@@ -79,7 +79,7 @@ body{
 <nav class="navbar navbar-expand-lg kp-navbar sticky-top">
   <div class="container py-2">
     <a class="navbar-brand kp-brand" href="{% url 'public:home' %}">
-      <img src="{% static 'img/logo.png' %}" alt="logo" style="height:42px;border-radius:12px;">
+      <img src="{% static '/img/logo.png' %}" alt="logo" style="height:42px;border-radius:12px;">
       <span>Kunguroff &amp; Partners</span>
     </a>
 
@@ -120,7 +120,7 @@ body{
     <div class="row g-4">
       <div class="col-lg-5">
         <div class="d-flex align-items-center gap-2">
-          <img src="{% static 'img/logo.jpg' %}" alt="logo" style="height:38px;border-radius:12px;">
+          <img src="{% static '/img/logo.jpg' %}" alt="logo" style="height:38px;border-radius:12px;">
           <div>
             <div class="fw-bold">{{ site.company_name|default:"Kunguroff & Partners" }}</div>
             <div class="text-muted small">{{ site.slogan|default:"Stand for your rights" }}</div>
