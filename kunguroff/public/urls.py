@@ -8,7 +8,7 @@ urlpatterns = [
     path("consultation/", views.consultation_create, name="consultation_create"),
 
     path("staff/", views.StaffListView.as_view(), name="staff"),
-    path("cases/", views.CaseListView.as_view(), name="cases"),
+    path("casess/", views.CaseListView.as_view(), name="casess"),
     path("cases/<slug:slug>/", views.CaseDetailView.as_view(), name="case_detail"),
 
     path("news/", views.NewsListView.as_view(), name="news"),

@@ -90,10 +90,12 @@ body{
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav ms-auto gap-lg-2">
         <li class="nav-item"><a class="nav-link" href="{% url 'public:staff' %}">Сотрудники</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:cases' %}">Дела</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'public:casess' %}">Дела</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'public:news' %}">Новости</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'public:about' %}">О нас</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'public:contacts' %}">Контакты</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Войти</a></li>
+
       </ul>
 
       <a class="btn kp-btn kp-btn-primary ms-lg-3" href="{% url 'public:contacts' %}#consult">

@@ -1,7 +1,36 @@
 {% extends "public/base.html" %}
+
 {% block title %}{{ site.company_name }} — Главная{% endblock %}
 {% block content %}
+<style>.kp-form-title{
+  font-weight: 900;
+  letter-spacing: .2px;
+}
 
+.kp-input{
+  border-radius: 18px !important;
+  border: 1px solid rgba(16,144,240,.18) !important;
+  background: rgba(255,255,255,.92) !important;
+}
+
+.kp-input:focus{
+  border-color: var(--kp-primary) !important;
+  box-shadow: 0 0 0 .25rem rgba(16,144,240,.18) !important;
+}
+
+.kp-input-icon{
+  border-radius: 18px !important;
+  border: 1px solid rgba(16,144,240,.18) !important;
+  background: rgba(16,144,240,.08) !important;
+  color: var(--kp-primary) !important;
+}
+
+.kp-mini{
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(11,19,32,.62);
+}
+</style>
 <section class="kp-hero p-4 p-lg-5">
   <div class="row align-items-center g-4">
     <div class="col-lg-7">
@@ -13,7 +42,7 @@
       </p>
       <div class="d-flex gap-2 flex-wrap mt-3">
         <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">Получить консультацию</a>
-        <a class="btn kp-btn btn-outline-primary" href="{% url 'public:cases' %}" style="border-radius:999px;">Смотреть дела</a>
+        <a class="btn kp-btn btn-outline-primary" href="{% url 'public:casess' %}" style="border-radius:999px;">Смотреть дела</a>
       </div>
 
       <div class="d-flex gap-3 mt-4 flex-wrap">
@@ -33,17 +62,84 @@
     </div>
 
     <div class="col-lg-5">
-      <div class="kp-card p-4">
-        <div class="fw-bold mb-2">Быстрая заявка</div>
-        <form method="post" action="{% url 'public:consultation_create' %}">
-          {% csrf_token %}
-          <div class="mb-2">{{ form.name.label_tag }}{{ form.name }}</div>
-          <div class="mb-2">{{ form.phone.label_tag }}{{ form.phone }}</div>
-          <div class="mb-2">{{ form.topic.label_tag }}{{ form.topic }}</div>
-          <button class="btn kp-btn kp-btn-primary w-100" type="submit">Отправить</button>
-          <div class="text-muted small mt-2">Ответим в ближайшее время.</div>
-        </form>
+     <div class="kp-card p-4 p-lg-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <div class="kp-form-title fs-5">Быстрая заявка</div>
+      <div class="kp-mini">Обычно отвечаем в рабочее время в течение 10–30 минут</div>
+    </div>
+    <span class="badge rounded-pill"
+          style="background:rgba(16,144,240,.12);color:var(--kp-primary);border:1px solid rgba(16,144,240,.18);">
+      Конфиденциально
+    </span>
+  </div>
+
+  <form method="post" action="{% url 'public:consultation_create' %}">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label fw-bold mb-1">Имя *</label>
+      <div class="input-group">
+        <span class="input-group-text kp-input-icon"><i class="fa-solid fa-user"></i></span>
+        {{ form.name }}
       </div>
+    </div>
+
+    <div class="mb-2">
+      <label class="form-label fw-bold mb-1">Телефон *</label>
+      <div class="input-group">
+        <span class="input-group-text kp-input-icon"><i class="fa-solid fa-phone"></i></span>
+        {{ form.phone }}
+      </div>
+      <div class="kp-mini mt-1">Мы не передаём номер третьим лицам</div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mt-3">
+      <button class="btn kp-btn kp-btn-primary flex-grow-1" type="submit">
+        Отправить
+      </button>
+    </div>
+
+    <button class="btn btn-link px-0 mt-2 text-decoration-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#moreFields"
+            aria-expanded="false"
+            aria-controls="moreFields">
+      <i class="fa-solid fa-sliders me-1"></i> Добавить детали (необязательно)
+    </button>
+
+    <div class="collapse" id="moreFields">
+      <div class="pt-2">
+        <div class="mb-3">
+          <label class="form-label fw-bold mb-1">Тема</label>
+          <div class="input-group">
+            <span class="input-group-text kp-input-icon"><i class="fa-solid fa-tag"></i></span>
+            {{ form.topic }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold mb-1">Email</label>
+          <div class="input-group">
+            <span class="input-group-text kp-input-icon"><i class="fa-solid fa-envelope"></i></span>
+            {{ form.email }}
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fw-bold mb-1">Сообщение</label>
+          {{ form.message }}
+        </div>
+      </div>
+    </div>
+
+    <div class="kp-mini mt-3">
+      Нажимая «Отправить», вы соглашаетесь на обработку данных для связи по заявке.
+    </div>
+  </form>
+</div>
+
     </div>
   </div>
 </section>
@@ -71,7 +167,7 @@
 <section class="mt-5">
   <div class="d-flex align-items-end justify-content-between mb-3">
     <h2 class="kp-section-title">Дела</h2>
-    <a href="{% url 'public:cases' %}" class="text-decoration-none">Все дела →</a>
+    <a href="{% url 'public:casess' %}" class="text-decoration-none">Все дела →</a>
   </div>
   <div class="row g-3">
     {% for c in cases %}
