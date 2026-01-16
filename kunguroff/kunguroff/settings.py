@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'calendar1',
     'ratings',
     'finance',
-    'public'
+    'public.apps.PublicConfig',
 ]
 
 

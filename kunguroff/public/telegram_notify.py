@@ -37,34 +37,65 @@ def _format_consultation(req: ConsultationRequest) -> str:
         f"🆔 <b>ID:</b> {req.id}"
     )
 
+import logging
+log = logging.getLogger(__name__)
 
 def _send_to_chat(chat_id: int, text: str) -> tuple[bool, str]:
     token = _telegram_token()
     if not token:
+        log.error("TG: no token")
         return False, "NO_TOKEN"
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     try:
-        r = requests.post(
-            url,
-            data={
-                "chat_id": chat_id,
-                "text": text,
-                "parse_mode": "HTML",
-                "disable_web_page_preview": True,
-            },
-            timeout=8,
-        )
+        r = requests.post(url, data={
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }, timeout=8)
+
         if not r.ok:
+            log.warning("TG HTTP %s: %s", r.status_code, r.text[:300])
             return False, f"HTTP_{r.status_code}"
 
         data = r.json()
         if not data.get("ok"):
+            log.warning("TG not ok: %s", data)
             return False, data.get("description", "TG_ERROR")
 
         return True, "OK"
-    except Exception:
+    except Exception as e:
+        log.exception("TG exception: %s", e)
         return False, "EXCEPTION"
+
+# def _send_to_chat(chat_id: int, text: str) -> tuple[bool, str]:
+#     token = _telegram_token()
+#     if not token:
+#         return False, "NO_TOKEN"
+
+#     url = f"https://api.telegram.org/bot{token}/sendMessage"
+#     try:
+#         r = requests.post(
+#             url,
+#             data={
+#                 "chat_id": chat_id,
+#                 "text": text,
+#                 "parse_mode": "HTML",
+#                 "disable_web_page_preview": True,
+#             },
+#             timeout=8,
+#         )
+#         if not r.ok:
+#             return False, f"HTTP_{r.status_code}"
+
+#         data = r.json()
+#         if not data.get("ok"):
+#             return False, data.get("description", "TG_ERROR")
+
+#         return True, "OK"
+#     except Exception:
+#         return False, "EXCEPTION"
 
 
 def notify_consultation_request(req_id: int) -> int:
