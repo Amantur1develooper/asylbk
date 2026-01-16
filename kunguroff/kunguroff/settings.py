@@ -52,7 +52,7 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'users.User'
 
-TELEGRAM_BOT_TOKEN = '7647322168:AAHC-VSVSS7qxrDCfJD2kaMHbeC9z2-l9R4'
+# TELEGRAM_BOT_TOKEN = '8583338642:AAEn5fyWZM4qyMDaRL6tNxJzPzt_CIf-UHY'
 # Планировщик задач для уведомлений
 CELERY_BEAT_SCHEDULE = {
     'send-telegram-notifications': {
@@ -60,7 +60,15 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 60.0,  # Каждую минуту
     },
 }
+import os
 
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7647322168:AAHC-VSVSS7qxrDCfJD2kaMHbeC9z2-l9R4")
+
+# кому отправлять заявки (по ролям)
+TELEGRAM_NOTIFY_ROLES = [
+    "director", "deputy_director", "manager", "admin",
+    "advocate", "lawyer",
+]
 
 #  Настройки логирования для отладки
 LOGGING = {
