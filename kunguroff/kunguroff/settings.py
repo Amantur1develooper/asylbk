@@ -67,8 +67,8 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7647322168:AAHC-VSVSS7qxrD
 
 # кому отправлять заявки (по ролям)
 TELEGRAM_NOTIFY_ROLES = [
-    "director", "deputy_director", "manager", "admin",
-    "advocate", "lawyer",
+    'director','deputy_director','manager','admin','advocate','lawyer',
+    'accountant','hr','external_lawyer','trainee',
 ]
 
 #  Настройки логирования для отладки
