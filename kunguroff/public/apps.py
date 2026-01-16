@@ -1,6 +1,10 @@
+# public/apps.py
 from django.apps import AppConfig
 
 
 class PublicConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'public'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "public"
+
+    def ready(self):
+        from . import signals  # noqa

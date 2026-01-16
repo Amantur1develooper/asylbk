@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .telegram import send_telegram_message, format_consultation
+# from .telegram import send_telegram_message, format_consultation
 from django.db import transaction
 from .telegram_notify import notify_consultation_request
 
