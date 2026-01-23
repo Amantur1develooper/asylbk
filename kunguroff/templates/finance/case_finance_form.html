@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load humanize %}
 
-{% block title %}Финансы по делу #{{ case.id }}{% endblock %}
+{% block title %}{% blocktrans with case_id=case.id %}Финансы по делу #{{ case_id }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-md-12">
     <div class="app-card">
       <div class="app-card-header d-flex justify-content-between align-items-center">
-        <h2>Финансы по делу #{{ case.id }}</h2>
+        <h2>{% blocktrans with case_id=case.id %}Финансы по делу #{{ case_id }}{% endblocktrans %}</h2>
+
         <a href="{% url 'cases:case_detail' case.id %}" class="btn btn-outline-secondary btn-sm">
-          Назад к делу
+          {% trans "Назад к делу" %}
         </a>
       </div>
 
@@ -29,17 +31,19 @@
 
           <div class="row mb-3">
             <div class="col-md-4">
-              <label class="form-label fw-bold">Доверитель (основной)</label>
+              <label class="form-label fw-bold">{% trans "Доверитель (основной)" %}</label>
               <input type="text"
                      class="form-control"
                      value="{{ case.main_trustor.full_name|default:'-' }}"
                      disabled>
             </div>
+
             <div class="col-md-4">
               <label class="form-label">{{ form.agreement_number.label }}</label>
               {{ form.agreement_number }}
               {{ form.agreement_number.errors }}
             </div>
+
             <div class="col-md-4">
               <label class="form-label">{{ form.agreement_date.label }}</label>
               {{ form.agreement_date }}
@@ -52,41 +56,44 @@
               <label class="form-label">{{ form.contract_amount.label }}</label>
               <div class="input-group">
                 {{ form.contract_amount }}
-                <span class="input-group-text">сом</span>
+                <span class="input-group-text">{% trans "сом" %}</span>
               </div>
               {{ form.contract_amount.errors }}
             </div>
+
             <div class="col-md-3">
               <label class="form-label">{{ form.paid_amount.label }}</label>
               <div class="input-group">
                 {{ form.paid_amount }}
-                <span class="input-group-text">сом</span>
+                <span class="input-group-text">{% trans "сом" %}</span>
               </div>
               {{ form.paid_amount.errors }}
               <small class="text-muted d-block mt-1">
-                Оплачено: {{ finance.paid_ratio|floatformat:0 }} %
+                {% trans "Оплачено:" %} {{ finance.paid_ratio|floatformat:0 }} %
               </small>
             </div>
+
             <div class="col-md-3">
-              <label class="form-label">Фирма, %</label>
+              <label class="form-label">{% trans "Фирма, %" %}</label>
               <div class="input-group">
                 {{ form.company_share_percent }}
                 <span class="input-group-text">%</span>
               </div>
               {{ form.company_share_percent.errors }}
               <small class="text-muted d-block mt-1">
-                = {{ finance.company_share_amount|intcomma }} сом
+                = {{ finance.company_share_amount|intcomma }} {% trans "сом" %}
               </small>
             </div>
+
             <div class="col-md-3">
-              <label class="form-label">Юристы, %</label>
+              <label class="form-label">{% trans "Юристы, %" %}</label>
               <div class="input-group">
                 {{ form.lawyers_share_percent }}
                 <span class="input-group-text">%</span>
               </div>
               {{ form.lawyers_share_percent.errors }}
               <small class="text-muted d-block mt-1">
-                = {{ finance.lawyers_pool_amount|intcomma }} сом
+                = {{ finance.lawyers_pool_amount|intcomma }} {% trans "сом" %}
               </small>
             </div>
           </div>
@@ -94,7 +101,7 @@
           <hr class="my-4">
 
           <h5 class="mb-3">
-            Распределение {{ finance.lawyers_share_percent }}% между сотрудниками
+            {% blocktrans with p=finance.lawyers_share_percent %}Распределение {{ p }}% между сотрудниками{% endblocktrans %}
           </h5>
 
           {{ formset.non_form_errors }}
@@ -104,14 +111,15 @@
             <table class="table table-sm align-middle">
               <thead>
                 <tr>
-                  <th>Сотрудник</th>
-                  <th>Доля 70%, %</th>
-                  <th>При полной оплате</th>
-                  <th>С учётом оплаты</th>
-                  <th>Ручная</th>
+                  <th>{% trans "Сотрудник" %}</th>
+                  <th>{% trans "Доля 70%, %" %}</th>
+                  <th>{% trans "При полной оплате" %}</th>
+                  <th>{% trans "С учётом оплаты" %}</th>
+                  <th>{% trans "Ручная" %}</th>
                   <th></th>
                 </tr>
               </thead>
+
               <tbody>
                 {% for share_form in formset %}
                   <tr>
@@ -120,38 +128,48 @@
                       {{ share_form.employee }}
                       {{ share_form.employee.errors }}
                     </td>
+
                     <td style="max-width: 140px;">
                       {{ share_form.percent_of_pool }}
                       {{ share_form.percent_of_pool.errors }}
                     </td>
+
                     <td>
                       {% if share_form.instance.pk %}
-                        {{ share_form.instance.amount_full|intcomma }} сом
-                      {% else %}-{% endif %}
+                        {{ share_form.instance.amount_full|intcomma }} {% trans "сом" %}
+                      {% else %}
+                        -
+                      {% endif %}
                     </td>
+
                     <td>
                       {% if share_form.instance.pk %}
-                        {{ share_form.instance.amount_current|intcomma }} сом
-                      {% else %}-{% endif %}
+                        {{ share_form.instance.amount_current|intcomma }} {% trans "сом" %}
+                      {% else %}
+                        -
+                      {% endif %}
                     </td>
+
                     <td class="text-center">
                       <div class="form-check">
                         {{ share_form.is_manual }}
                       </div>
                     </td>
+
                     <td>
                       {% if share_form.instance.pk %}
                         <div class="form-check">
                           {{ share_form.DELETE }}
-                          <label class="form-check-label">Удалить</label>
+                          <label class="form-check-label">{% trans "Удалить" %}</label>
                         </div>
                       {% endif %}
                     </td>
                   </tr>
+
                 {% empty %}
                   <tr>
                     <td colspan="6" class="text-center text-muted">
-                      Пока нет сотрудников для распределения
+                      {% trans "Пока нет сотрудников для распределения" %}
                     </td>
                   </tr>
                 {% endfor %}
@@ -161,12 +179,17 @@
 
           <div class="d-flex justify-content-between">
             <div class="small text-muted">
-              Сумма к распределению: <strong>{{ finance.lawyers_pool_amount|intcomma }} сом</strong><br>
-              Оплачено по договору:
-              <strong>{{ finance.paid_amount|intcomma }} / {{ finance.contract_amount|intcomma }} сом</strong>
+              {% trans "Сумма к распределению:" %}
+              <strong>{{ finance.lawyers_pool_amount|intcomma }} {% trans "сом" %}</strong><br>
+
+              {% trans "Оплачено по договору:" %}
+              <strong>
+                {{ finance.paid_amount|intcomma }} / {{ finance.contract_amount|intcomma }} {% trans "сом" %}
+              </strong>
             </div>
+
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-save me-1"></i> Сохранить
+              <i class="bi bi-save me-1"></i> {% trans "Сохранить" %}
             </button>
           </div>
         </form>

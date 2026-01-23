@@ -1,6 +1,13 @@
 {% load static %}
+{% load i18n %}
+{% load i18n_extras %}
+{% get_current_language as CURRENT_LANG %}
+{% get_available_languages as LANGUAGES %}
+{% get_language_info_list for LANGUAGES as languages %}
+
 <!doctype html>
-<html lang="ru">
+<html lang="{{ request.LANGUAGE_CODE }}">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +16,41 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   {% comment %} <link href="{% static 'public/css/brand.css' %}" rel="stylesheet"> {% endcomment %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const DEFAULT_LANG = 'ru';
+  const LANGS = [{% for code, name in LANGUAGES %}'{{ code }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  function buildNext(targetLang) {
+    const u = new URL(window.location.href);
+    const hadSlash = u.pathname.endsWith('/');
+
+    let parts = u.pathname.split('/').filter(Boolean); // ["ky","news"] или []
+    const hasPrefix = parts.length && LANGS.includes(parts[0]) && parts[0] !== DEFAULT_LANG;
+
+    if (targetLang === DEFAULT_LANG) {
+      if (hasPrefix) parts.shift();
+    } else {
+      if (hasPrefix) parts[0] = targetLang;
+      else parts.unshift(targetLang);
+    }
+
+    let path = '/' + parts.join('/');
+    if (hadSlash && !path.endsWith('/')) path += '/';
+
+    return path + u.search + u.hash;
+  }
+
+  document.querySelectorAll('[data-lang-form]').forEach((form) => {
+    const nextInput = form.querySelector('input[name="next"]');
+    form.querySelectorAll('button[name="language"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        nextInput.value = buildNext(btn.value);
+      });
+    });
+  });
+});
+</script>
 
   <link rel="icon" href="{% static 'img/logo.png' %}">
 </head>
@@ -89,17 +131,58 @@ body{
 
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav ms-auto gap-lg-2">
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:staff' %}">Сотрудники</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:casess' %}">Дела</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:news' %}">Новости</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:about' %}">О нас</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:contacts' %}">Контакты</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Войти</a></li>
+        <li>
+        
+
+<form action="{% url 'set_language' %}" method="post" class="d-none d-md-block" data-lang-form>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill dropdown-toggle"
+                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {% if CURRENT_LANG == "ru" %}RU{% elif CURRENT_LANG == "ky" %}KY{% else %}EN{% endif %}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            {% for lang in languages %}
+                <li>
+                    <button class="dropdown-item {% if lang.code == CURRENT_LANG %}active{% endif %}"
+                            type="submit" name="language" value="{{ lang.code }}">
+                        {{ lang.name_local }}
+                    </button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</form>
+
+</li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'public:staff' %}">{% trans "Сотрудники" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'public:casess' %}">{% trans "Дела" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'public:news' %}">{% trans "Новости" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'public:about' %}">{% trans "О нас" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'public:contacts' %}">{% trans "Контакты" %}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">{% trans "Войти" %}</a></li>
 
       </ul>
+      <div class="mt-2">
+    <div class="text-muted" style="font-size:12px; text-transform:uppercase; letter-spacing:.12em;">
+        {% trans "Язык" %}
+    </div>
+
+    <form action="{% url 'set_language' %}" method="post" class="d-flex gap-2 mt-2" data-lang-form>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" type="submit" name="language" value="ru">RU</button>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" type="submit" name="language" value="ky">KY</button>
+        <button class="btn btn-sm btn-outline-secondary rounded-pill" type="submit" name="language" value="en">EN</button>
+    </form>
+</div>
 
       <a class="btn kp-btn kp-btn-primary ms-lg-3" href="{% url 'public:contacts' %}#consult">
-        Консультация
+        {% trans "Консультация" %}
       </a>
     </div>
   </div>
@@ -128,12 +211,12 @@ body{
             <div class="text-muted small">{{ site.slogan|default:"Stand for your rights" }}</div>
           </div>
         </div>
-        <div class="text-muted small mt-3">© {% now "Y" %}. Все права защищены.</div>
+        <div class="text-muted small mt-3">© {% now "Y" %}{% trans ". Все права защищены." %}</div>
       </div>
       <div class="col-lg-7">
         <div class="row g-3">
           <div class="col-md-6">
-            <div class="fw-bold mb-1">Контакты</div>
+            <div class="fw-bold mb-1">{% trans "Контакты" %}</div>
             <div class="text-muted small">{{ site.address }}</div>
             <div class="text-muted small">{{ site.work_hours }}</div>
           </div>
@@ -150,4 +233,7 @@ body{
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
+
+
 </html>

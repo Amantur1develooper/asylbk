@@ -1,25 +1,34 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Удаление клиента - Kunguroff & Partners{% endblock %}
+{% block title %}{% trans "Удаление клиента" %} - Kunguroff & Partners{% endblock %}
 
-{% block page_title %}Удаление клиента{% endblock %}
+{% block page_title %}{% trans "Удаление клиента" %}{% endblock %}
 
 {% block content %}
 <div class="card">
-    <div class="card-body">
-        <div class="alert alert-danger">
-            <h4 class="alert-heading">Внимание!</h4>
-            <p>Вы уверены, что хотите удалить клиента <strong>{{ object }}</strong>?</p>
-            <p>Это действие нельзя отменить. Все связанные дела также будут удалены.</p>
-            
-            <form method="post">
-                {% csrf_token %}
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-danger">Да, удалить</button>
-                    <a href="{% url 'clients:client_detail' object.pk %}" class="btn btn-secondary">Отмена</a>
-                </div>
-            </form>
+  <div class="card-body">
+    <div class="alert alert-danger">
+      <h4 class="alert-heading">{% trans "Внимание!" %}</h4>
+
+      <p>
+        {% blocktrans with client=object %}
+          Вы уверены, что хотите удалить клиента <strong>{{ client }}</strong>?
+        {% endblocktrans %}
+      </p>
+
+      <p>{% trans "Это действие нельзя отменить. Все связанные дела также будут удалены." %}</p>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="mt-3">
+          <button type="submit" class="btn btn-danger">{% trans "Да, удалить" %}</button>
+          <a href="{% url 'clients:client_detail' object.pk %}" class="btn btn-secondary">
+            {% trans "Отмена" %}
+          </a>
         </div>
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}

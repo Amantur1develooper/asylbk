@@ -1,251 +1,257 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Календарь - Kunguroff & Partners{% endblock %}
+{% get_current_language as LANGUAGE_CODE %}
 
-{% block page_title %}Календарь событий{% endblock %}
+{% block title %}{% trans "Календарь" %} - Kunguroff & Partners{% endblock %}
+
+{% block page_title %}{% trans "Календарь событий" %}{% endblock %}
 
 {% block page_actions %}
-    <div class="btn-group">
-        <a href="{% url 'calendar1:event_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Создать событие
-        </a>
-        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-            <i class="bi bi-calendar"></i> Вид
-        </button>
-        <div class="dropdown-menu">
-            <a class="dropdown-item calendar-view-change" data-view="month" href="#">Месяц</a>
-            <a class="dropdown-item calendar-view-change" data-view="week" href="#">Неделя</a>
-            <a class="dropdown-item calendar-view-change" data-view="day" href="#">День</a>
-            <a class="dropdown-item calendar-view-change" data-view="list" href="#">Список</a>
-        </div>
+  <div class="btn-group">
+    <a href="{% url 'calendar1:event_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> {% trans "Создать событие" %}
+    </a>
+    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+      <i class="bi bi-calendar"></i> {% trans "Вид" %}
+    </button>
+    <div class="dropdown-menu">
+      <a class="dropdown-item calendar-view-change" data-view="month" href="#">{% trans "Месяц" %}</a>
+      <a class="dropdown-item calendar-view-change" data-view="week" href="#">{% trans "Неделя" %}</a>
+      <a class="dropdown-item calendar-view-change" data-view="day" href="#">{% trans "День" %}</a>
+      <a class="dropdown-item calendar-view-change" data-view="list" href="#">{% trans "Список" %}</a>
     </div>
+  </div>
 {% endblock %}
 
 {% block content %}
 <div class="row">
-    <!-- Боковая панель с фильтрами и быстрыми действиями -->
-    <div class="col-md-3">
-        <!-- Быстрое создание события -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Быстрое создание</h6>
-            </div>
-            <div class="card-body">
-                <form id="quickEventForm">
-                    <div class="mb-3">
-                        <input type="text" class="form-control" id="quickEventTitle" placeholder="Название события" required>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <input type="datetime-local" class="form-control" id="quickEventStart" required>
-                        </div>
-                        <div class="col-6">
-                            <input type="datetime-local" class="form-control" id="quickEventEnd" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 btn-sm">Добавить</button>
-                </form>
-            </div>
-        </div>
+  <!-- Боковая панель -->
+  <div class="col-md-3">
 
-        <!-- Фильтры -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Фильтры</h6>
+    <!-- Быстрое создание события -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="card-title mb-0">{% trans "Быстрое создание" %}</h6>
+      </div>
+      <div class="card-body">
+        <form id="quickEventForm">
+          <div class="mb-3">
+            <input type="text" class="form-control" id="quickEventTitle"
+                   placeholder="{% trans 'Название события' %}" required>
+          </div>
+          <div class="row mb-3">
+            <div class="col-6">
+              <input type="datetime-local" class="form-control" id="quickEventStart" required>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Тип события</label>
-                    <select class="form-select" id="eventTypeFilter">
-                        <option value="">Все типы</option>
-                        {% for event_type in event_types %}
-                            <option value="{{ event_type.0 }}">{{ event_type.1 }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Приоритет</label>
-                    <select class="form-select" id="priorityFilter">
-                        <option value="">Все приоритеты</option>
-                        {% for priority in priorities %}
-                            <option value="{{ priority.0 }}">{{ priority.1 }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Дело</label>
-                    <select class="form-select" id="caseFilter">
-                        <option value="">Все дела</option>
-                        {% for case in user_cases %}
-                            <option value="{{ case.id }}">{{ case.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button class="btn btn-outline-primary w-100" id="applyFilters">Применить</button>
-                <button class="btn btn-outline-secondary w-100 mt-2" id="resetFilters">Сбросить</button>
+            <div class="col-6">
+              <input type="datetime-local" class="form-control" id="quickEventEnd" required>
             </div>
-        </div>
-
-        <!-- Предстоящие события -->
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title mb-0">Сегодня</h6>
-            </div>
-            <div class="card-body">
-                {% if today_events %}
-                    <div class="list-group list-group-flush">
-                        {% for event in today_events %}
-                            <a href="{% url 'calendar1:event_detail' event.pk %}" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">{{ event.title }}</h6>
-                                    <small class="text-muted">{{ event.start_time|time }}</small>
-                                </div>
-                                <small class="text-muted">
-                                    <i class="bi bi-geo-alt"></i> {{ event.location|default:"Место не указано" }}
-                                </small>
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted mb-0">Событий на сегодня нет</p>
-                {% endif %}
-            </div>
-        </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 btn-sm">{% trans "Добавить" %}</button>
+        </form>
+      </div>
     </div>
 
-    <!-- Основной календарь -->
-    <div class="col-md-9">
-        <div class="card">
-            <div class="card-body">
-                <div id="calendar"></div>
-            </div>
+    <!-- Фильтры -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="card-title mb-0">{% trans "Фильтры" %}</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">{% trans "Тип события" %}</label>
+          <select class="form-select" id="eventTypeFilter">
+            <option value="">{% trans "Все типы" %}</option>
+            {% for event_type in event_types %}
+              <option value="{{ event_type.0 }}">{{ event_type.1 }}</option>
+            {% endfor %}
+          </select>
         </div>
+        <div class="mb-3">
+          <label class="form-label">{% trans "Приоритет" %}</label>
+          <select class="form-select" id="priorityFilter">
+            <option value="">{% trans "Все приоритеты" %}</option>
+            {% for priority in priorities %}
+              <option value="{{ priority.0 }}">{{ priority.1 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">{% trans "Дело" %}</label>
+          <select class="form-select" id="caseFilter">
+            <option value="">{% trans "Все дела" %}</option>
+            {% for case in user_cases %}
+              <option value="{{ case.id }}">{{ case.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button class="btn btn-outline-primary w-100" id="applyFilters">{% trans "Применить" %}</button>
+        <button class="btn btn-outline-secondary w-100 mt-2" id="resetFilters">{% trans "Сбросить" %}</button>
+      </div>
     </div>
+
+    <!-- Сегодня -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="card-title mb-0">{% trans "Сегодня" %}</h6>
+      </div>
+      <div class="card-body">
+        {% if today_events %}
+          <div class="list-group list-group-flush">
+            {% for event in today_events %}
+              <a href="{% url 'calendar1:event_detail' event.pk %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1">{{ event.title }}</h6>
+                  <small class="text-muted">{{ event.start_time|time }}</small>
+                </div>
+                <small class="text-muted">
+                  <i class="bi bi-geo-alt"></i>
+                  {{ event.location|default:_("Место не указано") }}
+                </small>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">{% trans "Событий на сегодня нет" %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Календарь -->
+  <div class="col-md-9">
+    <div class="card">
+      <div class="card-body">
+        <div id="calendar"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Модальное окно для создания/редактирования события -->
+<!-- Модалка -->
 <div class="modal fade" id="eventModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Создание события</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Форма будет загружаться через AJAX -->
-            </div>
-        </div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{% trans "Создание события" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <!-- AJAX форма -->
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 <style>
-    #calendar {
-        height: 700px;
-    }
-    .fc-event {
-        cursor: pointer;
-    }
-    .fc-toolbar {
-        padding: 1rem;
-    }
-    .calendar-event-high {
-        border-left: 4px solid #dc3545;
-    }
-    .calendar-event-medium {
-        border-left: 4px solid #fd7e14;
-    }
-    .calendar-event-low {
-        border-left: 4px solid #20c997;
-    }
+  #calendar { height: 700px; }
+  .fc-event { cursor: pointer; }
+  .fc-toolbar { padding: 1rem; }
+  .calendar-event-high { border-left: 4px solid #dc3545; }
+  .calendar-event-medium { border-left: 4px solid #fd7e14; }
+  .calendar-event-low { border-left: 4px solid #20c997; }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ru.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: 'ru',
-        timeZone: 'Europe/Moscow',
-        initialView: 'dayGridMonth',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-        },
-        buttonText: {
-            today: 'Сегодня',
-            month: 'Месяц',
-            week: 'Неделя',
-            day: 'День',
-            list: 'Список'
-        },
-        events: '{% url "calendar1:calendar_json" %}',
-        eventClick: function(info) {
-            window.location.href = info.event.extendedProps.url;
-        },
-        dateClick: function(info) {
-            // При клике на дату можно создать быстрое событие
-            document.getElementById('quickEventStart').value = info.dateStr + 'T09:00';
-            document.getElementById('quickEventEnd').value = info.dateStr + 'T10:00';
-        },
-        eventDidMount: function(info) {
-            // Добавляем классы для приоритетов
-            if (info.event.extendedProps.priority === 'high') {
-                info.el.classList.add('calendar-event-high');
-            } else if (info.event.extendedProps.priority === 'medium') {
-                info.el.classList.add('calendar-event-medium');
-            } else {
-                info.el.classList.add('calendar-event-low');
-            }
-        }
-    });
 
-    calendar.render();
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
 
-    // Быстрое создание события
-    document.getElementById('quickEventForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData();
-        formData.append('title', document.getElementById('quickEventTitle').value);
-        formData.append('start_time', document.getElementById('quickEventStart').value);
-        formData.append('end_time', document.getElementById('quickEventEnd').value);
-        formData.append('event_type', 'meeting');
-        
-        fetch('{% url "calendar1:quick_event_create" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                calendar.addEvent(data.event);
-                document.getElementById('quickEventForm').reset();
-                // Показать уведомление об успехе
-            } else {
-                // Показать ошибку
-            }
-        });
-    });
+  const djLang = "{{ LANGUAGE_CODE }}"; // ru / en / ky
+  const calendarEl = document.getElementById('calendar');
 
-    // Смена вида календаря
-    document.querySelectorAll('.calendar-view-change').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const view = this.getAttribute('data-view');
-            calendar.changeView(view);
-        });
+  // Если захочешь — сюда можно добавить кастомные тексты для ky через .po (Django сделает сам),
+  // а FullCalendar возьмет переводы из buttonText ниже.
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    locale: (djLang || 'ru'),
+    timeZone: 'Asia/Bishkek',
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+    },
+    buttonText: {
+      today: "{% trans 'Сегодня' %}",
+      month: "{% trans 'Месяц' %}",
+      week: "{% trans 'Неделя' %}",
+      day: "{% trans 'День' %}",
+      list: "{% trans 'Список' %}"
+    },
+    events: '{% url "calendar1:calendar_json" %}',
+    eventClick: function(info) {
+      window.location.href = info.event.extendedProps.url;
+    },
+    dateClick: function(info) {
+      document.getElementById('quickEventStart').value = info.dateStr + 'T09:00';
+      document.getElementById('quickEventEnd').value = info.dateStr + 'T10:00';
+    },
+    eventDidMount: function(info) {
+      const p = info.event.extendedProps.priority;
+      if (p === 'high') info.el.classList.add('calendar-event-high');
+      else if (p === 'medium') info.el.classList.add('calendar-event-medium');
+      else info.el.classList.add('calendar-event-low');
+    }
+  });
+
+  calendar.render();
+
+  // Быстрое создание события
+  document.getElementById('quickEventForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('title', document.getElementById('quickEventTitle').value);
+    formData.append('start_time', document.getElementById('quickEventStart').value);
+    formData.append('end_time', document.getElementById('quickEventEnd').value);
+    formData.append('event_type', 'meeting');
+
+    fetch('{% url "calendar1:quick_event_create" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        calendar.addEvent(data.event);
+        document.getElementById('quickEventForm').reset();
+      } else {
+        alert(data.error || "{% trans 'Ошибка при создании события' %}");
+      }
+    })
+    .catch(() => alert("{% trans 'Ошибка сети' %}"));
+  });
+
+  // Смена вида календаря
+  document.querySelectorAll('.calendar-view-change').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const view = this.getAttribute('data-view');
+      if (view === 'month') calendar.changeView('dayGridMonth');
+      if (view === 'week') calendar.changeView('timeGridWeek');
+      if (view === 'day') calendar.changeView('timeGridDay');
+      if (view === 'list') calendar.changeView('listMonth');
     });
+  });
+
 });
 </script>
 {% endblock %}

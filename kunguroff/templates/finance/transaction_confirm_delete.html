@@ -1,39 +1,40 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Удаление операции - Kunguroff & Partners{% endblock %}
+{% block title %}{% trans "Удаление операции" %} - Kunguroff & Partners{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-6 offset-md-3">
         <div class="app-card">
             <div class="app-card-header">
-                <h2>Удалить операцию</h2>
+                <h2>{% trans "Удалить операцию" %}</h2>
             </div>
             <div class="app-card-body">
-                <p>Вы уверены, что хотите удалить эту финансовую операцию?</p>
+                <p>{% trans "Вы уверены, что хотите удалить эту финансовую операцию?" %}</p>
 
                 <ul class="list-group mb-3">
                     <li class="list-group-item">
-                        <strong>Тип:</strong> {{ object.get_transaction_type_display }}
+                        <strong>{% trans "Тип:" %}</strong> {{ object.get_transaction_type_display }}
                     </li>
                     <li class="list-group-item">
-                        <strong>Сумма:</strong> {{ object.amount }} сом
+                        <strong>{% trans "Сумма:" %}</strong> {{ object.amount }} {% trans "сом" %}
                     </li>
                     <li class="list-group-item">
-                        <strong>Дата:</strong> {{ object.date|date:"d.m.Y" }}
+                        <strong>{% trans "Дата:" %}</strong> {{ object.date|date:"d.m.Y" }}
                     </li>
                     <li class="list-group-item">
-                        <strong>Описание:</strong> {{ object.description }}
+                        <strong>{% trans "Описание:" %}</strong> {{ object.description }}
                     </li>
                 </ul>
 
                 <form method="post">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash me-1"></i> Удалить
+                        <i class="bi bi-trash me-1"></i> {% trans "Удалить" %}
                     </button>
                     <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary">
-                        Отмена
+                        {% trans "Отмена" %}
                     </a>
                 </form>
             </div>

@@ -1,22 +1,23 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load humanize %}
 
-{% block title %}Бухгалтерия - Kunguroff & Partners{% endblock %}
+{% block title %}{% trans "Бухгалтерия" %} - Kunguroff & Partners{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-8">
-        <h2>Бухгалтерия</h2>
+        <h2>{% trans "Бухгалтерия" %}</h2>
         <p class="text-muted mb-0">
-            Период: {{ start_date|date:"d.m.Y" }} — {{ end_date|date:"d.m.Y" }}
+            {% trans "Период:" %} {{ start_date|date:"d.m.Y" }} — {{ end_date|date:"d.m.Y" }}
         </p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
         <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-primary me-2">
-            <i class="bi bi-list-ul me-1"></i> Операции
+            <i class="bi bi-list-ul me-1"></i> {% trans "Операции" %}
         </a>
         <a href="{% url 'finance:case_finance_export' %}" class="btn btn-success">
-            <i class="bi bi-file-earmark-excel me-1"></i> Экспорт дел в Excel
+            <i class="bi bi-file-earmark-excel me-1"></i> {% trans "Экспорт дел в Excel" %}
         </a>
     </div>
 </div>
@@ -26,28 +27,30 @@
     <div class="col-md-4">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
-                <h6 class="text-muted">Общий доход</h6>
-                <h3 class="text-success mb-0">{{ total_income|default:0|intcomma }} сом</h3>
+                <h6 class="text-muted">{% trans "Общий доход" %}</h6>
+                <h3 class="text-success mb-0">{{ total_income|default:0|intcomma }} {% trans "сом" %}</h3>
             </div>
         </div>
     </div>
+
     <div class="col-md-4 mt-3 mt-md-0">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
-                <h6 class="text-muted">Общий расход</h6>
-                <h3 class="text-danger mb-0">{{ total_expense|default:0|intcomma }} сом</h3>
+                <h6 class="text-muted">{% trans "Общий расход" %}</h6>
+                <h3 class="text-danger mb-0">{{ total_expense|default:0|intcomma }} {% trans "сом" %}</h3>
             </div>
         </div>
     </div>
+
     <div class="col-md-4 mt-3 mt-md-0">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
-                <h6 class="text-muted">Чистая прибыль</h6>
+                <h6 class="text-muted">{% trans "Чистая прибыль" %}</h6>
                 <h3 class="{% if profit >= 0 %}text-success{% else %}text-danger{% endif %} mb-0">
-                    {{ profit|default:0|intcomma }} сом
+                    {{ profit|default:0|intcomma }} {% trans "сом" %}
                 </h3>
                 <small class="text-muted">
-                    Рост к предыдущему периоду: {{ growth_rate }}%
+                    {% blocktrans with rate=growth_rate %}Рост к предыдущему периоду: {{ rate }}%{% endblocktrans %}
                 </small>
             </div>
         </div>
@@ -57,42 +60,46 @@
 <!-- Фильтры -->
 <div class="card mb-4">
     <div class="card-header bg-light">
-        <h5 class="mb-0">Фильтры</h5>
+        <h5 class="mb-0">{% trans "Фильтры" %}</h5>
     </div>
     <div class="card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label">Период</label>
+                <label class="form-label">{% trans "Период" %}</label>
                 <select name="period" class="form-select">
-                    <option value="week" {% if period == 'week' %}selected{% endif %}>Неделя</option>
-                    <option value="month" {% if period == 'month' %}selected{% endif %}>Месяц</option>
-                    <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>Квартал</option>
-                    <option value="year" {% if period == 'year' %}selected{% endif %}>Год</option>
-                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>Произвольно</option>
+                    <option value="week" {% if period == 'week' %}selected{% endif %}>{% trans "Неделя" %}</option>
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>{% trans "Месяц" %}</option>
+                    <option value="quarter" {% if period == 'quarter' %}selected{% endif %}>{% trans "Квартал" %}</option>
+                    <option value="year" {% if period == 'year' %}selected{% endif %}>{% trans "Год" %}</option>
+                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>{% trans "Произвольно" %}</option>
                 </select>
             </div>
+
             <div class="col-md-3">
-                <label class="form-label">Тип операции</label>
+                <label class="form-label">{% trans "Тип операции" %}</label>
                 <select name="transaction_type" class="form-select">
-                    <option value="">Все</option>
-                    <option value="income" {% if transaction_type == 'income' %}selected{% endif %}>Приход</option>
-                    <option value="expense" {% if transaction_type == 'expense' %}selected{% endif %}>Расход</option>
+                    <option value="">{% trans "Все" %}</option>
+                    <option value="income" {% if transaction_type == 'income' %}selected{% endif %}>{% trans "Приход" %}</option>
+                    <option value="expense" {% if transaction_type == 'expense' %}selected{% endif %}>{% trans "Расход" %}</option>
                 </select>
             </div>
+
             <div class="col-md-3">
-                <label class="form-label">Дата с</label>
+                <label class="form-label">{% trans "Дата с" %}</label>
                 <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
             </div>
+
             <div class="col-md-3">
-                <label class="form-label">Дата по</label>
+                <label class="form-label">{% trans "Дата по" %}</label>
                 <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
             </div>
+
             <div class="col-md-12 mt-3">
                 <button type="submit" class="btn btn-primary me-2">
-                    <i class="bi bi-funnel me-1"></i> Применить
+                    <i class="bi bi-funnel me-1"></i> {% trans "Применить" %}
                 </button>
                 <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle me-1"></i> Сбросить
+                    <i class="bi bi-x-circle me-1"></i> {% trans "Сбросить" %}
                 </a>
             </div>
         </form>
@@ -102,39 +109,45 @@
 <!-- Последние операции (короткий список) -->
 <div class="card mb-4">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Операции за период</h5>
+        <h5 class="mb-0">{% trans "Операции за период" %}</h5>
         <a href="{% url 'finance:transaction_list' %}" class="btn btn-sm btn-outline-primary">
-            Все операции
+            {% trans "Все операции" %}
         </a>
     </div>
+
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table mb-0 table-hover">
                 <thead>
                     <tr>
-                        <th>Дата</th>
-                        <th>Тип</th>
-                        <th>Сумма</th>
-                        <th>Описание</th>
-                        <th>Дело/Клиент</th>
+                        <th>{% trans "Дата" %}</th>
+                        <th>{% trans "Тип" %}</th>
+                        <th>{% trans "Сумма" %}</th>
+                        <th>{% trans "Описание" %}</th>
+                        <th>{% trans "Дело/Клиент" %}</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for tr in page_obj %}
                     <tr>
                         <td>{{ tr.date|date:"d.m.Y" }}</td>
+
                         <td>
                             <span class="badge {% if tr.transaction_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
                                 {{ tr.get_transaction_type_display }}
                             </span>
                         </td>
+
                         <td class="fw-bold {% if tr.transaction_type == 'income' %}text-success{% else %}text-danger{% endif %}">
-                            {{ tr.amount|intcomma }} сом
+                            {{ tr.amount|intcomma }} {% trans "сом" %}
                         </td>
+
                         <td>{{ tr.description|truncatewords:6 }}</td>
+
                         <td>
                             {% if tr.case %}
-                                #{{ tr.case.id }}: {{ tr.case.title|truncatewords:3 }}
+                                {% blocktrans with case_id=tr.case.id title=tr.case.title|truncatewords:3 %}#{{ case_id }}: {{ title }}{% endblocktrans %}
                             {% elif tr.client %}
                                 {{ tr.client.full_name }}
                             {% else %}
@@ -145,7 +158,7 @@
                     {% empty %}
                     <tr>
                         <td colspan="5" class="text-center py-4 text-muted">
-                            Нет операций за выбранный период
+                            {% trans "Нет операций за выбранный период" %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -155,7 +168,7 @@
 
         {% if is_paginated %}
         <div class="p-3">
-            <nav aria-label="Навигация по страницам">
+            <nav aria-label="{% trans 'Навигация по страницам' %}">
                 <ul class="pagination justify-content-center mb-0">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
@@ -164,9 +177,11 @@
                             </a>
                         </li>
                     {% endif %}
+
                     <li class="page-item active">
                         <span class="page-link">{{ page_obj.number }}</span>
                     </li>
+
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ page_obj.next_page_number }}">

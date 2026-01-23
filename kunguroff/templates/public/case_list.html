@@ -1,20 +1,21 @@
 {% extends "public/base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Дела — {{ site.company_name }}{% endblock %}
+{% block title %}{% trans "Дела" %} — {{ site.company_name }}{% endblock %}
 
 {% block content %}
 <div class="kp-hero p-4 p-lg-5 mb-4">
   <div class="row align-items-center g-3">
     <div class="col-lg-8">
-      <h1 class="kp-section-title mb-2">Дела и кейсы</h1>
+      <h1 class="kp-section-title mb-2">{% trans "Дела и кейсы" %}</h1>
       <div class="text-muted fs-5">
-        Реальные примеры нашей работы (без раскрытия персональных данных).
+        {% trans "Реальные примеры нашей работы (без раскрытия персональных данных)." %}
       </div>
     </div>
     <div class="col-lg-4 d-flex justify-content-lg-end">
       <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">
-        Нужна консультация
+        {% trans "Нужна консультация" %}
       </a>
     </div>
   </div>
@@ -61,7 +62,7 @@
 
             <div class="mt-3">
               <span class="btn btn-outline-primary kp-btn" style="border-radius:999px;">
-                Подробнее
+                {% trans "Подробнее" %}
               </span>
             </div>
           </div>
@@ -71,8 +72,8 @@
   {% empty %}
     <div class="col-12">
       <div class="kp-card p-4">
-        <div class="fw-bold">Пока нет опубликованных дел</div>
-        <div class="text-muted">Добавьте кейсы в админке и включите “Опубликован”.</div>
+        <div class="fw-bold">{% trans "Пока нет опубликованных дел" %}</div>
+        <div class="text-muted">{{ _("Добавьте кейсы в админке и включите “Опубликован”.") }}</div>
       </div>
     </div>
   {% endfor %}

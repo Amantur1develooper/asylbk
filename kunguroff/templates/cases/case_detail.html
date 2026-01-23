@@ -1,469 +1,476 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 {% load custom_tags %}
+
 {% block title %}{{ case.title }} - Kunguroff & Partners{% endblock %}
 
-{% block page_title %}Дело: {{ case.title }}{% endblock %}
+{% block page_title %}{% trans "Дело:" %} {{ case.title }}{% endblock %}
 
 {% block page_actions %}
-    <div class="btn-group">
-        <a href="{% url 'cases:case_update' case.pk %}" class="btn btn-outline-primary">
-            <i class="bi bi-pencil"></i> Редактировать
-        </a>
-        {% if user.role in 'director deputy_director' %}
-            <a href="{% url 'cases:case_delete' case.pk %}" class="btn btn-outline-danger">
-                <i class="bi bi-trash"></i> Удалить
-            </a>
-        {% endif %}
-    </div>
+  <div class="btn-group">
+    <a href="{% url 'cases:case_update' case.pk %}" class="btn btn-outline-primary">
+      <i class="bi bi-pencil"></i> {% trans "Редактировать" %}
+    </a>
+
+    {% if user.role == 'director' or user.role == 'deputy_director' %}
+      <a href="{% url 'cases:case_delete' case.pk %}" class="btn btn-outline-danger">
+        <i class="bi bi-trash"></i> {% trans "Удалить" %}
+      </a>
+    {% endif %}
+  </div>
 {% endblock %}
 
 {% block content %}
 <div class="row">
-    <!-- Основная информация -->
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Основная информация</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Название:</div>
-                    <div class="col-sm-8">{{ case.title }}</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Категория:</div>
-                    <div class="col-sm-8">{{ case.category.get_name_display }}</div>
-                </div>
-                
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Статус:</div>
-                    <div class="col-sm-8">
-                        <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
-                            {{ case.get_status_display }}
-                        </span>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Текущий этап:</div>
-                    <div class="col-sm-8">
-                        {% if case.current_stage %}
-                            {{ case.current_stage.name }} ({{ case.current_stage.order }}/{{ case.category.stages.count }})
-                        {% else %}
-                            —
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Прогресс:</div>
-                    <div class="col-sm-8">
-                        <div class="d-flex align-items-center">
-                            <div class="progress flex-grow-1 me-2" style="height: 10px;">
-                                <div class="progress-bar" role="progressbar" style="width: {{ case.progress }}%;" 
-                                     aria-valuenow="{{ case.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <small>{{ case.progress }}%</small>
-                        </div>
-                    </div>
-                </div>
-                 <!-- Судебная информация -->
-                {% if case.court_name or case.case_number or case.judge_name %}
-                <hr>
-                <h6>Судебная информация:</h6>
-                {% if case.court_name %}
-                <div class="row mb-2">
-                    <div class="col-sm-4 fw-bold">Суд:</div>
-                    <div class="col-sm-8">{{ case.court_name }}</div>
-                </div>
-                {% endif %}
-                {% if case.case_number %}
-                <div class="row mb-2">
-                    <div class="col-sm-4 fw-bold">Номер дела:</div>
-                    <div class="col-sm-8">{{ case.case_number }}</div>
-                </div>
-                {% endif %}
-                {% if case.judge_name %}
-                <div class="row mb-2">
-                    <div class="col-sm-4 fw-bold">Судья:</div>
-                    <div class="col-sm-8">{{ case.judge_name }}</div>
-                </div>
-                {% endif %}
-                {% endif %}
-            </div>
+  <!-- Основная информация -->
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">{% trans "Основная информация" %}</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Название:" %}</div>
+          <div class="col-sm-8">{{ case.title }}</div>
         </div>
-        {% if case.finance %}
-<div class="card mt-3">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Финансы по делу</h5>
-        <a href="{% url 'finance:case_finance_update' case.id %}" class="btn btn-sm btn-outline-primary">
-            Редактировать
-        </a>
-    </div>
-    <div class="card-body">
-        <dl class="row mb-0">
-            <dt class="col-sm-4">Сумма договора (100%)</dt>
-            <dd class="col-sm-8">{{ case.finance.contract_amount }} сом</dd>
 
-            <dt class="col-sm-4">Оплачено по договору</dt>
-            <dd class="col-sm-8">{{ case.finance.paid_amount }} сом</dd>
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Категория:" %}</div>
+          <div class="col-sm-8">{{ case.category.get_name_display }}</div>
+        </div>
 
-            <dt class="col-sm-4">30% компании</dt>
-            <dd class="col-sm-8">{{ case.finance.company_share_amount }} сом</dd>
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Статус:" %}</div>
+          <div class="col-sm-8">
+            <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
+              {{ case.get_status_display }}
+            </span>
+          </div>
+        </div>
 
-            <dt class="col-sm-4">70% юристов</dt>
-            <dd class="col-sm-8">{{ case.finance.lawyers_pool_amount }} сом</dd>
-        </dl>
-    </div>
-</div>
-{% endif %}
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Текущий этап:" %}</div>
+          <div class="col-sm-8">
+            {% if case.current_stage %}
+              {{ case.current_stage.name }} ({{ case.current_stage.order }}/{{ case.category.stages.count }})
+            {% else %}
+              {{ "—"|default:_("—") }}
+            {% endif %}
+          </div>
+        </div>
 
-        <!-- Ответственные лица -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Ответственные лица</h5>
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Прогресс:" %}</div>
+          <div class="col-sm-8">
+            <div class="d-flex align-items-center">
+              <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                <div class="progress-bar" role="progressbar"
+                     style="width: {{ case.progress }}%;"
+                     aria-valuenow="{{ case.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <small>{{ case.progress }}%</small>
             </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Юрист/Адвокат:</div>
-                    <div class="col-sm-8">
-                         {% if case.responsible_lawyer.all %}
-                         {% for lawyer in case.responsible_lawyer.all %}
-                    <li class="list-group-item">
-                        {{ lawyer.get_full_name|default:lawyer.username }} 
-                        ({{ lawyer.get_role_display }})
-                    </li>
-                {% endfor %}
-                </td>
-        {% else %}
-            <p class="text-muted">Ответственные не назначены</p>
+          </div>
+        </div>
+
+        <!-- Судебная информация -->
+        {% if case.court_name or case.case_number or case.judge_name %}
+          <hr>
+          <h6>{% trans "Судебная информация:" %}</h6>
+
+          {% if case.court_name %}
+            <div class="row mb-2">
+              <div class="col-sm-4 fw-bold">{% trans "Суд:" %}</div>
+              <div class="col-sm-8">{{ case.court_name }}</div>
+            </div>
+          {% endif %}
+
+          {% if case.case_number %}
+            <div class="row mb-2">
+              <div class="col-sm-4 fw-bold">{% trans "Номер дела:" %}</div>
+              <div class="col-sm-8">{{ case.case_number }}</div>
+            </div>
+          {% endif %}
+
+          {% if case.judge_name %}
+            <div class="row mb-2">
+              <div class="col-sm-4 fw-bold">{% trans "Судья:" %}</div>
+              <div class="col-sm-8">{{ case.judge_name }}</div>
+            </div>
+          {% endif %}
         {% endif %}
-                        {% comment %} {{ case.responsible_lawyer.get_full_name|default:case.responsible_lawyer.username }} {% endcomment %}
-                    </div>
-                </div>
-                {% if case.manager %}
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Менеджер:</div>
-                    <div class="col-sm-8">{{ case.manager.get_full_name|default:case.manager.username }}</div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Описание дела -->
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Описание дела</h5>
-            </div>
-            <div class="card-body">
-                {% if case.description %}
-                    {{ case.description|linebreaks }}
-                {% else %}
-                    <p class="text-muted">Описание отсутствует</p>
-                {% endif %}
-            </div>
+    {% if case.finance %}
+      <div class="card mt-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{% trans "Финансы по делу" %}</h5>
+          <a href="{% url 'finance:case_finance_update' case.id %}" class="btn btn-sm btn-outline-primary">
+            {% trans "Редактировать" %}
+          </a>
         </div>
-        
-        <!-- Даты -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Даты</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Создано:</div>
-                    <div class="col-sm-8">{{ case.created_at|date:"d.m.Y H:i" }}</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 fw-bold">Обновлено:</div>
-                    <div class="col-sm-8">{{ case.updated_at|date:"d.m.Y H:i" }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
- <!-- Участники дела -->
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Участники дела</h5>
-                <a href="{% url 'cases:case_add_participant' case.pk %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-person-plus"></i> Добавить
-                </a>
-            </div>
-            <div class="card-body">
-                {% if case.participants.all %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Доверитель</th>
-                                    <th>Роль</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for participant in case.participants.all %}
-                                    <tr>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4">{% trans "Сумма договора (100%)" %}</dt>
+            <dd class="col-sm-8">{{ case.finance.contract_amount }} {% trans "сом" %}</dd>
 
-                                        <td>
-                                            <a href="{% url 'clients:trustor_detail' participant.trustor.pk %}">
-                                                {{ participant.trustor.get_full_name }}
-                                            </a>
-                                            {% if participant.main_participant %}
-                                                <span class="badge bg-primary ms-1">Основной</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ participant.role.role_name }}</td>
-                                        <td>
-                                            <span class="badge bg-secondary">
-                                                {{ participant.trustor.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="{% url 'cases:case_update_participant' participant.pk %}" 
-                                                   class="btn btn-outline-secondary" title="Редактировать">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                                <a href="{% url 'cases:case_delete_participant' participant.pk %}" 
-                                                   class="btn btn-outline-danger" title="Удалить">
-                                                    <i class="bi bi-trash"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Статистика по ролям -->
-                    <div class="mt-3">
-                        <h6>Распределение по ролям:</h6>
-                        {% for role_stat in case.participants_by_role %}
-                            <span class="badge bg-light text-dark me-1">
-                                {{ role_stat.role__role_name }}: {{ role_stat.count }}
-                            </span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center text-muted py-3">
-                        <i class="bi bi-people display-4"></i>
-                        <p class="mt-2">Участники дела не добавлены</p>
-                        <a href="{% url 'cases:case_add_participant' case.pk %}" class="btn btn-primary btn-sm">
-                            Добавить первого участника
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
+            <dt class="col-sm-4">{% trans "Оплачено по договору" %}</dt>
+            <dd class="col-sm-8">{{ case.finance.paid_amount }} {% trans "сом" %}</dd>
+
+            <dt class="col-sm-4">{% trans "30% компании" %}</dt>
+            <dd class="col-sm-8">{{ case.finance.company_share_amount }} {% trans "сом" %}</dd>
+
+            <dt class="col-sm-4">{% trans "70% юристов" %}</dt>
+            <dd class="col-sm-8">{{ case.finance.lawyers_pool_amount }} {% trans "сом" %}</dd>
+          </dl>
         </div>
-    </div>
-    <div class="card">
-    <div class="card-header">
-        <h5 class="card-title mb-0">Документы по этапам</h5>
-    </div>
-    <div class="card-body">
-        <div class="accordion" id="stagesAccordion">
-            {% for stage in case.category.stages.all %}
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading{{ stage.id }}">
-                        <button class="accordion-button {% if forloop.first %}collapsed{% endif %}" type="button" 
-                                data-bs-toggle="collapse" data-bs-target="#collapse{{ stage.id }}" 
-                                aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
-                                aria-controls="collapse{{ stage.id }}">
-                            Этап {{ stage.order }}: {{ stage.name }}
-                            {% if stage == case.current_stage %}
-                                <span class="badge bg-primary ms-2">Текущий</span>
-                            {% endif %}
-                        </button>
-                    </h2>
-                    <div id="collapse{{ stage.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
-                         aria-labelledby="heading{{ stage.id }}" data-bs-parent="#stagesAccordion">
-                        <div class="accordion-body">
-                            <p class="text-muted">{{ stage.description|default:"Описание этапа отсутствует" }}</p>
-                            
-                            <h6 class="mt-3 mb-3">Документы этапа:</h6>
-                            
-                            {% with documents=documents_by_stage|get_item:stage %}
-                            {% if documents %}
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Поле</th>
-                                                <th>Тип</th
-                                                <th>Значение</th>
-                                                <th>Загружено</th>
-                                                <th>Действия</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for document in documents %}
-                                                <tr>
-                                                    <td>{{ document.field.name }}</td>
-                                                    <td>
-                                                        <span class="badge bg-secondary">{{ document.field.get_field_type_display }}</span>
-                                                    </td>
-                                                    <td>
-                                                        {% if document.field.field_type == 'file' and document.file_value %}
-                                                            <a href="{{ document.file_value.url }}" target="_blank">
-                                                                {{ document.file_value.name|slice:"20:" }}{% if document.file_value.name|length > 20 %}...{% endif %}
-                                                            </a>
-                                                        {% elif document.field.field_type == 'text' %}
-                                                            {{ document.text_value|truncatewords:5 }}
-                                                        {% elif document.field.field_type == 'date' %}
-                                                            {{ document.date_value|date:"d.m.Y" }}
-                                                        {% else %}
-                                                            <span class="text-muted">Не заполнено</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>
-                                                        {{ document.created_at|date:"d.m.Y" }}<br>
-                                                        <small class="text-muted">{{ document.created_by.get_full_name|default:document.created_by.username }}</small>
-                                                    </td>
-                                                    <td>
-  <div class="btn-group btn-group-sm">
-    {% if document.field.field_type == 'file' and document.file_value %}
-      <a href="{{ document.file_value.url }}" target="_blank" class="btn btn-outline-primary" title="Скачать">
-        <i class="bi bi-download"></i>
-      </a>
+      </div>
     {% endif %}
 
-    {# Показываем ведро только авторам и управленцам #}
-    {% if user == document.created_by or user.role in "director deputy_director manager" %}
-      <a href="{% url 'cases:document_delete' case.pk stage.id document.field.id %}"
-         class="btn btn-outline-danger"
-         title="Удалить (будет подтверждение)">
-        <i class="bi bi-trash"></i>
-      </a>
+    <!-- Ответственные лица -->
+    <div class="card mb-4 mt-3">
+      <div class="card-header">
+        <h5 class="card-title mb-0">{% trans "Ответственные лица" %}</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Юрист/Адвокат:" %}</div>
+          <div class="col-sm-8">
+            {% if case.responsible_lawyer.all %}
+              <ul class="list-group">
+                {% for lawyer in case.responsible_lawyer.all %}
+                  <li class="list-group-item">
+                    {{ lawyer.get_full_name|default:lawyer.username }}
+                    ({{ lawyer.get_role_display }})
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">{% trans "Ответственные не назначены" %}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if case.manager %}
+          <div class="row mb-3">
+            <div class="col-sm-4 fw-bold">{% trans "Менеджер:" %}</div>
+            <div class="col-sm-8">{{ case.manager.get_full_name|default:case.manager.username }}</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Описание дела -->
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">{% trans "Описание дела" %}</h5>
+      </div>
+      <div class="card-body">
+        {% if case.description %}
+          {{ case.description|linebreaks }}
+        {% else %}
+          <p class="text-muted mb-0">{% trans "Описание отсутствует" %}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Даты -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">{% trans "Даты" %}</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Создано:" %}</div>
+          <div class="col-sm-8">{{ case.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Обновлено:" %}</div>
+          <div class="col-sm-8">{{ case.updated_at|date:"d.m.Y H:i" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Участники дела -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">{% trans "Участники дела" %}</h5>
+    <a href="{% url 'cases:case_add_participant' case.pk %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-person-plus"></i> {% trans "Добавить" %}
+    </a>
+  </div>
+
+  <div class="card-body">
+    {% if case.participants.all %}
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>{% trans "Доверитель" %}</th>
+              <th>{% trans "Роль" %}</th>
+              <th>{% trans "Статус" %}</th>
+              <th>{% trans "Действия" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for participant in case.participants.all %}
+              <tr>
+                <td>
+                  <a href="{% url 'clients:trustor_detail' participant.trustor.pk %}">
+                    {{ participant.trustor.get_full_name }}
+                  </a>
+                  {% if participant.main_participant %}
+                    <span class="badge bg-primary ms-1">{% trans "Основной" %}</span>
+                  {% endif %}
+                </td>
+                <td>{{ participant.role.role_name }}</td>
+                <td>
+                  <span class="badge bg-secondary">
+                    {{ participant.trustor.get_status_display }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a href="{% url 'cases:case_update_participant' participant.pk %}"
+                       class="btn btn-outline-secondary" title="{% trans 'Редактировать' %}">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'cases:case_delete_participant' participant.pk %}"
+                       class="btn btn-outline-danger" title="{% trans 'Удалить' %}">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-3">
+        <h6>{% trans "Распределение по ролям:" %}</h6>
+        {% for role_stat in case.participants_by_role %}
+          <span class="badge bg-light text-dark me-1">
+            {{ role_stat.role__role_name }}: {{ role_stat.count }}
+          </span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center text-muted py-3">
+        <i class="bi bi-people display-4"></i>
+        <p class="mt-2 mb-2">{% trans "Участники дела не добавлены" %}</p>
+        <a href="{% url 'cases:case_add_participant' case.pk %}" class="btn btn-primary btn-sm">
+          {% trans "Добавить первого участника" %}
+        </a>
+      </div>
     {% endif %}
   </div>
-</td>
-
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle"></i> Документы для этого этапа еще не добавлены.
-                                </div>
-                            {% endif %}
-                            {% endwith %}
-                            
-                            <!-- Форма добавления документа -->
-                            {% if user.role in 'lawyer advocate director deputy_director manager' and stage == case.current_stage %}
-                                <hr>
-                                <h6 class="mt-3 mb-3">Добавить документ:</h6>
-                                
-                                <form method="post" action="{% url 'cases:case_add_document' case.pk %}" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="stage" value="{{ stage.id }}">
-                                    
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label for="id_document_field" class="form-label">Поле</label>
-                                                <select name="field" class="form-select" id="id_document_field" required>
-                                                    <option value="">Выберите поле</option>
-                                                    {% for field in stage.fields.all %}
-                                                        <option value="{{ field.id }}" data-type="{{ field.field_type }}">
-                                                            {{ field.name }} {% if field.is_required %}(обязательное){% endif %}
-                                                        </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-8">
-                                            <div class="mb-3">
-                                                <label for="id_document_value" class="form-label">Значение</label>
-                                                <div id="document-value-container">
-                                                    <!-- Контейнер для динамической загрузки поля ввода -->
-                                                    <p class="text-muted">Выберите поле для отображения формы ввода</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <button type="submit" class="btn btn-primary">Добавить документ</button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
 </div>
 
 <!-- Документы по этапам -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">{% trans "Документы по этапам" %}</h5>
+  </div>
 
+  <div class="card-body">
+    <div class="accordion" id="stagesAccordion">
+      {% for stage in case.category.stages.all %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="heading{{ stage.id }}">
+            <button class="accordion-button {% if forloop.first %}collapsed{% endif %}" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapse{{ stage.id }}"
+                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                    aria-controls="collapse{{ stage.id }}">
+              {% trans "Этап" %} {{ stage.order }}: {{ stage.name }}
+              {% if stage == case.current_stage %}
+                <span class="badge bg-primary ms-2">{% trans "Текущий" %}</span>
+              {% endif %}
+            </button>
+          </h2>
+
+          <div id="collapse{{ stage.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+               aria-labelledby="heading{{ stage.id }}" data-bs-parent="#stagesAccordion">
+            <div class="accordion-body">
+              <p class="text-muted">{{ stage.description|default:_("Описание этапа отсутствует") }}</p>
+
+              <h6 class="mt-3 mb-3">{% trans "Документы этапа:" %}</h6>
+
+              {% with documents=documents_by_stage|get_item:stage %}
+                {% if documents %}
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>{% trans "Поле" %}</th>
+                          <th>{% trans "Тип" %}</th>
+                          <th>{% trans "Значение" %}</th>
+                          <th>{% trans "Загружено" %}</th>
+                          <th>{% trans "Действия" %}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for document in documents %}
+                          <tr>
+                            <td>{{ document.field.name }}</td>
+                            <td>
+                              <span class="badge bg-secondary">{{ document.field.get_field_type_display }}</span>
+                            </td>
+                            <td>
+                              {% if document.field.field_type == 'file' and document.file_value %}
+                                <a href="{{ document.file_value.url }}" target="_blank">
+                                  {{ document.file_value.name|slice:"20:" }}{% if document.file_value.name|length > 20 %}...{% endif %}
+                                </a>
+                              {% elif document.field.field_type == 'text' %}
+                                {{ document.text_value|truncatewords:5 }}
+                              {% elif document.field.field_type == 'date' %}
+                                {{ document.date_value|date:"d.m.Y" }}
+                              {% else %}
+                                <span class="text-muted">{% trans "Не заполнено" %}</span>
+                              {% endif %}
+                            </td>
+                            <td>
+                              {{ document.created_at|date:"d.m.Y" }}<br>
+                              <small class="text-muted">
+                                {{ document.created_by.get_full_name|default:document.created_by.username }}
+                              </small>
+                            </td>
+                            <td>
+                              <div class="btn-group btn-group-sm">
+                                {% if document.field.field_type == 'file' and document.file_value %}
+                                  <a href="{{ document.file_value.url }}" target="_blank"
+                                     class="btn btn-outline-primary" title="{% trans 'Скачать' %}">
+                                    <i class="bi bi-download"></i>
+                                  </a>
+                                {% endif %}
+
+                                {% if user == document.created_by or user.role == 'director' or user.role == 'deputy_director' or user.role == 'manager' %}
+                                  <a href="{% url 'cases:document_delete' case.pk stage.id document.field.id %}"
+                                     class="btn btn-outline-danger"
+                                     title="{% trans 'Удалить (будет подтверждение)' %}">
+                                    <i class="bi bi-trash"></i>
+                                  </a>
+                                {% endif %}
+                              </div>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> {% trans "Документы для этого этапа еще не добавлены." %}
+                  </div>
+                {% endif %}
+              {% endwith %}
+
+              <!-- Форма добавления документа -->
+              {% if stage == case.current_stage and (user.role == 'lawyer' or user.role == 'advocate' or user.role == 'director' or user.role == 'deputy_director' or user.role == 'manager') %}
+                <hr>
+                <h6 class="mt-3 mb-3">{% trans "Добавить документ:" %}</h6>
+
+                <form method="post" action="{% url 'cases:case_add_document' case.pk %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <input type="hidden" name="stage" value="{{ stage.id }}">
+
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="id_document_field" class="form-label">{% trans "Поле" %}</label>
+                        <select name="field" class="form-select" id="id_document_field" required>
+                          <option value="">{% trans "Выберите поле" %}</option>
+                          {% for field in stage.fields.all %}
+                            <option value="{{ field.id }}" data-type="{{ field.field_type }}">
+                              {{ field.name }} {% if field.is_required %}({% trans "обязательное" %}){% endif %}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-md-8">
+                      <div class="mb-3">
+                        <label class="form-label">{% trans "Значение" %}</label>
+                        <div id="document-value-container">
+                          <p class="text-muted">{% trans "Выберите поле для отображения формы ввода" %}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary">{% trans "Добавить документ" %}</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Динамическая загрузка полей ввода для документов
 document.addEventListener('DOMContentLoaded', function() {
-    const fieldSelect = document.getElementById('id_document_field');
-    const valueContainer = document.getElementById('document-value-container');
-    
-    if (fieldSelect && valueContainer) {
-        fieldSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const fieldType = selectedOption.getAttribute('data-type');
-            
-            if (!fieldType) {
-                valueContainer.innerHTML = '<p class="text-muted">Выберите поле для отображения формы ввода</p>';
-                return;
-            }
-            
-            // Создаем соответствующее поле ввода в зависимости от типа поля
-            if (fieldType === 'text') {
-                valueContainer.innerHTML = `
-                    <textarea name="text_value" class="form-control" rows="3" 
-                              placeholder="Введите текстовое значение" required></textarea>
-                `;
-            } else if (fieldType === 'file') {
-                valueContainer.innerHTML = `
-                    <input type="file" name="file_value" class="form-control" required>
-                `;
-            } else if (fieldType === 'date') {
-                valueContainer.innerHTML = `
-                    <input type="date" name="date_value" class="form-control" required>
-                `;
-            } else if (fieldType === 'select') {
-                // Для select-полей нужно получить варианты выбора
-                const fieldId = this.value;
-                
-                // Загружаем варианты выбора через AJAX
-                fetch(`/cases/ajax/field-options/${fieldId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        let optionsHtml = '';
-                        
-                        data.options.forEach(option => {
-                            optionsHtml += `<option value="${option}">${option}</option>`;
-                        });
-                        
-                        valueContainer.innerHTML = `
-                            <select name="text_value" class="form-select" required>
-                                <option value="">Выберите значение</option>
-                                ${optionsHtml}
-                            </select>
-                        `;
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        valueContainer.innerHTML = '<p class="text-danger">Ошибка загрузки опций</p>';
-                    });
-            }
-        });
-    }
+  const fieldSelect = document.getElementById('id_document_field');
+  const valueContainer = document.getElementById('document-value-container');
+
+  if (fieldSelect && valueContainer) {
+    fieldSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const fieldType = selectedOption.getAttribute('data-type');
+
+      if (!fieldType) {
+        valueContainer.innerHTML = '<p class="text-muted">{% trans "Выберите поле для отображения формы ввода" %}</p>';
+        return;
+      }
+
+      if (fieldType === 'text') {
+        valueContainer.innerHTML = `
+          <textarea name="text_value" class="form-control" rows="3"
+            placeholder="{% trans "Введите текстовое значение" %}" required></textarea>
+        `;
+      } else if (fieldType === 'file') {
+        valueContainer.innerHTML = `
+          <input type="file" name="file_value" class="form-control" required>
+        `;
+      } else if (fieldType === 'date') {
+        valueContainer.innerHTML = `
+          <input type="date" name="date_value" class="form-control" required>
+        `;
+      } else if (fieldType === 'select') {
+        const fieldId = this.value;
+
+        fetch(`/cases/ajax/field-options/${fieldId}/`)
+          .then(response => response.json())
+          .then(data => {
+            let optionsHtml = '';
+            data.options.forEach(option => {
+              optionsHtml += `<option value="${option}">${option}</option>`;
+            });
+
+            valueContainer.innerHTML = `
+              <select name="text_value" class="form-select" required>
+                <option value="">{% trans "Выберите значение" %}</option>
+                ${optionsHtml}
+              </select>
+            `;
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            valueContainer.innerHTML = '<p class="text-danger">{% trans "Ошибка загрузки опций" %}</p>';
+          });
+      }
+    });
+  }
 });
 </script>
 {% endblock %}

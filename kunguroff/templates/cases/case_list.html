@@ -1,454 +1,445 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Дела - Kunguroff & Partners{% endblock %}
-
-{% block page_title %}Дела{% endblock %}
+{% block title %}{% trans "Дела" %} - Kunguroff & Partners{% endblock %}
+{% block page_title %}{% trans "Дела" %}{% endblock %}
 
 {% block page_actions %}
-    <div class="btn-group">
-        <a href="{% url 'cases:case_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Добавить дело
-        </a>
-        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
-            <i class="bi bi-funnel"></i> Фильтры
-        </button>
-    </div>
+  <div class="btn-group">
+    <a href="{% url 'cases:case_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> {% trans "Добавить дело" %}
+    </a>
+    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+      <i class="bi bi-funnel"></i> {% trans "Фильтры" %}
+    </button>
+  </div>
 {% endblock %}
 
 {% block content %}
 <!-- Фильтры -->
 <div class="card mb-4 collapse" id="filtersCollapse">
-    <div class="card-body">
-        <form method="get" id="filterForm">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="filterCategory" class="form-label">Категория</label>
-                        <select name="category" id="filterCategory" class="form-select">
-                            <option value="">Все категории</option>
-                            {% for category in categories %}
-                                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>
-                                    {{ category.get_name_display }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="filterStatus" class="form-label">Статус</label>
-                        <select name="status" id="filterStatus" class="form-select">
-                            <option value="">Все статусы</option>
-                            {% for status_key, status_value in status_choices %}
-                                <option value="{{ status_key }}" {% if request.GET.status == status_key %}selected{% endif %}>
-                                    {{ status_value }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="filterLawyer" class="form-label">Ответственный</label>
-                        <select name="responsible_lawyer" id="filterLawyer" class="form-select">
-                            <option value="">Все юристы</option>
-                            {% for lawyer in lawyers %}
-                                <option value="{{ lawyer.id }}" {% if request.GET.responsible_lawyer == lawyer.id|stringformat:"i" %}selected{% endif %}>
-                                    {{ lawyer.get_full_name|default:lawyer.username }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-3">
-                        <label for="filterClient" class="form-label">Клиент</label>
-                        <input type="text" name="client" id="filterClient" class="form-control" 
-                               placeholder="ФИО клиента" value="{{ request.GET.client }}">
-                    </div>
-                </div>
+  <div class="card-body">
+    <form method="get" id="filterForm">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label for="filterCategory" class="form-label">{% trans "Категория" %}</label>
+            <select name="category" id="filterCategory" class="form-select">
+              <option value="">{% trans "Все категории" %}</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>
+                  {{ category.get_name_display }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label for="filterStatus" class="form-label">{% trans "Статус" %}</label>
+            <select name="status" id="filterStatus" class="form-select">
+              <option value="">{% trans "Все статусы" %}</option>
+              {% for status_key, status_value in status_choices %}
+                <option value="{{ status_key }}" {% if request.GET.status == status_key %}selected{% endif %}>
+                  {{ status_value }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label for="filterLawyer" class="form-label">{% trans "Ответственный" %}</label>
+            <select name="responsible_lawyer" id="filterLawyer" class="form-select">
+              <option value="">{% trans "Все юристы" %}</option>
+              {% for lawyer in lawyers %}
+                <option value="{{ lawyer.id }}" {% if request.GET.responsible_lawyer == lawyer.id|stringformat:"i" %}selected{% endif %}>
+                  {{ lawyer.get_full_name|default:lawyer.username }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label for="filterClient" class="form-label">{% trans "Клиент" %}</label>
+            <input type="text" name="client" id="filterClient" class="form-control"
+                   placeholder="{% trans 'ФИО клиента' %}" value="{{ request.GET.client }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="filterProgressMin" class="form-label">{% trans "Прогресс от" %}</label>
+            <div class="input-group">
+              <input type="range" name="progress_min" id="filterProgressMin" class="form-range"
+                     min="0" max="100" value="{{ request.GET.progress_min|default:0 }}"
+                     oninput="progressMinValue.value = this.value">
+              <span class="input-group-text" id="progressMinValue">{{ request.GET.progress_min|default:0 }}%</span>
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="filterProgressMin" class="form-label">Прогресс от</label>
-                        <div class="input-group">
-                            <input type="range" name="progress_min" id="filterProgressMin" class="form-range" 
-                                   min="0" max="100" value="{{ request.GET.progress_min|default:0 }}" 
-                                   oninput="progressMinValue.value = this.value">
-                            <span class="input-group-text" id="progressMinValue">{{ request.GET.progress_min|default:0 }}%</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="filterProgressMax" class="form-label">Прогресс до</label>
-                        <div class="input-group">
-                            <input type="range" name="progress_max" id="filterProgressMax" class="form-range" 
-                                   min="0" max="100" value="{{ request.GET.progress_max|default:100 }}" 
-                                   oninput="progressMaxValue.value = this.value">
-                            <span class="input-group-text" id="progressMaxValue">{{ request.GET.progress_max|default:100 }}%</span>
-                        </div>
-                    </div>
-                </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="filterProgressMax" class="form-label">{% trans "Прогресс до" %}</label>
+            <div class="input-group">
+              <input type="range" name="progress_max" id="filterProgressMax" class="form-range"
+                     min="0" max="100" value="{{ request.GET.progress_max|default:100 }}"
+                     oninput="progressMaxValue.value = this.value">
+              <span class="input-group-text" id="progressMaxValue">{{ request.GET.progress_max|default:100 }}%</span>
             </div>
-            <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-filter"></i> Применить фильтры
-                </button>
-                <a href="{% url 'cases:case_list' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle"></i> Сбросить
-                </a>
-            </div>
-        </form>
-    </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-filter"></i> {% trans "Применить фильтры" %}
+        </button>
+        <a href="{% url 'cases:case_list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle"></i> {% trans "Сбросить" %}
+        </a>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Статистика -->
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h5 class="card-title">{{ cases_count }}</h5>
-                <p class="card-text">Всего дел</p>
-            </div>
-        </div>
+  <div class="col-md-3">
+    <div class="card bg-primary text-white">
+      <div class="card-body">
+        <h5 class="card-title">{{ cases_count }}</h5>
+        <p class="card-text">{% trans "Всего дел" %}</p>
+      </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">{{ completed_cases }}</h5>
-                <p class="card-text">Завершено</p>
-            </div>
-        </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-success text-white">
+      <div class="card-body">
+        <h5 class="card-title">{{ completed_cases }}</h5>
+        <p class="card-text">{% trans "Завершено" %}</p>
+      </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-dark">
-            <div class="card-body">
-                <h5 class="card-title">{{ in_progress_cases }}</h5>
-                <p class="card-text">В работе</p>
-            </div>
-        </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-warning text-dark">
+      <div class="card-body">
+        <h5 class="card-title">{{ in_progress_cases }}</h5>
+        <p class="card-text">{% trans "В работе" %}</p>
+      </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-danger text-white">
-            <div class="card-body">
-                <h5 class="card-title">{{ overdue_cases }}</h5>
-                <p class="card-text">Просрочено</p>
-            </div>
-        </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-danger text-white">
+      <div class="card-body">
+        <h5 class="card-title">{{ overdue_cases }}</h5>
+        <p class="card-text">{% trans "Просрочено" %}</p>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Таблица дел -->
 <div class="card">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="btn-group">
-                <button type="button" class="btn btn-outline-secondary" id="exportBtn">
-                    <i class="bi bi-download"></i> Экспорт
-                </button>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-list-columns"></i> Колонки
-                    </button>
-                    <div class="dropdown-menu" id="columnToggle">
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="0" checked>
-                            <label class="form-check-label">Название</label>
-                        </div>
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="1" checked>
-                            <label class="form-check-label">Категория</label>
-                        </div>
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="2" checked>
-                            <label class="form-check-label">Клиент</label>
-                        </div>
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="3" checked>
-                            <label class="form-check-label">Статус</label>
-                        </div>
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="4" checked>
-                            <label class="form-check-label">Прогресс</label>
-                        </div>
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="5" checked>
-                            <label class="form-check-label">Ответственный</label>
-                        </div>
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="6" checked>
-                            <label class="form-check-label">Дата создания</label>
-                        </div>
-                        <div class="form-check dropdown-item">
-                            <input class="form-check-input column-toggle" type="checkbox" data-column="7" checked>
-                            <label class="form-check-label">Действия</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="d-flex">
-                <div class="input-group me-2" style="width: 250px;">
-                    <input type="text" class="form-control" placeholder="Поиск..." id="searchInput">
-                    <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-sort-down"></i> Сортировка
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item sort-option" href="#" data-sort="created_at">По дате создания (новые)</a>
-                        <a class="dropdown-item sort-option" href="#" data-sort="-created_at">По дате создания (старые)</a>
-                        <a class="dropdown-item sort-option" href="#" data-sort="title">По названию (А-Я)</a>
-                        <a class="dropdown-item sort-option" href="#" data-sort="-title">По названию (Я-А)</a>
-                        <a class="dropdown-item sort-option" href="#" data-sort="progress">По прогрессу (возр.)</a>
-                        <a class="dropdown-item sort-option" href="#" data-sort="-progress">По прогрессу (убыв.)</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table table-hover" id="casesTable">
-                <thead>
-                    <tr>
-                        <th>Название дела</th>
-                        <th>Категория</th>
-                        <th>Клиент</th>
-                        <th>Статус</th>
-                        <th>Прогресс</th>
-                        <th>Ответственный</th>
-                        <th>Дата создания</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for case in cases %}
-                        <tr>
-                            <td>
-                                <a href="{% url 'cases:case_detail' case.pk %}" class="fw-bold">{{ case.title }}</a>
-                                {% if case.description %}
-                                    <br><small class="text-muted">{{ case.description|truncatewords:5 }}</small>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge bg-light text-dark">{{ case.category.get_name_display }}</span>
-                            </td>
-                            <td>
-                                <a href="">
-                                    {{ case.trustor }}
-                                </a>
-                            </td>
-                            <td>
-                                <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
-                                    {{ case.get_status_display }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress flex-grow-1 me-2" style="height: 10px;">
-                                        <div class="progress-bar 
-                                            {% if case.progress == 100 %}bg-success
-                                            {% elif case.progress > 75 %}bg-primary
-                                            {% elif case.progress > 50 %}bg-info
-                                            {% elif case.progress > 25 %}bg-warning
-                                            {% else %}bg-danger{% endif %}" 
-                                            role="progressbar" style="width: {{ case.progress }}%;" 
-                                            aria-valuenow="{{ case.progress }}" aria-valuemin="0" aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                    <small>{{ case.progress }}%</small>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm me-2 bg-primary rounded-circle d-flex align-items-center justify-content-center text-white">
-                                         {% if case.responsible_lawyer.all %}
-            <td class="list-group">
-                {% for lawyer in case.responsible_lawyer.all %}
-                    <li class="list-group-item">
-                        {{ lawyer.get_full_name|default:lawyer.username }} 
-                        ({{ lawyer.get_role_display }})
-                    </li>
-                {% endfor %}
-                </td>
-        {% else %}
-            <p class="text-muted">Ответственные не назначены</p>
-        {% endif %}
-                                    </div>
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary" id="exportBtn">
+          <i class="bi bi-download"></i> {% trans "Экспорт" %}
+        </button>
 
-                                    {% comment %} {{ case.responsible_lawyer.get_full_name|default:case.responsible_lawyer.username }} {% endcomment %}
-                                </div>
-                            </td>
-                            <td>{{ case.created_at|date:"d.m.Y" }}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-outline-primary" title="Просмотр">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{% url 'cases:case_update' case.pk %}" class="btn btn-outline-secondary" title="Редактировать">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    {% if user.role in 'director deputy_director' %}
-                                        <a href="{% url 'cases:case_delete' case.pk %}" class="btn btn-outline-danger" title="Удалить">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="8" class="text-center py-4">
-                                <i class="bi bi-inbox display-4 text-muted"></i>
-                                <p class="mt-3">Дела не найдены</p>
-                                <a href="{% url 'cases:case_create' %}" class="btn btn-primary mt-2">Добавить первое дело</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="bi bi-list-columns"></i> {% trans "Колонки" %}
+          </button>
+          <div class="dropdown-menu" id="columnToggle">
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="0" checked>
+              <label class="form-check-label">{% trans "Название" %}</label>
+            </div>
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="1" checked>
+              <label class="form-check-label">{% trans "Категория" %}</label>
+            </div>
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="2" checked>
+              <label class="form-check-label">{% trans "Клиент" %}</label>
+            </div>
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="3" checked>
+              <label class="form-check-label">{% trans "Статус" %}</label>
+            </div>
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="4" checked>
+              <label class="form-check-label">{% trans "Прогресс" %}</label>
+            </div>
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="5" checked>
+              <label class="form-check-label">{% trans "Ответственный" %}</label>
+            </div>
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="6" checked>
+              <label class="form-check-label">{% trans "Дата создания" %}</label>
+            </div>
+            <div class="form-check dropdown-item">
+              <input class="form-check-input column-toggle" type="checkbox" data-column="7" checked>
+              <label class="form-check-label">{% trans "Действия" %}</label>
+            </div>
+          </div>
         </div>
-        
-        <!-- Пагинация -->
-        {% if is_paginated %}
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                <i class="bi bi-chevron-left"></i>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link"><i class="bi bi-chevron-left"></i></span>
-                        </li>
-                    {% endif %}
-                    
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if page_obj.number == num %}
-                            <li class="page-item active">
-                                <span class="page-link">{{ num }}</span>
-                            </li>
-                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                    
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link"><i class="bi bi-chevron-right"></i></span>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
-        {% endif %}
+      </div>
+
+      <div class="d-flex">
+        <div class="input-group me-2" style="width: 250px;">
+          <input type="text" class="form-control" placeholder="{% trans 'Поиск...' %}" id="searchInput">
+          <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="bi bi-sort-down"></i> {% trans "Сортировка" %}
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item sort-option" href="#" data-sort="created_at">{% trans "По дате создания (новые)" %}</a>
+            <a class="dropdown-item sort-option" href="#" data-sort="-created_at">{% trans "По дате создания (старые)" %}</a>
+            <a class="dropdown-item sort-option" href="#" data-sort="title">{% trans "По названию (А-Я)" %}</a>
+            <a class="dropdown-item sort-option" href="#" data-sort="-title">{% trans "По названию (Я-А)" %}</a>
+            <a class="dropdown-item sort-option" href="#" data-sort="progress">{% trans "По прогрессу (возр.)" %}</a>
+            <a class="dropdown-item sort-option" href="#" data-sort="-progress">{% trans "По прогрессу (убыв.)" %}</a>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover" id="casesTable">
+        <thead>
+          <tr>
+            <th>{% trans "Название дела" %}</th>
+            <th>{% trans "Категория" %}</th>
+            <th>{% trans "Клиент" %}</th>
+            <th>{% trans "Статус" %}</th>
+            <th>{% trans "Прогресс" %}</th>
+            <th>{% trans "Ответственный" %}</th>
+            <th>{% trans "Дата создания" %}</th>
+            <th>{% trans "Действия" %}</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for case in cases %}
+            <tr>
+              <td>
+                <a href="{% url 'cases:case_detail' case.pk %}" class="fw-bold">{{ case.title }}</a>
+                {% if case.description %}
+                  <br><small class="text-muted">{{ case.description|truncatewords:5 }}</small>
+                {% endif %}
+              </td>
+
+              <td>
+                <span class="badge bg-light text-dark">{{ case.category.get_name_display }}</span>
+              </td>
+
+              <td>
+                <a href="">{{ case.trustor }}</a>
+              </td>
+
+              <td>
+                <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
+                  {{ case.get_status_display }}
+                </span>
+              </td>
+
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                    <div class="progress-bar
+                      {% if case.progress == 100 %}bg-success
+                      {% elif case.progress > 75 %}bg-primary
+                      {% elif case.progress > 50 %}bg-info
+                      {% elif case.progress > 25 %}bg-warning
+                      {% else %}bg-danger{% endif %}"
+                      role="progressbar"
+                      style="width: {{ case.progress }}%;"
+                      aria-valuenow="{{ case.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>{{ case.progress }}%</small>
+                </div>
+              </td>
+
+              <td>
+                {% if case.responsible_lawyer.all %}
+                  <div class="d-flex flex-wrap gap-1">
+                    {% for lawyer in case.responsible_lawyer.all %}
+                      <span class="badge bg-light text-dark">
+                        {{ lawyer.get_full_name|default:lawyer.username }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <span class="text-muted small">{% trans "Ответственные не назначены" %}</span>
+                {% endif %}
+              </td>
+
+              <td>{{ case.created_at|date:"d.m.Y" }}</td>
+
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-outline-primary" title="{% trans 'Просмотр' %}">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                  <a href="{% url 'cases:case_update' case.pk %}" class="btn btn-outline-secondary" title="{% trans 'Редактировать' %}">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  {% if user.role in 'director deputy_director' %}
+                    <a href="{% url 'cases:case_delete' case.pk %}" class="btn btn-outline-danger" title="{% trans 'Удалить' %}">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-4">
+                <i class="bi bi-inbox display-4 text-muted"></i>
+                <p class="mt-3 mb-2">{% trans "Дела не найдены" %}</p>
+                <a href="{% url 'cases:case_create' %}" class="btn btn-primary mt-2">{% trans "Добавить первое дело" %}</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Пагинация -->
+    {% if is_paginated %}
+      <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+            </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
 .avatar-sm {
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
-    font-weight: bold;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  font-weight: bold;
 }
-.progress {
-    background-color: #e9ecef;
-}
+.progress { background-color: #e9ecef; }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Поиск по таблице
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    const table = document.getElementById('casesTable');
-    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-    
-    function performSearch() {
-        const searchText = searchInput.value.toLowerCase();
-        
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            let found = false;
-            
-            // Ищем во всех ячейках, кроме последней (действия)
-            for (let j = 0; j < row.cells.length - 1; j++) {
-                const cellText = row.cells[j].textContent.toLowerCase();
-                if (cellText.includes(searchText)) {
-                    found = true;
-                    break;
-                }
-            }
-            
-            row.style.display = found ? '' : 'none';
-        }
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const table = document.getElementById('casesTable');
+  const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+  function performSearch() {
+    const searchText = (searchInput.value || '').toLowerCase();
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      let found = false;
+
+      // ищем во всех ячейках, кроме последней (действия)
+      for (let j = 0; j < row.cells.length - 1; j++) {
+        const cellText = (row.cells[j].textContent || '').toLowerCase();
+        if (cellText.includes(searchText)) { found = true; break; }
+      }
+      row.style.display = found ? '' : 'none';
     }
-    
-    searchInput.addEventListener('keyup', performSearch);
-    searchBtn.addEventListener('click', performSearch);
-    
-    // Переключение видимости колонок
-    const columnToggles = document.querySelectorAll('.column-toggle');
-    
-    columnToggles.forEach(toggle => {
-        toggle.addEventListener('change', function() {
-            const columnIndex = this.getAttribute('data-column');
-            const columns = table.querySelectorAll(`tr > *:nth-child(${parseInt(columnIndex) + 1})`);
-            
-            columns.forEach(column => {
-                column.style.display = this.checked ? '' : 'none';
-            });
-        });
+  }
+
+  if (searchInput) searchInput.addEventListener('keyup', performSearch);
+  if (searchBtn) searchBtn.addEventListener('click', performSearch);
+
+  // Колонки
+  const columnToggles = document.querySelectorAll('.column-toggle');
+  columnToggles.forEach(toggle => {
+    toggle.addEventListener('change', function() {
+      const columnIndex = this.getAttribute('data-column');
+      const columns = table.querySelectorAll(`tr > *:nth-child(${parseInt(columnIndex) + 1})`);
+      columns.forEach(column => { column.style.display = this.checked ? '' : 'none'; });
     });
-    
-    // Сортировка
-    const sortOptions = document.querySelectorAll('.sort-option');
-    
-    sortOptions.forEach(option => {
-        option.addEventListener('click', function(e) {
-            e.preventDefault();
-            const sortField = this.getAttribute('data-sort');
-            
-            // Получаем текущие параметры URL
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('sort', sortField);
-            
-            // Перенаправляем с новыми параметрами
-            window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
-        });
+  });
+
+  // Сортировка (через URL)
+  document.querySelectorAll('.sort-option').forEach(option => {
+    option.addEventListener('click', function(e) {
+      e.preventDefault();
+      const sortField = this.getAttribute('data-sort');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('sort', sortField);
+
+      window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
     });
-    
-    // Экспорт данных
-    const exportBtn = document.getElementById('exportBtn');
-    
+  });
+
+  // Экспорт CSV
+  const exportBtn = document.getElementById('exportBtn');
+  if (exportBtn) {
     exportBtn.addEventListener('click', function() {
-        // Получаем текущие параметры фильтрации
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('export', 'csv');
-        
-        // Перенаправляем на URL экспорта
-        window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('export', 'csv');
+      window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
     });
+  }
 });
 </script>
 {% endblock %}

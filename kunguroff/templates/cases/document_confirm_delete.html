@@ -1,15 +1,18 @@
 {% extends "base.html" %}
+{% load i18n %}
+
 {% block content %}
-  <h1 class="text-xl font-semibold">Удалить документ</h1>
+  <h1 class="text-xl font-semibold">{% trans "Удалить документ" %}</h1>
+
   <p class="mt-3">
-    Вы уверены, что хотите удалить поле
-    «{{ object.field.name }}» на этапе «{{ object.stage.name }}»
-    в деле «{{ case.title }}»?
+    {% blocktrans with field_name=object.field.name stage_name=object.stage.name case_title=case.title %}
+      Вы уверены, что хотите удалить поле «{{ field_name }}» на этапе «{{ stage_name }}» в деле «{{ case_title }}»?
+    {% endblocktrans %}
   </p>
 
   <form method="post" class="mt-4">
     {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Удалить</button>
-    <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-secondary">Отмена</a>
+    <button type="submit" class="btn btn-danger">{% trans "Удалить" %}</button>
+    <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-secondary">{% trans "Отмена" %}</a>
   </form>
 {% endblock %}

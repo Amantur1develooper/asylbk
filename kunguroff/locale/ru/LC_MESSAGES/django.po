@@ -1,0 +1,1964 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-22 16:37+0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
+"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: kunguroff/settings.py:63
+msgid "Русский"
+msgstr ""
+
+#: kunguroff/settings.py:64
+msgid "Кыргызча"
+msgstr ""
+
+#: kunguroff/settings.py:65
+msgid "English"
+msgstr ""
+
+#: templates/base.html:9 templates/base.html:43 templates/dashboard.html:5
+#: templates/public/about.html:13 templates/public/about.html:53
+msgid "Kunguroff & Partners"
+msgstr ""
+
+#: templates/base.html:52 templates/cases/case_list.html:5
+#: templates/cases/case_list.html:6 templates/includes/sidebar.html:9
+#: templates/public/base.html:110 templates/public/case_list.html:5
+#: templates/public/home.html:171
+msgid "Дела"
+msgstr ""
+
+#: templates/base.html:55 templates/clients/client_list.html:4
+#: templates/clients/client_list.html:6 templates/includes/sidebar.html:13
+msgid "Доверители"
+msgstr ""
+
+#: templates/base.html:58
+msgid "Транзакции"
+msgstr ""
+
+#: templates/base.html:84
+msgid "Профиль"
+msgstr ""
+
+#: templates/base.html:86
+msgid "Выйти"
+msgstr ""
+
+#: templates/calendar/calendar.html:7 templates/calendar/event_list.html:14
+#: templates/includes/sidebar.html:17
+msgid "Календарь"
+msgstr ""
+
+#: templates/calendar/calendar.html:9
+msgid "Календарь событий"
+msgstr ""
+
+#: templates/calendar/calendar.html:14 templates/calendar/event_form.html:242
+#: templates/calendar/event_list.html:11 templates/dashboard.html:208
+msgid "Создать событие"
+msgstr ""
+
+#: templates/calendar/calendar.html:17
+msgid "Вид"
+msgstr ""
+
+#: templates/calendar/calendar.html:20 templates/calendar/calendar.html:191
+#: templates/finance/dashboard.html:71
+msgid "Месяц"
+msgstr ""
+
+#: templates/calendar/calendar.html:21 templates/calendar/calendar.html:192
+#: templates/finance/dashboard.html:70
+msgid "Неделя"
+msgstr ""
+
+#: templates/calendar/calendar.html:22 templates/calendar/calendar.html:193
+msgid "День"
+msgstr ""
+
+#: templates/calendar/calendar.html:23 templates/calendar/calendar.html:194
+msgid "Список"
+msgstr ""
+
+#: templates/calendar/calendar.html:36
+msgid "Быстрое создание"
+msgstr ""
+
+#: templates/calendar/calendar.html:42
+msgid "Название события"
+msgstr ""
+
+#: templates/calendar/calendar.html:52 templates/cases/case_detail.html:205
+msgid "Добавить"
+msgstr ""
+
+#: templates/calendar/calendar.html:60 templates/calendar/event_list.html:25
+#: templates/cases/case_list.html:14 templates/finance/dashboard.html:63
+#: templates/finance/transaction_list.html:22
+msgid "Фильтры"
+msgstr ""
+
+#: templates/calendar/calendar.html:64 templates/calendar/event_list.html:30
+msgid "Тип события"
+msgstr ""
+
+#: templates/calendar/calendar.html:66 templates/calendar/event_list.html:32
+#: templates/finance/transaction_list.html:29
+msgid "Все типы"
+msgstr ""
+
+#: templates/calendar/calendar.html:73 templates/calendar/event_list.html:42
+#: templates/calendar/event_list.html:106
+msgid "Приоритет"
+msgstr ""
+
+#: templates/calendar/calendar.html:75 templates/calendar/event_list.html:44
+msgid "Все приоритеты"
+msgstr ""
+
+#: templates/calendar/calendar.html:82
+#: templates/finance/transaction_list.html:69
+#: templates/finance/transaction_list.html:126
+msgid "Дело"
+msgstr ""
+
+#: templates/calendar/calendar.html:84 templates/dashboard.html:152
+#: templates/public/home.html:172
+msgid "Все дела"
+msgstr ""
+
+#: templates/calendar/calendar.html:90 templates/calendar/event_list.html:63
+#: templates/finance/dashboard.html:99 templates/ratings/dashboard.html:66
+msgid "Применить"
+msgstr ""
+
+#: templates/calendar/calendar.html:91 templates/calendar/event_list.html:64
+#: templates/cases/case_list.html:107 templates/finance/dashboard.html:102
+#: templates/finance/transaction_list.html:79
+msgid "Сбросить"
+msgstr ""
+
+#: templates/calendar/calendar.html:98 templates/calendar/calendar.html:190
+msgid "Сегодня"
+msgstr ""
+
+#: templates/calendar/calendar.html:111
+msgid "Место не указано"
+msgstr ""
+
+#: templates/calendar/calendar.html:117
+msgid "Событий на сегодня нет"
+msgstr ""
+
+#: templates/calendar/calendar.html:138
+msgid "Создание события"
+msgstr ""
+
+#: templates/calendar/calendar.html:237
+msgid "Ошибка при создании события"
+msgstr ""
+
+#: templates/calendar/calendar.html:240
+msgid "Ошибка сети"
+msgstr ""
+
+#: templates/calendar/event_confirm_delete.html:4
+#: templates/calendar/event_confirm_delete.html:6
+msgid "Удаление события"
+msgstr ""
+
+#: templates/calendar/event_confirm_delete.html:17
+msgid "Подтверждение удаления"
+msgstr ""
+
+#: templates/calendar/event_confirm_delete.html:20
+#, python-format
+msgid ""
+"\n"
+"            Вы уверены, что хотите удалить событие <strong>\"%(title)s\"</"
+"strong>?\n"
+"          "
+msgstr ""
+
+#: templates/calendar/event_confirm_delete.html:26
+msgid ""
+"Это действие нельзя отменить. Все связанные уведомления также будут удалены."
+msgstr ""
+
+#: templates/calendar/event_confirm_delete.html:33
+#: templates/clients/client_confirm_delete.html:25
+msgid "Да, удалить"
+msgstr ""
+
+#: templates/calendar/event_confirm_delete.html:36
+#: templates/calendar/event_form.html:238 templates/cases/case_form.html:142
+#: templates/cases/document_confirm_delete.html:16
+#: templates/cases/participant_confirm_delete.html:33
+#: templates/cases/participant_form.html:94
+#: templates/clients/client_confirm_delete.html:27
+#: templates/clients/client_form.html:132
+#: templates/finance/transaction_confirm_delete.html:37
+#: templates/finance/transaction_form.html:57
+msgid "Отмена"
+msgstr ""
+
+#: templates/calendar/event_detail.html:12
+#: templates/calendar/event_list.html:141 templates/cases/case_detail.html:13
+#: templates/cases/case_detail.html:111 templates/cases/case_detail.html:241
+#: templates/cases/case_list.html:304 templates/clients/client_detail.html:11
+#: templates/clients/client_list.html:67
+#: templates/finance/transaction_list.html:141
+msgid "Редактировать"
+msgstr ""
+
+#: templates/calendar/event_detail.html:17
+#: templates/calendar/event_list.html:146 templates/cases/case_detail.html:18
+#: templates/cases/case_detail.html:245 templates/cases/case_list.html:308
+#: templates/cases/document_confirm_delete.html:15
+#: templates/cases/participant_confirm_delete.html:36
+#: templates/clients/client_detail.html:15
+#: templates/clients/client_list.html:72
+#: templates/finance/case_finance_form.html:163
+#: templates/finance/transaction_confirm_delete.html:34
+#: templates/finance/transaction_list.html:144
+msgid "Удалить"
+msgstr ""
+
+#: templates/calendar/event_detail.html:29 templates/cases/case_detail.html:30
+#: templates/clients/client_detail.html:27
+#: templates/clients/client_form.html:27
+msgid "Основная информация"
+msgstr ""
+
+#: templates/calendar/event_detail.html:33 templates/cases/case_detail.html:34
+msgid "Название:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:38
+#: templates/finance/transaction_confirm_delete.html:18
+msgid "Тип:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:45
+msgid "Время:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:50 templates/cases/case_list.html:129
+msgid "Завершено"
+msgstr ""
+
+#: templates/calendar/event_detail.html:52
+msgid "В процессе"
+msgstr ""
+
+#: templates/calendar/event_detail.html:54
+msgid "Предстоящее"
+msgstr ""
+
+#: templates/calendar/event_detail.html:61
+msgid "Место:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:67
+msgid "Приоритет:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:77
+#: templates/finance/transaction_confirm_delete.html:27
+msgid "Описание:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:87
+#: templates/calendar/event_form.html:171
+msgid "Настройки уведомлений"
+msgstr ""
+
+#: templates/calendar/event_detail.html:92
+msgid "Уведомления включены"
+msgstr ""
+
+#: templates/calendar/event_detail.html:96
+msgid "Время напоминаний:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:98
+#: templates/calendar/event_form.html:188
+msgid "За 1 день"
+msgstr ""
+
+#: templates/calendar/event_detail.html:99
+#: templates/calendar/event_form.html:194
+msgid "За 12 часов"
+msgstr ""
+
+#: templates/calendar/event_detail.html:100
+#: templates/calendar/event_form.html:200
+msgid "За 3 часа"
+msgstr ""
+
+#: templates/calendar/event_detail.html:101
+#: templates/calendar/event_form.html:209
+msgid "За 1 час"
+msgstr ""
+
+#: templates/calendar/event_detail.html:102
+#: templates/calendar/event_form.html:215
+msgid "За 30 минут"
+msgstr ""
+
+#: templates/calendar/event_detail.html:103
+#: templates/calendar/event_form.html:221
+msgid "За 10 минут"
+msgstr ""
+
+#: templates/calendar/event_detail.html:104
+#: templates/calendar/event_form.html:227
+msgid "За 1 минуту"
+msgstr ""
+
+#: templates/calendar/event_detail.html:110
+msgid "Уведомления отключены"
+msgstr ""
+
+#: templates/calendar/event_detail.html:121
+msgid "Связанные объекты"
+msgstr ""
+
+#: templates/calendar/event_detail.html:125
+msgid "Владелец:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:131
+#: templates/calendar/event_list.html:119 templates/cases/case_detail.html:8
+msgid "Дело:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:138
+msgid "Доверитель:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:145
+msgid "Участники:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:161
+msgid "Системная информация"
+msgstr ""
+
+#: templates/calendar/event_detail.html:165
+#: templates/cases/case_detail.html:188
+msgid "Создано:"
+msgstr ""
+
+#: templates/calendar/event_detail.html:169
+#: templates/cases/case_detail.html:192
+msgid "Обновлено:"
+msgstr ""
+
+#: templates/calendar/event_form.html:6
+msgid "Редактирование"
+msgstr ""
+
+#: templates/calendar/event_form.html:6
+msgid "Создание"
+msgstr ""
+
+#: templates/calendar/event_form.html:7
+msgid "события"
+msgstr ""
+
+#: templates/calendar/event_form.html:11
+msgid "Редактирование события"
+msgstr ""
+
+#: templates/calendar/event_form.html:11
+msgid "Создание нового события"
+msgstr ""
+
+#: templates/calendar/event_form.html:66
+msgid ""
+"Сначала выберите дату и время начала, окончание заполнится автоматически."
+msgstr ""
+
+#: templates/calendar/event_form.html:90
+msgid "+30 мин"
+msgstr ""
+
+#: templates/calendar/event_form.html:93
+msgid "+1 час"
+msgstr ""
+
+#: templates/calendar/event_form.html:99
+msgid "Можно быстро изменить окончание кнопками справа."
+msgstr ""
+
+#: templates/calendar/event_form.html:165
+msgid "Удерживайте Ctrl для выбора нескольких участников"
+msgstr ""
+
+#: templates/calendar/event_form.html:178
+msgid "Включить уведомления"
+msgstr ""
+
+#: templates/calendar/event_form.html:242 templates/cases/case_form.html:146
+#: templates/cases/participant_form.html:99
+#: templates/clients/client_form.html:135
+msgid "Сохранить изменения"
+msgstr ""
+
+#: templates/calendar/event_list.html:5 templates/calendar/event_list.html:6
+msgid "Список событий"
+msgstr ""
+
+#: templates/calendar/event_list.html:54 templates/finance/dashboard.html:88
+#: templates/finance/transaction_list.html:36
+msgid "Дата с"
+msgstr ""
+
+#: templates/calendar/event_list.html:59 templates/finance/dashboard.html:93
+#: templates/finance/transaction_list.html:41
+msgid "Дата по"
+msgstr ""
+
+#: templates/calendar/event_list.html:72
+msgid "Статистика"
+msgstr ""
+
+#: templates/calendar/event_list.html:76
+msgid "Сегодня:"
+msgstr ""
+
+#: templates/calendar/event_list.html:80
+msgid "Предстоящие:"
+msgstr ""
+
+#: templates/calendar/event_list.html:84
+msgid "Всего:"
+msgstr ""
+
+#: templates/calendar/event_list.html:95
+msgid "События"
+msgstr ""
+
+#: templates/calendar/event_list.html:103 templates/cases/case_list.html:169
+#: templates/dashboard.html:105
+msgid "Название"
+msgstr ""
+
+#: templates/calendar/event_list.html:104 templates/cases/case_detail.html:312
+#: templates/finance/dashboard.html:124
+#: templates/finance/transaction_list.html:95
+msgid "Тип"
+msgstr ""
+
+#: templates/calendar/event_list.html:105
+msgid "Время"
+msgstr ""
+
+#: templates/calendar/event_list.html:107
+msgid "Место"
+msgstr ""
+
+#: templates/calendar/event_list.html:108 templates/cases/case_detail.html:218
+#: templates/cases/case_detail.html:315 templates/cases/case_list.html:197
+#: templates/cases/case_list.html:238 templates/clients/client_detail.html:136
+#: templates/clients/client_list.html:27 templates/dashboard.html:108
+#: templates/finance/transaction_list.html:101
+msgid "Действия"
+msgstr ""
+
+#: templates/calendar/event_list.html:135 templates/cases/case_detail.html:58
+msgid "—"
+msgstr ""
+
+#: templates/calendar/event_list.html:138 templates/cases/case_list.html:301
+#: templates/clients/client_list.html:63
+msgid "Просмотр"
+msgstr ""
+
+#: templates/calendar/event_list.html:160 templates/finance/dashboard.html:171
+#: templates/finance/transaction_list.html:167
+msgid "Навигация по страницам"
+msgstr ""
+
+#: templates/calendar/event_list.html:166
+#: templates/calendar/event_list.html:171 templates/clients/client_list.html:98
+#: templates/clients/client_list.html:102
+#: templates/finance/transaction_list.html:172
+#: templates/finance/transaction_list.html:177
+#: templates/public/news_list.html:110 templates/public/news_list.html:113
+msgid "Назад"
+msgstr ""
+
+#: templates/calendar/event_list.html:192
+#: templates/calendar/event_list.html:197 templates/public/news_list.html:122
+#: templates/public/news_list.html:125
+msgid "Вперёд"
+msgstr ""
+
+#: templates/calendar/event_list.html:206
+msgid "События не найдены"
+msgstr ""
+
+#: templates/calendar/event_list.html:207
+msgid "Попробуйте изменить параметры фильтрации или создать новое событие"
+msgstr ""
+
+#: templates/calendar/event_list.html:209
+msgid "Создать первое событие"
+msgstr ""
+
+#: templates/cases/case_detail.html:39
+msgid "Категория:"
+msgstr ""
+
+#: templates/cases/case_detail.html:44
+msgid "Статус:"
+msgstr ""
+
+#: templates/cases/case_detail.html:53
+msgid "Текущий этап:"
+msgstr ""
+
+#: templates/cases/case_detail.html:64
+msgid "Прогресс:"
+msgstr ""
+
+#: templates/cases/case_detail.html:80
+msgid "Судебная информация:"
+msgstr ""
+
+#: templates/cases/case_detail.html:84
+msgid "Суд:"
+msgstr ""
+
+#: templates/cases/case_detail.html:91
+msgid "Номер дела:"
+msgstr ""
+
+#: templates/cases/case_detail.html:98
+msgid "Судья:"
+msgstr ""
+
+#: templates/cases/case_detail.html:109
+msgid "Финансы по делу"
+msgstr ""
+
+#: templates/cases/case_detail.html:116
+#, python-format
+msgid "Сумма договора (100%%)"
+msgstr ""
+
+#: templates/cases/case_detail.html:117 templates/cases/case_detail.html:120
+#: templates/cases/case_detail.html:123 templates/cases/case_detail.html:126
+#: templates/finance/case_finance_form.html:59
+#: templates/finance/case_finance_form.html:68
+#: templates/finance/case_finance_form.html:84
+#: templates/finance/case_finance_form.html:96
+#: templates/finance/case_finance_form.html:139
+#: templates/finance/case_finance_form.html:147
+#: templates/finance/case_finance_form.html:183
+#: templates/finance/case_finance_form.html:187
+#: templates/finance/dashboard.html:31 templates/finance/dashboard.html:40
+#: templates/finance/dashboard.html:50 templates/finance/dashboard.html:143
+#: templates/finance/transaction_confirm_delete.html:21
+#: templates/finance/transaction_list.html:114
+#: templates/finance/transaction_list.html:211
+#: templates/finance/transaction_list.html:217
+#: templates/finance/transaction_list.html:224
+msgid "сом"
+msgstr ""
+
+#: templates/cases/case_detail.html:119
+msgid "Оплачено по договору"
+msgstr ""
+
+#: templates/cases/case_detail.html:122
+#, python-format
+msgid "30%% компании"
+msgstr ""
+
+#: templates/cases/case_detail.html:125
+#, python-format
+msgid "70%% юристов"
+msgstr ""
+
+#: templates/cases/case_detail.html:135
+msgid "Ответственные лица"
+msgstr ""
+
+#: templates/cases/case_detail.html:139
+msgid "Юрист/Адвокат:"
+msgstr ""
+
+#: templates/cases/case_detail.html:151 templates/cases/case_list.html:293
+#: templates/clients/client_detail.html:61
+#: templates/clients/client_list.html:55
+msgid "Ответственные не назначены"
+msgstr ""
+
+#: templates/cases/case_detail.html:158
+msgid "Менеджер:"
+msgstr ""
+
+#: templates/cases/case_detail.html:170
+msgid "Описание дела"
+msgstr ""
+
+#: templates/cases/case_detail.html:176
+msgid "Описание отсутствует"
+msgstr ""
+
+#: templates/cases/case_detail.html:184
+msgid "Даты"
+msgstr ""
+
+#: templates/cases/case_detail.html:203
+msgid "Участники дела"
+msgstr ""
+
+#: templates/cases/case_detail.html:215
+msgid "Доверитель"
+msgstr ""
+
+#: templates/cases/case_detail.html:216
+msgid "Роль"
+msgstr ""
+
+#: templates/cases/case_detail.html:217 templates/cases/case_list.html:41
+#: templates/cases/case_list.html:181 templates/cases/case_list.html:234
+#: templates/clients/client_detail.html:134 templates/dashboard.html:106
+msgid "Статус"
+msgstr ""
+
+#: templates/cases/case_detail.html:229
+msgid "Основной"
+msgstr ""
+
+#: templates/cases/case_detail.html:257
+msgid "Распределение по ролям:"
+msgstr ""
+
+#: templates/cases/case_detail.html:267
+msgid "Участники дела не добавлены"
+msgstr ""
+
+#: templates/cases/case_detail.html:269
+msgid "Добавить первого участника"
+msgstr ""
+
+#: templates/cases/case_detail.html:279
+msgid "Документы по этапам"
+msgstr ""
+
+#: templates/cases/case_detail.html:291
+msgid "Этап"
+msgstr ""
+
+#: templates/cases/case_detail.html:293
+msgid "Текущий"
+msgstr ""
+
+#: templates/cases/case_detail.html:301
+msgid "Описание этапа отсутствует"
+msgstr ""
+
+#: templates/cases/case_detail.html:303
+msgid "Документы этапа:"
+msgstr ""
+
+#: templates/cases/case_detail.html:311 templates/cases/case_detail.html:386
+msgid "Поле"
+msgstr ""
+
+#: templates/cases/case_detail.html:313 templates/cases/case_detail.html:400
+msgid "Значение"
+msgstr ""
+
+#: templates/cases/case_detail.html:314
+msgid "Загружено"
+msgstr ""
+
+#: templates/cases/case_detail.html:335
+msgid "Не заполнено"
+msgstr ""
+
+#: templates/cases/case_detail.html:348
+msgid "Скачать"
+msgstr ""
+
+#: templates/cases/case_detail.html:356
+msgid "Удалить (будет подтверждение)"
+msgstr ""
+
+#: templates/cases/case_detail.html:369
+msgid "Документы для этого этапа еще не добавлены."
+msgstr ""
+
+#: templates/cases/case_detail.html:377
+msgid "Добавить документ:"
+msgstr ""
+
+#: templates/cases/case_detail.html:388
+msgid "Выберите поле"
+msgstr ""
+
+#: templates/cases/case_detail.html:391
+msgid "обязательное"
+msgstr ""
+
+#: templates/cases/case_detail.html:402 templates/cases/case_detail.html:432
+msgid "Выберите поле для отображения формы ввода"
+msgstr ""
+
+#: templates/cases/case_detail.html:408
+msgid "Добавить документ"
+msgstr ""
+
+#: templates/cases/case_detail.html:439
+msgid "Введите текстовое значение"
+msgstr ""
+
+#: templates/cases/case_detail.html:462
+msgid "Выберите значение"
+msgstr ""
+
+#: templates/cases/case_detail.html:469
+msgid "Ошибка загрузки опций"
+msgstr ""
+
+#: templates/cases/case_form.html:6 templates/cases/case_form.html:10
+msgid "Редактирование дела"
+msgstr ""
+
+#: templates/cases/case_form.html:6
+msgid "Создание дела"
+msgstr ""
+
+#: templates/cases/case_form.html:10
+msgid "Создание нового дела"
+msgstr ""
+
+#: templates/cases/case_form.html:146 templates/dashboard.html:202
+msgid "Создать дело"
+msgstr ""
+
+#: templates/cases/case_form.html:163
+msgid "Сначала выберите категорию"
+msgstr ""
+
+#: templates/cases/case_form.html:167
+msgid "Загрузка этапов..."
+msgstr ""
+
+#: templates/cases/case_form.html:174
+msgid "Выберите этап"
+msgstr ""
+
+#: templates/cases/case_form.html:180
+msgid "Нет доступных этапов"
+msgstr ""
+
+#: templates/cases/case_form.html:185
+msgid "Ошибка загрузки этапов:"
+msgstr ""
+
+#: templates/cases/case_form.html:186
+msgid "Ошибка загрузки"
+msgstr ""
+
+#: templates/cases/case_list.html:11 templates/clients/client_detail.html:122
+msgid "Добавить дело"
+msgstr ""
+
+#: templates/cases/case_list.html:27 templates/cases/case_list.html:173
+#: templates/cases/case_list.html:232 templates/clients/client_detail.html:133
+#: templates/finance/transaction_list.html:46
+#: templates/finance/transaction_list.html:98
+msgid "Категория"
+msgstr ""
+
+#: templates/cases/case_list.html:29 templates/finance/transaction_list.html:48
+msgid "Все категории"
+msgstr ""
+
+#: templates/cases/case_list.html:43
+msgid "Все статусы"
+msgstr ""
+
+#: templates/cases/case_list.html:55 templates/cases/case_list.html:189
+#: templates/cases/case_list.html:236 templates/clients/client_list.html:25
+msgid "Ответственный"
+msgstr ""
+
+#: templates/cases/case_list.html:57
+msgid "Все юристы"
+msgstr ""
+
+#: templates/cases/case_list.html:69 templates/cases/case_list.html:177
+#: templates/cases/case_list.html:233
+#: templates/finance/transaction_list.html:128
+msgid "Клиент"
+msgstr ""
+
+#: templates/cases/case_list.html:71
+msgid "ФИО клиента"
+msgstr ""
+
+#: templates/cases/case_list.html:79
+msgid "Прогресс от"
+msgstr ""
+
+#: templates/cases/case_list.html:91
+msgid "Прогресс до"
+msgstr ""
+
+#: templates/cases/case_list.html:104
+#: templates/finance/transaction_list.html:76
+msgid "Применить фильтры"
+msgstr ""
+
+#: templates/cases/case_list.html:120 templates/dashboard.html:18
+msgid "Всего дел"
+msgstr ""
+
+#: templates/cases/case_list.html:138
+msgid "В работе"
+msgstr ""
+
+#: templates/cases/case_list.html:147
+msgid "Просрочено"
+msgstr ""
+
+#: templates/cases/case_list.html:159 templates/ratings/dashboard.html:132
+msgid "Экспорт"
+msgstr ""
+
+#: templates/cases/case_list.html:164
+msgid "Колонки"
+msgstr ""
+
+#: templates/cases/case_list.html:185 templates/cases/case_list.html:235
+#: templates/clients/client_detail.html:135 templates/dashboard.html:107
+msgid "Прогресс"
+msgstr ""
+
+#: templates/cases/case_list.html:193 templates/cases/case_list.html:237
+#: templates/clients/client_list.html:26
+msgid "Дата создания"
+msgstr ""
+
+#: templates/cases/case_list.html:205 templates/cases/participant_form.html:122
+msgid "Поиск..."
+msgstr ""
+
+#: templates/cases/case_list.html:213
+msgid "Сортировка"
+msgstr ""
+
+#: templates/cases/case_list.html:216
+msgid "По дате создания (новые)"
+msgstr ""
+
+#: templates/cases/case_list.html:217
+msgid "По дате создания (старые)"
+msgstr ""
+
+#: templates/cases/case_list.html:218
+msgid "По названию (А-Я)"
+msgstr ""
+
+#: templates/cases/case_list.html:219
+msgid "По названию (Я-А)"
+msgstr ""
+
+#: templates/cases/case_list.html:220
+msgid "По прогрессу (возр.)"
+msgstr ""
+
+#: templates/cases/case_list.html:221
+msgid "По прогрессу (убыв.)"
+msgstr ""
+
+#: templates/cases/case_list.html:231 templates/clients/client_detail.html:132
+msgid "Название дела"
+msgstr ""
+
+#: templates/cases/case_list.html:319
+msgid "Дела не найдены"
+msgstr ""
+
+#: templates/cases/case_list.html:320
+msgid "Добавить первое дело"
+msgstr ""
+
+#: templates/cases/document_confirm_delete.html:5
+msgid "Удалить документ"
+msgstr ""
+
+#: templates/cases/document_confirm_delete.html:8
+#, python-format
+msgid ""
+"\n"
+"      Вы уверены, что хотите удалить поле «%(field_name)s» на этапе "
+"«%(stage_name)s» в деле «%(case_title)s»?\n"
+"    "
+msgstr ""
+
+#: templates/cases/participant_confirm_delete.html:7
+#: templates/cases/participant_confirm_delete.html:15
+#: templates/cases/participant_form.html:7
+#: templates/cases/participant_form.html:16
+msgid "Редактирование участника"
+msgstr ""
+
+#: templates/cases/participant_confirm_delete.html:9
+#: templates/cases/participant_form.html:9
+msgid "Добавление участника"
+msgstr ""
+
+#: templates/cases/participant_confirm_delete.html:17
+#: templates/cases/participant_form.html:18
+msgid "Добавление нового участника"
+msgstr ""
+
+#: templates/cases/participant_confirm_delete.html:22
+msgid "Удалить участника?"
+msgstr ""
+
+#: templates/cases/participant_confirm_delete.html:25
+#, python-format
+msgid ""
+"\n"
+"      Вы уверены, что хотите удалить участника %(participant_name)s из дела №"
+"%(case_pk)s?\n"
+"    "
+msgstr ""
+
+#: templates/cases/participant_form.html:101
+#: templates/clients/client_form.html:135
+#: templates/finance/case_finance_form.html:192
+#: templates/finance/transaction_form.html:54
+msgid "Сохранить"
+msgstr ""
+
+#: templates/cases/participant_form.html:117
+msgid "Выберите доверителя"
+msgstr ""
+
+#: templates/cases/participant_form.html:120
+msgid "Начните вводить имя"
+msgstr ""
+
+#: templates/cases/participant_form.html:121
+msgid "Ничего не найдено"
+msgstr ""
+
+#: templates/clients/client_confirm_delete.html:4
+#: templates/clients/client_confirm_delete.html:6
+msgid "Удаление клиента"
+msgstr ""
+
+#: templates/clients/client_confirm_delete.html:12
+msgid "Внимание!"
+msgstr ""
+
+#: templates/clients/client_confirm_delete.html:15
+#, python-format
+msgid ""
+"\n"
+"          Вы уверены, что хотите удалить клиента <strong>%(client)s</"
+"strong>?\n"
+"        "
+msgstr ""
+
+#: templates/clients/client_confirm_delete.html:20
+msgid "Это действие нельзя отменить. Все связанные дела также будут удалены."
+msgstr ""
+
+#: templates/clients/client_detail.html:6
+msgid "Клиент:"
+msgstr ""
+
+#: templates/clients/client_detail.html:32
+msgid "ФИО:"
+msgstr ""
+
+#: templates/clients/client_detail.html:39
+msgid "Телефон:"
+msgstr ""
+
+#: templates/clients/client_detail.html:44
+msgid "Email:"
+msgstr ""
+
+#: templates/clients/client_detail.html:49
+msgid "Ответственный:"
+msgstr ""
+
+#: templates/clients/client_detail.html:74
+#: templates/clients/client_form.html:61
+msgid "Паспортные данные"
+msgstr ""
+
+#: templates/clients/client_detail.html:79
+msgid "Паспорт:"
+msgstr ""
+
+#: templates/clients/client_detail.html:84
+msgid "Кем выдан:"
+msgstr ""
+
+#: templates/clients/client_detail.html:89
+msgid "Дата выдачи:"
+msgstr ""
+
+#: templates/clients/client_detail.html:94
+msgid "Адрес регистрации:"
+msgstr ""
+
+#: templates/clients/client_detail.html:100
+msgid "Адрес проживания:"
+msgstr ""
+
+#: templates/clients/client_detail.html:107
+msgid "ИНН:"
+msgstr ""
+
+#: templates/clients/client_detail.html:120
+msgid "Дела клиента"
+msgstr ""
+
+#: templates/clients/client_detail.html:173
+msgid "У клиента пока нет дел"
+msgstr ""
+
+#: templates/clients/client_detail.html:183
+msgid "Заметки"
+msgstr ""
+
+#: templates/clients/client_form.html:6 templates/clients/client_form.html:10
+msgid "Редактирование клиента"
+msgstr ""
+
+#: templates/clients/client_form.html:6 templates/clients/client_form.html:10
+msgid "Добавление клиента"
+msgstr ""
+
+#: templates/clients/client_list.html:10 templates/dashboard.html:205
+msgid "Добавить доверителя"
+msgstr ""
+
+#: templates/clients/client_list.html:22
+msgid "ФИО"
+msgstr ""
+
+#: templates/clients/client_list.html:23 templates/public/about.html:69
+#: templates/public/contact.html:45 templates/public/contact.html:137
+#: templates/public/home.html:84 templates/public/news_detail.html:86
+msgid "Телефон"
+msgstr ""
+
+#: templates/clients/client_list.html:24 templates/public/news_detail.html:91
+msgid "Email"
+msgstr ""
+
+#: templates/clients/client_list.html:83
+msgid "Доверители не найдены"
+msgstr ""
+
+#: templates/clients/client_list.html:93
+msgid "Page navigation"
+msgstr ""
+
+#: templates/clients/client_list.html:120
+#: templates/clients/client_list.html:124
+#: templates/finance/transaction_list.html:194
+#: templates/finance/transaction_list.html:199
+msgid "Вперед"
+msgstr ""
+
+#: templates/dashboard.html:5 templates/dashboard.html:7
+#: templates/includes/sidebar.html:5
+msgid "Дашборд"
+msgstr ""
+
+#: templates/dashboard.html:26 templates/dashboard.html:46
+#: templates/dashboard.html:66 templates/dashboard.html:86
+#: templates/public/case_list.html:65
+msgid "Подробнее"
+msgstr ""
+
+#: templates/dashboard.html:38
+msgid "Активных дел"
+msgstr ""
+
+#: templates/dashboard.html:58
+msgid "Доверителей"
+msgstr ""
+
+#: templates/dashboard.html:78
+msgid "Событий сегодня"
+msgstr ""
+
+#: templates/dashboard.html:98
+msgid "Недавние дела"
+msgstr ""
+
+#: templates/dashboard.html:144
+msgid "Нет активных дел"
+msgstr ""
+
+#: templates/dashboard.html:162
+msgid "Ближайшие события"
+msgstr ""
+
+#: templates/dashboard.html:185
+msgid "Нет предстоящих событий"
+msgstr ""
+
+#: templates/dashboard.html:189
+msgid "Все события"
+msgstr ""
+
+#: templates/dashboard.html:197
+msgid "Быстрые действия"
+msgstr ""
+
+#: templates/dashboard.html:221
+msgid "Прогресс дел по категориям"
+msgstr ""
+
+#: templates/dashboard.html:240
+msgid "Гражданские"
+msgstr ""
+
+#: templates/dashboard.html:241
+msgid "Административные"
+msgstr ""
+
+#: templates/dashboard.html:242
+msgid "Уголовные"
+msgstr ""
+
+#: templates/dashboard.html:243
+msgid "Правонарушения"
+msgstr ""
+
+#: templates/dashboard.html:246
+#, python-format
+msgid "Средний прогресс (%%)"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:5
+#: templates/finance/case_finance_form.html:12
+#, python-format
+msgid "Финансы по делу #%(case_id)s"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:15
+msgid "Назад к делу"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:34
+msgid "Доверитель (основной)"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:72
+msgid "Оплачено:"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:77
+#, python-format
+msgid "Фирма, %%"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:89
+#, python-format
+msgid "Юристы, %%"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:104
+#, python-format
+msgid "Распределение %(p)s%% между сотрудниками"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:114
+msgid "Сотрудник"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:115
+#, python-format
+msgid "Доля 70%%, %%"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:116
+msgid "При полной оплате"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:117
+msgid "С учётом оплаты"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:118
+msgid "Ручная"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:172
+msgid "Пока нет сотрудников для распределения"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:182
+msgid "Сумма к распределению:"
+msgstr ""
+
+#: templates/finance/case_finance_form.html:185
+msgid "Оплачено по договору:"
+msgstr ""
+
+#: templates/finance/dashboard.html:5 templates/finance/dashboard.html:10
+#: templates/includes/sidebar.html:21
+msgid "Бухгалтерия"
+msgstr ""
+
+#: templates/finance/dashboard.html:12
+msgid "Период:"
+msgstr ""
+
+#: templates/finance/dashboard.html:17
+msgid "Операции"
+msgstr ""
+
+#: templates/finance/dashboard.html:20
+msgid "Экспорт дел в Excel"
+msgstr ""
+
+#: templates/finance/dashboard.html:30
+#: templates/finance/transaction_list.html:212
+msgid "Общий доход"
+msgstr ""
+
+#: templates/finance/dashboard.html:39
+#: templates/finance/transaction_list.html:218
+msgid "Общий расход"
+msgstr ""
+
+#: templates/finance/dashboard.html:48
+#: templates/finance/transaction_list.html:226
+msgid "Чистая прибыль"
+msgstr ""
+
+#: templates/finance/dashboard.html:53
+#, python-format
+msgid "Рост к предыдущему периоду: %(rate)s%%"
+msgstr ""
+
+#: templates/finance/dashboard.html:68 templates/ratings/dashboard.html:16
+msgid "Период"
+msgstr ""
+
+#: templates/finance/dashboard.html:72 templates/ratings/dashboard.html:25
+msgid "Квартал"
+msgstr ""
+
+#: templates/finance/dashboard.html:73 templates/ratings/dashboard.html:28
+msgid "Год"
+msgstr ""
+
+#: templates/finance/dashboard.html:74
+msgid "Произвольно"
+msgstr ""
+
+#: templates/finance/dashboard.html:79
+#: templates/finance/transaction_list.html:27
+msgid "Тип операции"
+msgstr ""
+
+#: templates/finance/dashboard.html:81
+msgid "Все"
+msgstr ""
+
+#: templates/finance/dashboard.html:82
+#: templates/finance/transaction_list.html:30
+msgid "Приход"
+msgstr ""
+
+#: templates/finance/dashboard.html:83
+#: templates/finance/transaction_list.html:31
+msgid "Расход"
+msgstr ""
+
+#: templates/finance/dashboard.html:112
+msgid "Операции за период"
+msgstr ""
+
+#: templates/finance/dashboard.html:114
+msgid "Все операции"
+msgstr ""
+
+#: templates/finance/dashboard.html:123
+#: templates/finance/transaction_list.html:94
+msgid "Дата"
+msgstr ""
+
+#: templates/finance/dashboard.html:125
+#: templates/finance/transaction_list.html:96
+msgid "Сумма"
+msgstr ""
+
+#: templates/finance/dashboard.html:126
+#: templates/finance/transaction_list.html:97
+msgid "Описание"
+msgstr ""
+
+#: templates/finance/dashboard.html:127
+#: templates/finance/transaction_list.html:99
+msgid "Дело/Клиент"
+msgstr ""
+
+#: templates/finance/dashboard.html:150
+#, python-format
+msgid "#%(case_id)s: %(title)s"
+msgstr ""
+
+#: templates/finance/dashboard.html:161
+msgid "Нет операций за выбранный период"
+msgstr ""
+
+#: templates/finance/transaction_confirm_delete.html:4
+msgid "Удаление операции"
+msgstr ""
+
+#: templates/finance/transaction_confirm_delete.html:11
+msgid "Удалить операцию"
+msgstr ""
+
+#: templates/finance/transaction_confirm_delete.html:14
+msgid "Вы уверены, что хотите удалить эту финансовую операцию?"
+msgstr ""
+
+#: templates/finance/transaction_confirm_delete.html:21
+msgid "Сумма:"
+msgstr ""
+
+#: templates/finance/transaction_confirm_delete.html:24
+msgid "Дата:"
+msgstr ""
+
+#: templates/finance/transaction_form.html:6
+#: templates/finance/transaction_form.html:19
+msgid "Редактирование операции"
+msgstr ""
+
+#: templates/finance/transaction_form.html:8
+#: templates/finance/transaction_form.html:21
+msgid "Новая финансовая операция"
+msgstr ""
+
+#: templates/finance/transaction_form.html:25
+msgid "К списку операций"
+msgstr ""
+
+#: templates/finance/transaction_list.html:5
+#: templates/finance/transaction_list.html:12
+msgid "Финансовые операции"
+msgstr ""
+
+#: templates/finance/transaction_list.html:14
+msgid "Добавить операцию"
+msgstr ""
+
+#: templates/finance/transaction_list.html:50
+msgid "Доходы"
+msgstr ""
+
+#: templates/finance/transaction_list.html:58
+msgid "Расходы"
+msgstr ""
+
+#: templates/finance/transaction_list.html:71
+msgid "ID дела"
+msgstr ""
+
+#: templates/finance/transaction_list.html:82
+msgid "Экспорт в Excel"
+msgstr ""
+
+#: templates/finance/transaction_list.html:100
+msgid "Создано"
+msgstr ""
+
+#: templates/finance/transaction_list.html:154
+msgid "Нет операций, соответствующих выбранным фильтрам"
+msgstr ""
+
+#: templates/finance/transaction_list.html:156
+msgid "Добавить первую операцию"
+msgstr ""
+
+#: templates/includes/sidebar.html:25 templates/ratings/dashboard.html:4
+msgid "Рейтинги"
+msgstr ""
+
+#: templates/includes/sidebar.html:30
+msgid "Администрирование"
+msgstr ""
+
+#: templates/includes/sidebar.html:32
+msgid "Панель администратора"
+msgstr ""
+
+#: templates/public/about.html:5 templates/public/about.html:11
+#: templates/public/base.html:112
+msgid "О нас"
+msgstr ""
+
+#: templates/public/about.html:14
+msgid ""
+"юридическая команда, которая работает на результат, держит слово и защищает "
+"интересы клиента на каждом этапе."
+msgstr ""
+
+#: templates/public/about.html:19
+msgid "Записаться на консультацию"
+msgstr ""
+
+#: templates/public/about.html:22
+msgid "Наша команда"
+msgstr ""
+
+#: templates/public/about.html:29
+msgid "Системный подход"
+msgstr ""
+
+#: templates/public/about.html:30
+msgid "аналитика + стратегия"
+msgstr ""
+
+#: templates/public/about.html:35
+msgid "Коммуникация"
+msgstr ""
+
+#: templates/public/about.html:36
+msgid "понятно и вовремя"
+msgstr ""
+
+#: templates/public/about.html:41 templates/public/home.html:52
+msgid "Конфиденциальность"
+msgstr ""
+
+#: templates/public/about.html:42
+msgid "бережно относимся к информации клиента"
+msgstr ""
+
+#: templates/public/about.html:54
+msgid "Stand for your rights"
+msgstr ""
+
+#: templates/public/about.html:59
+msgid ""
+"Мы не “просто ведём дело”, мы берём ответственность за путь клиента: от "
+"первичной консультации до финального результата."
+msgstr ""
+
+#: templates/public/about.html:65
+msgid "Адрес можно заполнить в настройках сайта"
+msgstr ""
+
+#: templates/public/about.html:73 templates/public/news_detail.html:96
+msgid "График работы"
+msgstr ""
+
+#: templates/public/about.html:78 templates/public/home.html:30
+#: templates/public/news_list.html:18
+msgid "Получить консультацию"
+msgstr ""
+
+#: templates/public/about.html:89
+msgid "Миссия"
+msgstr ""
+
+#: templates/public/about.html:91
+msgid ""
+"Защищать права и интересы клиента, создавая понятную стратегию и доводя дело "
+"до результата."
+msgstr ""
+
+#: templates/public/about.html:97
+msgid "Принципы"
+msgstr ""
+
+#: templates/public/about.html:99
+msgid "честная оценка перспектив"
+msgstr ""
+
+#: templates/public/about.html:100
+msgid "строгие сроки и дисциплина"
+msgstr ""
+
+#: templates/public/about.html:101
+msgid "конфиденциальность"
+msgstr ""
+
+#: templates/public/about.html:102
+msgid "прозрачность по этапам"
+msgstr ""
+
+#: templates/public/about.html:108
+msgid "Как работаем"
+msgstr ""
+
+#: templates/public/about.html:110
+msgid ""
+"1) Анализ → 2) План действий → 3) Сопровождение → 4) Финальный результат и "
+"отчёт."
+msgstr ""
+
+#: templates/public/about.html:121
+msgid "Хотите обсудить вашу ситуацию?"
+msgstr ""
+
+#: templates/public/about.html:123
+msgid "Оставьте заявку — мы свяжемся и предложим оптимальный юридический план."
+msgstr ""
+
+#: templates/public/about.html:128 templates/public/news_detail.html:68
+msgid "Оставить заявку"
+msgstr ""
+
+#: templates/public/base.html:109 templates/public/staff_list.html:5
+#: templates/public/staff_list.html:32
+msgid "Сотрудники"
+msgstr ""
+
+#: templates/public/base.html:111 templates/public/home.html:192
+#: templates/public/news_list.html:5
+msgid "Новости"
+msgstr ""
+
+#: templates/public/base.html:113 templates/public/base.html:153
+#: templates/public/contact.html:5 templates/public/contact.html:11
+#: templates/public/news_detail.html:77
+msgid "Контакты"
+msgstr ""
+
+#: templates/public/base.html:114
+msgid "Войти"
+msgstr ""
+
+#: templates/public/base.html:119 templates/public/contact.html:18
+#: templates/public/news_detail.html:100 templates/public/staff_list.html:36
+msgid "Консультация"
+msgstr ""
+
+#: templates/public/base.html:148
+msgid ". Все права защищены."
+msgstr ""
+
+#: templates/public/case_list.html:11
+msgid "Дела и кейсы"
+msgstr ""
+
+#: templates/public/case_list.html:13
+msgid "Реальные примеры нашей работы (без раскрытия персональных данных)."
+msgstr ""
+
+#: templates/public/case_list.html:18
+msgid "Нужна консультация"
+msgstr ""
+
+#: templates/public/case_list.html:75
+msgid "Пока нет опубликованных дел"
+msgstr ""
+
+#: templates/public/case_list.html:76
+msgid "Добавьте кейсы в админке и включите “Опубликован”."
+msgstr ""
+
+#: templates/public/contact.html:13
+msgid "Свяжитесь с нами удобным способом или оставьте заявку на консультацию."
+msgstr ""
+
+#: templates/public/contact.html:27
+msgid "Мы на связи"
+msgstr ""
+
+#: templates/public/contact.html:33 templates/public/news_detail.html:81
+msgid "Адрес"
+msgstr ""
+
+#: templates/public/contact.html:35
+msgid "Укажите адрес в настройках сайта"
+msgstr ""
+
+#: templates/public/contact.html:47
+msgid "Укажите телефон"
+msgstr ""
+
+#: templates/public/contact.html:52 templates/public/staff_list.html:84
+msgid "Позвонить"
+msgstr ""
+
+#: templates/public/contact.html:64
+msgid "Укажите email"
+msgstr ""
+
+#: templates/public/contact.html:74
+msgid "График"
+msgstr ""
+
+#: templates/public/contact.html:76
+msgid "Укажите график работы"
+msgstr ""
+
+#: templates/public/contact.html:97
+msgid "Карта"
+msgstr ""
+
+#: templates/public/contact.html:99
+msgid "Сюда можно вставить Google Maps / Яндекс.Карты iframe."
+msgstr ""
+
+#: templates/public/contact.html:106
+msgid "Карта будет здесь"
+msgstr ""
+
+#: templates/public/contact.html:115
+msgid "Заявка на консультацию"
+msgstr ""
+
+#: templates/public/contact.html:117
+msgid "Опишите кратко ситуацию — мы свяжемся с вами."
+msgstr ""
+
+#: templates/public/contact.html:122
+msgid "Быстро и конфиденциально"
+msgstr ""
+
+#: templates/public/contact.html:131 templates/public/home.html:76
+msgid "Имя"
+msgstr ""
+
+#: templates/public/contact.html:133
+msgid "Ваше имя"
+msgstr ""
+
+#: templates/public/contact.html:149 templates/public/home.html:110
+msgid "Тема"
+msgstr ""
+
+#: templates/public/contact.html:151
+msgid "Например: семейный спор / бизнес"
+msgstr ""
+
+#: templates/public/contact.html:155 templates/public/home.html:126
+msgid "Сообщение"
+msgstr ""
+
+#: templates/public/contact.html:157
+msgid "Коротко опишите ситуацию..."
+msgstr ""
+
+#: templates/public/contact.html:163
+msgid "Отправить заявку"
+msgstr ""
+
+#: templates/public/contact.html:166
+msgid "На главную"
+msgstr ""
+
+#: templates/public/contact.html:172
+msgid ""
+"Нажимая “Отправить”, вы соглашаетесь на обработку данных для связи по заявке."
+msgstr ""
+
+#: templates/public/contact.html:180
+msgid "Совет"
+msgstr ""
+
+#: templates/public/contact.html:182
+msgid ""
+"Если вопрос срочный — лучше сразу звонок. Если нужно приложить документы — "
+"напишите на email/мессенджер."
+msgstr ""
+
+#: templates/public/home.html:4
+msgid "Главная"
+msgstr ""
+
+#: templates/public/home.html:21
+msgid "Защищаем ваши права — уверенно, быстро, профессионально"
+msgstr ""
+
+#: templates/public/home.html:25
+msgid "Консультации, сопровождение, представительство в суде и защита бизнеса."
+msgstr ""
+
+#: templates/public/home.html:33
+msgid "Смотреть дела"
+msgstr ""
+
+#: templates/public/home.html:40
+msgid "Сильная команда"
+msgstr ""
+
+#: templates/public/home.html:41
+msgid "Опыт, практика, результат"
+msgstr ""
+
+#: templates/public/home.html:46
+msgid "Прозрачные условия"
+msgstr ""
+
+#: templates/public/home.html:47
+msgid "Понятные этапы и сроки"
+msgstr ""
+
+#: templates/public/home.html:53
+msgid "Безопасность данных клиента"
+msgstr ""
+
+#: templates/public/home.html:63
+msgid "Быстрая заявка"
+msgstr ""
+
+#: templates/public/home.html:64
+msgid "Обычно отвечаем в рабочее время в течение 10–30 минут"
+msgstr ""
+
+#: templates/public/home.html:68
+msgid "Конфиденциально"
+msgstr ""
+
+#: templates/public/home.html:89
+msgid "Мы не передаём номер третьим лицам"
+msgstr ""
+
+#: templates/public/home.html:94
+msgid "Отправить"
+msgstr ""
+
+#: templates/public/home.html:104
+msgid "Добавить детали (необязательно)"
+msgstr ""
+
+#: templates/public/home.html:133
+msgid ""
+"Нажимая «Отправить», вы соглашаетесь на обработку данных для связи по заявке."
+msgstr ""
+
+#: templates/public/home.html:143
+msgid "Практики"
+msgstr ""
+
+#: templates/public/home.html:144
+msgid "то, что делаем лучше всего"
+msgstr ""
+
+#: templates/public/home.html:160
+msgid "Описание практики заполните в админке."
+msgstr ""
+
+#: templates/public/home.html:193
+msgid "Все новости"
+msgstr ""
+
+#: templates/public/news_detail.html:10
+msgid "Назад к новостям"
+msgstr ""
+
+#: templates/public/news_detail.html:33
+msgid "Новость"
+msgstr ""
+
+#: templates/public/news_detail.html:61
+msgid "Нужна юридическая консультация?"
+msgstr ""
+
+#: templates/public/news_detail.html:63
+msgid "Опишите ситуацию — мы предложим оптимальный план действий."
+msgstr ""
+
+#: templates/public/news_detail.html:104
+msgid ""
+"* Важно: публикации носят информационный характер и не являются "
+"индивидуальной юридической консультацией."
+msgstr ""
+
+#: templates/public/news_list.html:11
+msgid "Новости и статьи"
+msgstr ""
+
+#: templates/public/news_list.html:13
+msgid "Разборы, изменения законодательства, практика и полезные материалы."
+msgstr ""
+
+#: templates/public/news_list.html:29
+msgid "Поиск и фильтр можно добавить следующим шагом (по теме/категории/дате)."
+msgstr ""
+
+#: templates/public/news_list.html:37
+msgid "Публикации"
+msgstr ""
+
+#: templates/public/news_list.html:38
+msgid "актуально и по делу"
+msgstr ""
+
+#: templates/public/news_list.html:77
+msgid "опубликовано"
+msgstr ""
+
+#: templates/public/news_list.html:88
+msgid "Читать"
+msgstr ""
+
+#: templates/public/news_list.html:98
+msgid "Пока нет опубликованных новостей"
+msgstr ""
+
+#: templates/public/news_list.html:99
+msgid "Добавьте записи в админке и включите “Опубликовано”."
+msgstr ""
+
+#: templates/public/staff_list.html:33
+msgid "Команда, которая защищает ваши интересы"
+msgstr ""
+
+#: templates/public/staff_list.html:63
+msgid "Партнёр"
+msgstr ""
+
+#: templates/public/staff_list.html:76
+msgid "Описание сотрудника можно заполнить в админке."
+msgstr ""
+
+#: templates/public/staff_list.html:97
+msgid "Записаться"
+msgstr ""
+
+#: templates/public/staff_list.html:105
+msgid "Пока нет сотрудников"
+msgstr ""
+
+#: templates/public/staff_list.html:106
+msgid "Добавьте сотрудников в админке."
+msgstr ""
+
+#: templates/ratings/dashboard.html:11
+msgid "Параметры рейтинга"
+msgstr ""
+
+#: templates/ratings/dashboard.html:19
+msgid "Текущий месяц"
+msgstr ""
+
+#: templates/ratings/dashboard.html:22
+msgid "Прошлый месяц"
+msgstr ""
+
+#: templates/ratings/dashboard.html:34
+msgid "Критерий оценки"
+msgstr ""
+
+#: templates/ratings/dashboard.html:37
+msgid "Общий рейтинг"
+msgstr ""
+
+#: templates/ratings/dashboard.html:40
+msgid "Доход на юриста"
+msgstr ""
+
+#: templates/ratings/dashboard.html:43
+msgid "Количество дел"
+msgstr ""
+
+#: templates/ratings/dashboard.html:46
+msgid "Успешность дел"
+msgstr ""
+
+#: templates/ratings/dashboard.html:49 templates/ratings/dashboard.html:105
+msgid "Удовлетворенность клиентов"
+msgstr ""
+
+#: templates/ratings/dashboard.html:55
+msgid "Отдел"
+msgstr ""
+
+#: templates/ratings/dashboard.html:57
+msgid "Все отделы"
+msgstr ""
+
+#: templates/ratings/dashboard.html:73
+msgid "Моя статистика"
+msgstr ""
+
+#: templates/ratings/dashboard.html:78
+#, python-format
+msgid "%(pos)s место"
+msgstr ""
+
+#: templates/ratings/dashboard.html:80
+msgid "в общем рейтинге"
+msgstr ""
+
+#: templates/ratings/dashboard.html:85
+msgid "Доходность"
+msgstr ""
+
+#: templates/ratings/dashboard.html:95
+msgid "Завершенные дела"
+msgstr ""
+
+#: templates/ratings/dashboard.html:115
+msgid "Соблюдение сроков"
+msgstr ""
+
+#: templates/ratings/dashboard.html:129
+msgid "Рейтинг юристов"
+msgstr ""
+
+#: templates/ratings/dashboard.html:135
+msgid "Печать"
+msgstr ""
+
+#: templates/ratings/dashboard.html:149
+msgid "из 10"
+msgstr ""
+
+#: templates/ratings/dashboard.html:160
+msgid "Распределение по отделам"
+msgstr ""
+
+#: templates/ratings/dashboard.html:171
+msgid "Динамика рейтинга"
+msgstr ""
+
+#: templates/ratings/dashboard.html:194
+msgid "Средний рейтинг"
+msgstr ""
+
+#: templates/ratings/dashboard.html:214
+msgid "Мой рейтинг"
+msgstr ""
+
+#: templates/ratings/dashboard.html:220
+msgid "Средний по фирме"
+msgstr ""

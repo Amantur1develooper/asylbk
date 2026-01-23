@@ -1,116 +1,125 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}
-{% if object %}Редактирование участника{% else %}Добавление участника{% endif %} - Kunguroff & Partners
+  {% if object %}
+    {% trans "Редактирование участника" %}
+  {% else %}
+    {% trans "Добавление участника" %}
+  {% endif %}
+  - Kunguroff & Partners
 {% endblock %}
 
 {% block page_title %}
-{% if object %}Редактирование участника{% else %}Добавление нового участника{% endif %}
+  {% if object %}
+    {% trans "Редактирование участника" %}
+  {% else %}
+    {% trans "Добавление нового участника" %}
+  {% endif %}
 {% endblock %}
-
 
 {% block linkk %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
 {% endblock linkk %}
-    
+
 {% block content %}
-
 <div class="card">
-    <div class="card-body">
-        <form method="post" novalidate>
-            {% csrf_token %}
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
 
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            {{ error }}
+          {% endfor %}
+        </div>
+      {% endif %}
 
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {% for error in form.non_field_errors %}
-                    {{ error }}
-                {% endfor %}
-            </div>
+      <div class="mb-3">
+        <label for="{{ form.trustor.id_for_label }}" class="form-label">{{ form.trustor.label }}</label>
+        {{ form.trustor }}
+        {% if form.trustor.errors %}
+          <div class="invalid-feedback d-block">{{ form.trustor.errors.0 }}</div>
         {% endif %}
-        
-        <div class="mb-3">
-            <label for="{{ form.trustor.id_for_label }}" class="form-label">{{ form.trustor.label }}</label>
-            {{ form.trustor }}
-            {% if form.trustor.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.trustor.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="mb-3">
-            <label for="{{ form.role.id_for_label }}" class="form-label">{{ form.role.label }}</label>
-            {{ form.role }}
-            {% if form.role.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.role.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="form-check mb-3">
-            {{ form.main_participant }}
-            <label class="form-check-label" for="{{ form.main_participant.id_for_label }}">
-                {{ form.main_participant.label }}
-            </label>
-            {% if form.main_participant.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.main_participant.errors.0 }}
-                </div>
-            {% endif %}
-            {% if form.main_participant.help_text %}
-                <div class="form-text">{{ form.main_participant.help_text }}</div>
-            {% endif %}
-        </div>
-        
-        <div class="mb-3">
-            <label for="{{ form.representation_basis.id_for_label }}" class="form-label">{{ form.representation_basis.label }}</label>
-            {{ form.representation_basis }}
-            {% if form.representation_basis.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.representation_basis.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="mb-3">
-            <label for="{{ form.powers_details.id_for_label }}" class="form-label">{{ form.powers_details.label }}</label>
-            {{ form.powers_details }}
-            {% if form.powers_details.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.powers_details.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="d-flex justify-content-between">
-            <a href="{% if object %}{% url 'cases:case_detail' object.case.pk %}{% else %}{% url 'cases:case_detail' case.pk %}{% endif %}" 
-   class="btn btn-secondary">Отмена</a>
-            <button type="submit" class="btn btn-primary">
-                {% if object %}Сохранить изменения{% else %}Сохранить{% endif %}
-            </button>
-        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.role.id_for_label }}" class="form-label">{{ form.role.label }}</label>
+        {{ form.role }}
+        {% if form.role.errors %}
+          <div class="invalid-feedback d-block">{{ form.role.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-check mb-3">
+        {{ form.main_participant }}
+        <label class="form-check-label" for="{{ form.main_participant.id_for_label }}">
+          {{ form.main_participant.label }}
+        </label>
+        {% if form.main_participant.errors %}
+          <div class="invalid-feedback d-block">{{ form.main_participant.errors.0 }}</div>
+        {% endif %}
+        {% if form.main_participant.help_text %}
+          <div class="form-text">{{ form.main_participant.help_text }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.representation_basis.id_for_label }}" class="form-label">
+          {{ form.representation_basis.label }}
+        </label>
+        {{ form.representation_basis }}
+        {% if form.representation_basis.errors %}
+          <div class="invalid-feedback d-block">{{ form.representation_basis.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.powers_details.id_for_label }}" class="form-label">
+          {{ form.powers_details.label }}
+        </label>
+        {{ form.powers_details }}
+        {% if form.powers_details.errors %}
+          <div class="invalid-feedback d-block">{{ form.powers_details.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <a
+          href="{% if object %}{% url 'cases:case_detail' object.case.pk %}{% else %}{% url 'cases:case_detail' case.pk %}{% endif %}"
+          class="btn btn-secondary"
+        >
+          {% trans "Отмена" %}
+        </a>
+
+        <button type="submit" class="btn btn-primary">
+          {% if object %}
+            {% trans "Сохранить изменения" %}
+          {% else %}
+            {% trans "Сохранить" %}
+          {% endif %}
+        </button>
+      </div>
     </form>
-</div>
-
-
+  </div>
 </div>
 {% endblock %}
- {% block extra_js %}
+
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   $(function () {
     $('.js-trustor').select2({
       width: '100%',
-      placeholder: $('.js-trustor').data('placeholder') || 'Выберите доверителя',
+      placeholder: $('.js-trustor').data('placeholder') || '{% trans "Выберите доверителя" %}',
       allowClear: true,
       language: {
-        inputTooShort: () => 'Начните вводить имя',
-        noResults: () => 'Ничего не найдено',
-        searching: () => 'Поиск...'
+        inputTooShort: function () { return '{% trans "Начните вводить имя" %}'; },
+        noResults: function () { return '{% trans "Ничего не найдено" %}'; },
+        searching: function () { return '{% trans "Поиск..." %}'; }
       }
     });
   });

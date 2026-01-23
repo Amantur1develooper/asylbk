@@ -50,6 +50,22 @@ INSTALLED_APPS = [
     'public.apps.PublicConfig',
 ]
 
+from django.utils.translation import gettext_lazy as _
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+USE_L10N = True
+
+LANGUAGE_CODE = "ru"   # язык по умолчанию
+
+LANGUAGES = (("ru","Русский"),("ky","Кыргызча"),("en","English"))
+
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
+
+
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -97,7 +113,10 @@ LOGGING = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "django.middleware.locale.LocaleMiddleware",
     'django.middleware.common.CommonMiddleware',
+    # важно: LocaleMiddleware должен быть после SessionMiddleware и до CommonMiddleware
+    # "django.middleware.locale.LocaleMiddleware", 
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -159,10 +178,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'ru'
 
 
-LANGUAGE_CODE = 'ru-ru'
+
 TIME_ZONE = 'Asia/Bishkek'
 USE_I18N = True
 USE_TZ = True

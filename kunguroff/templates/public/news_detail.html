@@ -1,12 +1,13 @@
 {% extends "public/base.html" %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}{{ object.title }} — {{ site.company_name }}{% endblock %}
 
 {% block content %}
 <div class="mb-3">
   <a href="{% url 'public:news' %}" class="text-decoration-none">
-    <i class="fa-solid fa-arrow-left me-1"></i> Назад к новостям
+    <i class="fa-solid fa-arrow-left me-1"></i> {% trans "Назад к новостям" %}
   </a>
 </div>
 
@@ -29,7 +30,7 @@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
       <span class="badge rounded-pill"
             style="background:rgba(16,144,240,.12);color:var(--kp-primary);border:1px solid rgba(16,144,240,.18);">
-        Новость
+        {% trans "Новость" %}
       </span>
       <span class="text-muted small">
         <i class="fa-regular fa-calendar me-1"></i>{{ object.published_at|date:"d.m.Y" }}
@@ -57,14 +58,14 @@
     <div class="kp-card p-4 p-lg-5 mt-3">
       <div class="row align-items-center g-3">
         <div class="col-lg-8">
-          <div class="fw-bold fs-4">Нужна юридическая консультация?</div>
+          <div class="fw-bold fs-4">{% trans "Нужна юридическая консультация?" %}</div>
           <div class="text-muted mt-1">
-            Опишите ситуацию — мы предложим оптимальный план действий.
+            {% trans "Опишите ситуацию — мы предложим оптимальный план действий." %}
           </div>
         </div>
         <div class="col-lg-4 d-flex justify-content-lg-end">
           <a class="btn kp-btn kp-btn-primary w-100 w-lg-auto" href="{% url 'public:contacts' %}#consult">
-            Оставить заявку
+            {% trans "Оставить заявку" %}
           </a>
         </div>
       </div>
@@ -73,34 +74,34 @@
 
   <div class="col-lg-4">
     <div class="kp-card p-4 sticky-top" style="top:90px;">
-      <div class="fw-bold mb-2">Контакты</div>
+      <div class="fw-bold mb-2">{% trans "Контакты" %}</div>
 
       <div class="d-flex gap-2 align-items-center mb-2">
         <i class="fa-solid fa-location-dot" style="color:var(--kp-primary)"></i>
-        <div class="text-muted">{{ site.address|default:"Адрес" }}</div>
+        <div class="text-muted">{{ site.address|default:_("Адрес") }}</div>
       </div>
 
       <div class="d-flex gap-2 align-items-center mb-2">
         <i class="fa-solid fa-phone" style="color:var(--kp-primary)"></i>
-        <div class="text-muted">{{ site.phone|default:"Телефон" }}</div>
+        <div class="text-muted">{{ site.phone|default:_("Телефон") }}</div>
       </div>
 
       <div class="d-flex gap-2 align-items-center mb-2">
         <i class="fa-solid fa-envelope" style="color:var(--kp-primary)"></i>
-        <div class="text-muted">{{ site.email|default:"Email" }}</div>
+        <div class="text-muted">{{ site.email|default:_("Email") }}</div>
       </div>
 
       <div class="d-flex gap-2 align-items-center mb-3">
         <i class="fa-solid fa-clock" style="color:var(--kp-primary)"></i>
-        <div class="text-muted">{{ site.work_hours|default:"График работы" }}</div>
+        <div class="text-muted">{{ site.work_hours|default:_("График работы") }}</div>
       </div>
 
       <a class="btn kp-btn kp-btn-primary w-100" href="{% url 'public:contacts' %}#consult">
-        Консультация
+        {% trans "Консультация" %}
       </a>
 
       <div class="text-muted small mt-3">
-        * Важно: публикации носят информационный характер и не являются индивидуальной юридической консультацией.
+        {% trans "* Важно: публикации носят информационный характер и не являются индивидуальной юридической консультацией." %}
       </div>
     </div>
   </div>

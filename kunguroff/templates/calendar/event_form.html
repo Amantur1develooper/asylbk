@@ -1,351 +1,339 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} события - Kunguroff & Partners{% endblock %}
+{% block title %}
+  {% if form.instance.pk %}{% trans "Редактирование" %}{% else %}{% trans "Создание" %}{% endif %}
+  {% trans "события" %} - Kunguroff & Partners
+{% endblock %}
 
-{% block page_title %}{% if form.instance.pk %}Редактирование события{% else %}Создание нового события{% endif %}{% endblock %}
+{% block page_title %}
+  {% if form.instance.pk %}{% trans "Редактирование события" %}{% else %}{% trans "Создание нового события" %}{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
+  <div class="col-md-10">
+    <div class="card">
+      <div class="card-body">
+        <form method="post" id="eventForm">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                  <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="{{ form.event_type.id_for_label }}" class="form-label">{{ form.event_type.label }}</label>
+                {{ form.event_type }}
+                {% if form.event_type.errors %}
+                  <div class="invalid-feedback d-block">{{ form.event_type.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.start_time.id_for_label }}" class="form-label">
+                  {{ form.start_time.label }}
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="flex-grow-1">
+                    <div class="input-group">
+                      <span class="input-group-text">📅</span>
+                      {{ form.start_time }}
+                    </div>
+                  </div>
+                </div>
+                <div class="form-text">
+                  {% trans "Сначала выберите дату и время начала, окончание заполнится автоматически." %}
+                </div>
+                {% if form.start_time.errors %}
+                  <div class="invalid-feedback d-block">{{ form.start_time.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.end_time.id_for_label }}" class="form-label">
+                  {{ form.end_time.label }}
+                </label>
+
+                <div class="d-flex align-items-center gap-2">
+                  <div class="flex-grow-1">
+                    <div class="input-group">
+                      <span class="input-group-text">⏱️</span>
+                      {{ form.end_time }}
+                    </div>
+                  </div>
+
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary js-duration-btn" data-duration="30">
+                      {% trans "+30 мин" %}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary js-duration-btn" data-duration="60">
+                      {% trans "+1 час" %}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-text">
+                  {% trans "Можно быстро изменить окончание кнопками справа." %}
+                </div>
+
+                {% if form.end_time.errors %}
+                  <div class="invalid-feedback d-block">{{ form.end_time.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+              <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.location.id_for_label }}" class="form-label">{{ form.location.label }}</label>
+                {{ form.location }}
+                {% if form.location.errors %}
+                  <div class="invalid-feedback d-block">{{ form.location.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.priority.id_for_label }}" class="form-label">{{ form.priority.label }}</label>
+                {{ form.priority }}
+                {% if form.priority.errors %}
+                  <div class="invalid-feedback d-block">{{ form.priority.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.case.id_for_label }}" class="form-label">{{ form.case.label }}</label>
+                {{ form.case }}
+                {% if form.case.errors %}
+                  <div class="invalid-feedback d-block">{{ form.case.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="{{ form.trustor.id_for_label }}" class="form-label">{{ form.trustor.label }}</label>
+                {{ form.trustor }}
+                {% if form.trustor.errors %}
+                  <div class="invalid-feedback d-block">{{ form.trustor.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="{{ form.participants.id_for_label }}" class="form-label">{{ form.participants.label }}</label>
+            {{ form.participants }}
+            {% if form.participants.errors %}
+              <div class="invalid-feedback d-block">{{ form.participants.errors.0 }}</div>
+            {% endif %}
+            <div class="form-text">{% trans "Удерживайте Ctrl для выбора нескольких участников" %}</div>
+          </div>
+
+          <!-- Настройки уведомлений -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h6 class="card-title mb-0">{% trans "Настройки уведомлений" %}</h6>
+            </div>
             <div class="card-body">
-                <form method="post" id="eventForm">
-                    {% csrf_token %}
-                    
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {% for error in form.non_field_errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
-                                {{ form.title }}
-                                {% if form.title.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.title.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.event_type.id_for_label }}" class="form-label">{{ form.event_type.label }}</label>
-                                {{ form.event_type }}
-                                {% if form.event_type.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.event_type.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                   <div class="row">
-    <div class="col-md-6">
-        <div class="mb-3">
-            <label for="{{ form.start_time.id_for_label }}" class="form-label">
-                {{ form.start_time.label }}
-            </label>
-            <div class="d-flex align-items-center gap-2">
-                <div class="flex-grow-1">
-                    <div class="input-group">
-                        <span class="input-group-text">📅</span>
-                        {{ form.start_time }}
-                    </div>
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  {{ form.enable_notifications }}
+                  <label class="form-check-label" for="{{ form.enable_notifications.id_for_label }}">
+                    {% trans "Включить уведомления" %}
+                  </label>
                 </div>
-            </div>
-            <div class="form-text">
-                Сначала выберите дату и время начала, окончание заполнится автоматически.
-            </div>
-            {% if form.start_time.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.start_time.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-    </div>
+              </div>
 
-    <div class="col-md-6">
-        <div class="mb-3">
-            <label for="{{ form.end_time.id_for_label }}" class="form-label">
-                {{ form.end_time.label }}
-            </label>
-            <div class="d-flex align-items-center gap-2">
-                <div class="flex-grow-1">
-                    <div class="input-group">
-                        <span class="input-group-text">⏱️</span>
-                        {{ form.end_time }}
-                    </div>
+              <div class="row" id="notificationSettings">
+                <div class="col-md-6">
+                  <div class="form-check mb-2">
+                    {{ form.notify_1_day }}
+                    <label class="form-check-label" for="{{ form.notify_1_day.id_for_label }}">
+                      {% trans "За 1 день" %}
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    {{ form.notify_12_hours }}
+                    <label class="form-check-label" for="{{ form.notify_12_hours.id_for_label }}">
+                      {% trans "За 12 часов" %}
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    {{ form.notify_3_hours }}
+                    <label class="form-check-label" for="{{ form.notify_3_hours.id_for_label }}">
+                      {% trans "За 3 часа" %}
+                    </label>
+                  </div>
                 </div>
-                <div class="btn-group btn-group-sm" role="group">
-                    <button type="button"
-                            class="btn btn-outline-secondary js-duration-btn"
-                            data-duration="30">
-                        +30 мин
-                    </button>
-                    <button type="button"
-                            class="btn btn-outline-secondary js-duration-btn"
-                            data-duration="60">
-                        +1 час
-                    </button>
-                </div>
-            </div>
-            <div class="form-text">
-                Можно быстро изменить окончание кнопками справа.
-            </div>
-            {% if form.end_time.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.end_time.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
 
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.description.errors.0 }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.location.id_for_label }}" class="form-label">{{ form.location.label }}</label>
-                                {{ form.location }}
-                                {% if form.location.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.location.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.priority.id_for_label }}" class="form-label">{{ form.priority.label }}</label>
-                                {{ form.priority }}
-                                {% if form.priority.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.priority.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.case.id_for_label }}" class="form-label">{{ form.case.label }}</label>
-                                {{ form.case }}
-                                {% if form.case.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.case.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.trustor.id_for_label }}" class="form-label">{{ form.trustor.label }}</label>
-                                {{ form.trustor }}
-                                {% if form.trustor.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form.trustor.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.participants.id_for_label }}" class="form-label">{{ form.participants.label }}</label>
-                        {{ form.participants }}
-                        {% if form.participants.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.participants.errors.0 }}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">Удерживайте Ctrl для выбора нескольких участников</div>
-                    </div>
-                    
-                    <!-- Настройки уведомлений -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">Настройки уведомлений</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    {{ form.enable_notifications }}
-                                    <label class="form-check-label" for="{{ form.enable_notifications.id_for_label }}">
-                                        Включить уведомления
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="row" id="notificationSettings">
-                                <div class="col-md-6">
-                                    <div class="form-check mb-2">
-                                        {{ form.notify_1_day }}
-                                        <label class="form-check-label" for="{{ form.notify_1_day.id_for_label }}">
-                                            За 1 день
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        {{ form.notify_12_hours }}
-                                        <label class="form-check-label" for="{{ form.notify_12_hours.id_for_label }}">
-                                            За 12 часов
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        {{ form.notify_3_hours }}
-                                        <label class="form-check-label" for="{{ form.notify_3_hours.id_for_label }}">
-                                            За 3 часа
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check mb-2">
-                                        {{ form.notify_1_hour }}
-                                        <label class="form-check-label" for="{{ form.notify_1_hour.id_for_label }}">
-                                            За 1 час
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        {{ form.notify_30_minutes }}
-                                        <label class="form-check-label" for="{{ form.notify_30_minutes.id_for_label }}">
-                                            За 30 минут
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        {{ form.notify_10_minutes }}
-                                        <label class="form-check-label" for="{{ form.notify_10_minutes.id_for_label }}">
-                                            За 10 минут
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        {{ form.notify_1_minute }}
-                                        <label class="form-check-label" for="{{ form.notify_1_minute.id_for_label }}">
-                                            За 1 минуту
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <a href="{% if form.instance.pk %}{% url 'calendar1:event_detail' form.instance.pk %}{% else %}{% url 'calendar1:event_list' %}{% endif %}" 
-                           class="btn btn-secondary">Отмена</a>
-                        <button type="submit" class="btn btn-primary">
-                            {% if form.instance.pk %}Сохранить изменения{% else %}Создать событие{% endif %}
-                        </button>
-                    </div>
-                </form>
+                <div class="col-md-6">
+                  <div class="form-check mb-2">
+                    {{ form.notify_1_hour }}
+                    <label class="form-check-label" for="{{ form.notify_1_hour.id_for_label }}">
+                      {% trans "За 1 час" %}
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    {{ form.notify_30_minutes }}
+                    <label class="form-check-label" for="{{ form.notify_30_minutes.id_for_label }}">
+                      {% trans "За 30 минут" %}
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    {{ form.notify_10_minutes }}
+                    <label class="form-check-label" for="{{ form.notify_10_minutes.id_for_label }}">
+                      {% trans "За 10 минут" %}
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    {{ form.notify_1_minute }}
+                    <label class="form-check-label" for="{{ form.notify_1_minute.id_for_label }}">
+                      {% trans "За 1 минуту" %}
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <a href="{% if form.instance.pk %}{% url 'calendar1:event_detail' form.instance.pk %}{% else %}{% url 'calendar1:event_list' %}{% endif %}"
+               class="btn btn-secondary">
+              {% trans "Отмена" %}
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+              {% if form.instance.pk %}{% trans "Сохранить изменения" %}{% else %}{% trans "Создать событие" %}{% endif %}
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // ==== Уведомления ====
-    const enableNotifications = document.getElementById('{{ form.enable_notifications.id_for_label }}');
-    const notificationSettings = document.getElementById('notificationSettings');
+  // ==== Уведомления ====
+  const enableNotifications = document.getElementById('{{ form.enable_notifications.id_for_label }}');
+  const notificationSettings = document.getElementById('notificationSettings');
 
-    function toggleNotificationSettings() {
-        if (!enableNotifications || !notificationSettings) return;
+  function toggleNotificationSettings() {
+    if (!enableNotifications || !notificationSettings) return;
 
-        const disabled = !enableNotifications.checked;
-        notificationSettings.style.opacity = disabled ? '0.5' : '1';
-        notificationSettings.querySelectorAll('input').forEach(input => {
-            input.disabled = disabled;
-        });
-    }
-
-    if (enableNotifications) {
-        enableNotifications.addEventListener('change', toggleNotificationSettings);
-        toggleNotificationSettings(); // Инициализация при загрузке
-    }
-
-    // ==== Валидация формы ====
-    const form = document.getElementById('eventForm');
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        });
-    }
-
-    // ==== Удобная работа с датой/временем ====
-    const startInput = document.getElementById('{{ form.start_time.id_for_label }}');
-    const endInput   = document.getElementById('{{ form.end_time.id_for_label }}');
-
-    function formatForInput(date) {
-        if (!(date instanceof Date) || isNaN(date)) return '';
-        const pad = n => String(n).padStart(2, '0');
-        const y = date.getFullYear();
-        const m = pad(date.getMonth() + 1);
-        const d = pad(date.getDate());
-        const h = pad(date.getHours());
-        const min = pad(date.getMinutes());
-        return `${y}-${m}-${d}T${h}:${min}`;
-    }
-
-    function syncEndMin() {
-        if (!startInput || !endInput || !startInput.value) return;
-
-        // end_time не может быть раньше start_time
-        endInput.min = startInput.value;
-
-        // Если конец пустой или раньше начала — ставим +1 час
-        if (!endInput.value || endInput.value < startInput.value) {
-            const d = new Date(startInput.value);
-            if (!isNaN(d)) {
-                d.setHours(d.getHours() + 1);
-                endInput.value = formatForInput(d);
-            } else {
-                endInput.value = startInput.value;
-            }
-        }
-    }
-
-    if (startInput && endInput) {
-        startInput.addEventListener('change', syncEndMin);
-        syncEndMin();
-    }
-
-    // Кнопки "+30 мин" / "+1 час" для конца события
-    document.querySelectorAll('.js-duration-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            if (!startInput || !endInput || !startInput.value) return;
-
-            const base = new Date(startInput.value);
-            if (isNaN(base)) return;
-
-            const minutes = parseInt(this.dataset.duration || '0', 10);
-            base.setMinutes(base.getMinutes() + minutes);
-            endInput.value = formatForInput(base);
-            endInput.min = startInput.value;
-        });
+    const disabled = !enableNotifications.checked;
+    notificationSettings.style.opacity = disabled ? '0.5' : '1';
+    notificationSettings.querySelectorAll('input').forEach(input => {
+      input.disabled = disabled;
     });
+  }
+
+  if (enableNotifications) {
+    enableNotifications.addEventListener('change', toggleNotificationSettings);
+    toggleNotificationSettings();
+  }
+
+  // ==== Валидация формы ====
+  const form = document.getElementById('eventForm');
+  if (form) {
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  }
+
+  // ==== Удобная работа с датой/временем ====
+  const startInput = document.getElementById('{{ form.start_time.id_for_label }}');
+  const endInput   = document.getElementById('{{ form.end_time.id_for_label }}');
+
+  function formatForInput(date) {
+    if (!(date instanceof Date) || isNaN(date)) return '';
+    const pad = n => String(n).padStart(2, '0');
+    const y = date.getFullYear();
+    const m = pad(date.getMonth() + 1);
+    const d = pad(date.getDate());
+    const h = pad(date.getHours());
+    const min = pad(date.getMinutes());
+    return `${y}-${m}-${d}T${h}:${min}`;
+  }
+
+  function syncEndMin() {
+    if (!startInput || !endInput || !startInput.value) return;
+
+    endInput.min = startInput.value;
+
+    if (!endInput.value || endInput.value < startInput.value) {
+      const d = new Date(startInput.value);
+      if (!isNaN(d)) {
+        d.setHours(d.getHours() + 1);
+        endInput.value = formatForInput(d);
+      } else {
+        endInput.value = startInput.value;
+      }
+    }
+  }
+
+  if (startInput && endInput) {
+    startInput.addEventListener('change', syncEndMin);
+    syncEndMin();
+  }
+
+  // Кнопки "+30 мин" / "+1 час"
+  document.querySelectorAll('.js-duration-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      if (!startInput || !endInput || !startInput.value) return;
+
+      const base = new Date(startInput.value);
+      if (isNaN(base)) return;
+
+      const minutes = parseInt(this.dataset.duration || '0', 10);
+      base.setMinutes(base.getMinutes() + minutes);
+      endInput.value = formatForInput(base);
+      endInput.min = startInput.value;
+    });
+  });
 });
 </script>
 {% endblock %}

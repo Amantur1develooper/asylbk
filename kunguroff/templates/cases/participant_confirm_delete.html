@@ -1,21 +1,39 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}
-{% if object %}Редактирование участника{% else %}Добавление участника{% endif %} - Kunguroff & Partners
+  {% if object %}
+    {% trans "Редактирование участника" %} - Kunguroff & Partners
+  {% else %}
+    {% trans "Добавление участника" %} - Kunguroff & Partners
+  {% endif %}
 {% endblock %}
 
 {% block page_title %}
-{% if object %}Редактирование участника{% else %}Добавление нового участника{% endif %}
+  {% if object %}
+    {% trans "Редактирование участника" %}
+  {% else %}
+    {% trans "Добавление нового участника" %}
+  {% endif %}
 {% endblock %}
 
-{% block content %} <h2>Удалить участника?</h2>
-<p>Вы уверены, что хотите удалить участника {{ participant }} из дела №{{ participant.case.pk }}?</p>
+{% block content %}
+  <h2>{% trans "Удалить участника?" %}</h2>
 
-<form method="post">
+  <p>
+    {% blocktrans with participant_name=participant case_pk=participant.case.pk %}
+      Вы уверены, что хотите удалить участника {{ participant_name }} из дела №{{ case_pk }}?
+    {% endblocktrans %}
+  </p>
+
+  <form method="post">
     {% csrf_token %}
-    <a href="{% url 'cases:case_detail' participant.case.pk %}" class="btn btn-secondary">Отмена</a>
-    <button type="submit" class="btn btn-danger">Удалить</button>
-</form>
-
+    <a href="{% url 'cases:case_detail' participant.case.pk %}" class="btn btn-secondary">
+      {% trans "Отмена" %}
+    </a>
+    <button type="submit" class="btn btn-danger">
+      {% trans "Удалить" %}
+    </button>
+  </form>
 {% endblock %}

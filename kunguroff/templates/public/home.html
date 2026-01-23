@@ -1,154 +1,149 @@
 {% extends "public/base.html" %}
+{% load i18n %}
 
-{% block title %}{{ site.company_name }} — Главная{% endblock %}
+{% block title %}{{ site.company_name }} — {% trans "Главная" %}{% endblock %}
+
 {% block content %}
-<style>.kp-form-title{
-  font-weight: 900;
-  letter-spacing: .2px;
-}
 
-.kp-input{
-  border-radius: 18px !important;
-  border: 1px solid rgba(16,144,240,.18) !important;
-  background: rgba(255,255,255,.92) !important;
-}
-
-.kp-input:focus{
-  border-color: var(--kp-primary) !important;
-  box-shadow: 0 0 0 .25rem rgba(16,144,240,.18) !important;
-}
-
-.kp-input-icon{
-  border-radius: 18px !important;
-  border: 1px solid rgba(16,144,240,.18) !important;
-  background: rgba(16,144,240,.08) !important;
-  color: var(--kp-primary) !important;
-}
-
-.kp-mini{
-  font-size: 12px;
-  line-height: 1.35;
-  color: rgba(11,19,32,.62);
-}
+{# Лучше вынести CSS в brand.css, но если пока так — ок #}
+<style>
+  .kp-form-title{font-weight:900;letter-spacing:.2px}
+  .kp-input{border-radius:18px!important;border:1px solid rgba(16,144,240,.18)!important;background:rgba(255,255,255,.92)!important}
+  .kp-input:focus{border-color:var(--kp-primary)!important;box-shadow:0 0 0 .25rem rgba(16,144,240,.18)!important}
+  .kp-input-icon{border-radius:18px!important;border:1px solid rgba(16,144,240,.18)!important;background:rgba(16,144,240,.08)!important;color:var(--kp-primary)!important}
+  .kp-mini{font-size:12px;line-height:1.35;color:rgba(11,19,32,.62)}
 </style>
+
 <section class="kp-hero p-4 p-lg-5">
   <div class="row align-items-center g-4">
     <div class="col-lg-7">
       <h1 class="display-6 fw-black" style="font-weight:900;">
-        Защищаем ваши права — уверенно, быстро, профессионально
+        {% trans "Защищаем ваши права — уверенно, быстро, профессионально" %}
       </h1>
+
       <p class="text-muted fs-5 mt-3">
-        Консультации, сопровождение, представительство в суде и защита бизнеса.
+        {% trans "Консультации, сопровождение, представительство в суде и защита бизнеса." %}
       </p>
+
       <div class="d-flex gap-2 flex-wrap mt-3">
-        <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">Получить консультацию</a>
-        <a class="btn kp-btn btn-outline-primary" href="{% url 'public:casess' %}" style="border-radius:999px;">Смотреть дела</a>
+        <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">
+          {% trans "Получить консультацию" %}
+        </a>
+        <a class="btn kp-btn btn-outline-primary" href="{% url 'public:casess' %}" style="border-radius:999px;">
+          {% trans "Смотреть дела" %}
+        </a>
       </div>
 
-      <div class="d-flex gap-3 mt-4 flex-wrap">
-        <div class="kp-card p-3">
-          <div class="fw-bold">Сильная команда</div>
-          <div class="text-muted small">Опыт, практика, результат</div>
+      <div class="row g-3 mt-4">
+        <div class="col-12 col-md-4">
+          <div class="kp-card p-3 h-100">
+            <div class="fw-bold">{% trans "Сильная команда" %}</div>
+            <div class="text-muted small">{% trans "Опыт, практика, результат" %}</div>
+          </div>
         </div>
-        <div class="kp-card p-3">
-          <div class="fw-bold">Прозрачные условия</div>
-          <div class="text-muted small">Понятные этапы и сроки</div>
+        <div class="col-12 col-md-4">
+          <div class="kp-card p-3 h-100">
+            <div class="fw-bold">{% trans "Прозрачные условия" %}</div>
+            <div class="text-muted small">{% trans "Понятные этапы и сроки" %}</div>
+          </div>
         </div>
-        <div class="kp-card p-3">
-          <div class="fw-bold">Конфиденциальность</div>
-          <div class="text-muted small">Безопасность данных клиента</div>
+        <div class="col-12 col-md-4">
+          <div class="kp-card p-3 h-100">
+            <div class="fw-bold">{% trans "Конфиденциальность" %}</div>
+            <div class="text-muted small">{% trans "Безопасность данных клиента" %}</div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="col-lg-5">
-     <div class="kp-card p-4 p-lg-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-      <div class="kp-form-title fs-5">Быстрая заявка</div>
-      <div class="kp-mini">Обычно отвечаем в рабочее время в течение 10–30 минут</div>
-    </div>
-    <span class="badge rounded-pill"
-          style="background:rgba(16,144,240,.12);color:var(--kp-primary);border:1px solid rgba(16,144,240,.18);">
-      Конфиденциально
-    </span>
-  </div>
-
-  <form method="post" action="{% url 'public:consultation_create' %}">
-    {% csrf_token %}
-
-    <div class="mb-3">
-      <label class="form-label fw-bold mb-1">Имя *</label>
-      <div class="input-group">
-        <span class="input-group-text kp-input-icon"><i class="fa-solid fa-user"></i></span>
-        {{ form.name }}
-      </div>
-    </div>
-
-    <div class="mb-2">
-      <label class="form-label fw-bold mb-1">Телефон *</label>
-      <div class="input-group">
-        <span class="input-group-text kp-input-icon"><i class="fa-solid fa-phone"></i></span>
-        {{ form.phone }}
-      </div>
-      <div class="kp-mini mt-1">Мы не передаём номер третьим лицам</div>
-    </div>
-
-    <div class="d-flex align-items-center justify-content-between mt-3">
-      <button class="btn kp-btn kp-btn-primary flex-grow-1" type="submit">
-        Отправить
-      </button>
-    </div>
-
-    <button class="btn btn-link px-0 mt-2 text-decoration-none"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#moreFields"
-            aria-expanded="false"
-            aria-controls="moreFields">
-      <i class="fa-solid fa-sliders me-1"></i> Добавить детали (необязательно)
-    </button>
-
-    <div class="collapse" id="moreFields">
-      <div class="pt-2">
-        <div class="mb-3">
-          <label class="form-label fw-bold mb-1">Тема</label>
-          <div class="input-group">
-            <span class="input-group-text kp-input-icon"><i class="fa-solid fa-tag"></i></span>
-            {{ form.topic }}
+      <div class="kp-card p-4 p-lg-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <div class="kp-form-title fs-5">{% trans "Быстрая заявка" %}</div>
+            <div class="kp-mini">{% trans "Обычно отвечаем в рабочее время в течение 10–30 минут" %}</div>
           </div>
+          <span class="badge rounded-pill"
+                style="background:rgba(16,144,240,.12);color:var(--kp-primary);border:1px solid rgba(16,144,240,.18);">
+            {% trans "Конфиденциально" %}
+          </span>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-bold mb-1">Email</label>
-          <div class="input-group">
-            <span class="input-group-text kp-input-icon"><i class="fa-solid fa-envelope"></i></span>
-            {{ form.email }}
+        <form method="post" action="{% url 'public:consultation_create' %}">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-bold mb-1">{% trans "Имя" %} *</label>
+            <div class="input-group">
+              <span class="input-group-text kp-input-icon"><i class="fa-solid fa-user"></i></span>
+              {{ form.name }}
+            </div>
           </div>
-        </div>
 
-        <div class="mb-2">
-          <label class="form-label fw-bold mb-1">Сообщение</label>
-          {{ form.message }}
-        </div>
+          <div class="mb-2">
+            <label class="form-label fw-bold mb-1">{% trans "Телефон" %} *</label>
+            <div class="input-group">
+              <span class="input-group-text kp-input-icon"><i class="fa-solid fa-phone"></i></span>
+              {{ form.phone }}
+            </div>
+            <div class="kp-mini mt-1">{% trans "Мы не передаём номер третьим лицам" %}</div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between mt-3">
+            <button class="btn kp-btn kp-btn-primary flex-grow-1" type="submit">
+              {% trans "Отправить" %}
+            </button>
+          </div>
+
+          <button class="btn btn-link px-0 mt-2 text-decoration-none"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#moreFields"
+                  aria-expanded="false"
+                  aria-controls="moreFields">
+            <i class="fa-solid fa-sliders me-1"></i> {% trans "Добавить детали (необязательно)" %}
+          </button>
+
+          <div class="collapse" id="moreFields">
+            <div class="pt-2">
+              <div class="mb-3">
+                <label class="form-label fw-bold mb-1">{% trans "Тема" %}</label>
+                <div class="input-group">
+                  <span class="input-group-text kp-input-icon"><i class="fa-solid fa-tag"></i></span>
+                  {{ form.topic }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold mb-1">Email</label>
+                <div class="input-group">
+                  <span class="input-group-text kp-input-icon"><i class="fa-solid fa-envelope"></i></span>
+                  {{ form.email }}
+                </div>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label fw-bold mb-1">{% trans "Сообщение" %}</label>
+                {{ form.message }}
+              </div>
+            </div>
+          </div>
+
+          <div class="kp-mini mt-3">
+            {% trans "Нажимая «Отправить», вы соглашаетесь на обработку данных для связи по заявке." %}
+          </div>
+        </form>
       </div>
-    </div>
-
-    <div class="kp-mini mt-3">
-      Нажимая «Отправить», вы соглашаетесь на обработку данных для связи по заявке.
-    </div>
-  </form>
-</div>
-
     </div>
   </div>
 </section>
 
 <section class="mt-5">
   <div class="d-flex align-items-end justify-content-between mb-3">
-    <h2 class="kp-section-title">Практики</h2>
-    <span class="text-muted">то, что делаем лучше всего</span>
+    <h2 class="kp-section-title">{% trans "Практики" %}</h2>
+    <span class="text-muted">{% trans "то, что делаем лучше всего" %}</span>
   </div>
+
   <div class="row g-3">
     {% for p in practices %}
       <div class="col-md-6 col-lg-4">
@@ -157,7 +152,14 @@
             <i class="{{ p.icon|default:'fa-solid fa-scale-balanced' }} fs-4" style="color:var(--kp-primary)"></i>
             <div class="fw-bold">{{ p.title }}</div>
           </div>
-          <div class="text-muted mt-2">{{ p.description|default:"Описание практики заполните в админке." }}</div>
+
+          <div class="text-muted mt-2">
+            {% if p.description %}
+              {{ p.description }}
+            {% else %}
+              {% trans "Описание практики заполните в админке." %}
+            {% endif %}
+          </div>
         </div>
       </div>
     {% endfor %}
@@ -166,9 +168,10 @@
 
 <section class="mt-5">
   <div class="d-flex align-items-end justify-content-between mb-3">
-    <h2 class="kp-section-title">Дела</h2>
-    <a href="{% url 'public:casess' %}" class="text-decoration-none">Все дела →</a>
+    <h2 class="kp-section-title">{% trans "Дела" %}</h2>
+    <a href="{% url 'public:casess' %}" class="text-decoration-none">{% trans "Все дела" %} →</a>
   </div>
+
   <div class="row g-3">
     {% for c in cases %}
       <div class="col-md-6 col-lg-4">
@@ -186,9 +189,10 @@
 
 <section class="mt-5">
   <div class="d-flex align-items-end justify-content-between mb-3">
-    <h2 class="kp-section-title">Новости</h2>
-    <a href="{% url 'public:news' %}" class="text-decoration-none">Все новости →</a>
+    <h2 class="kp-section-title">{% trans "Новости" %}</h2>
+    <a href="{% url 'public:news' %}" class="text-decoration-none">{% trans "Все новости" %} →</a>
   </div>
+
   <div class="row g-3">
     {% for n in news %}
       <div class="col-lg-4">
