@@ -65,6 +65,9 @@ LOCALE_PATHS = [
     BASE_DIR / "locale",
 ]
 
+ADMIN_SITE_HEADER = "Администрирование Kunguroff"
+ADMIN_SITE_TITLE = "Kunguroff"
+ADMIN_INDEX_TITLE = "Панель управления"
 
 
 AUTH_USER_MODEL = 'users.User'

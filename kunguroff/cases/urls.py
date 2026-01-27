@@ -15,6 +15,7 @@ urlpatterns = [
     path('<int:pk>/add-document/', views.CaseDocumentCreateView.as_view(), name='case_add_document'),
     path('ajax/category-stages/', views.CategoryStagesView.as_view(), name='ajax_category_stages'),
     # ... другие маршруты ...
+      path('ajax/load-stages/', views.load_stages, name='cases_load_stages'),
     path('ajax/load-stages/', views.ajax_load_stages, name='ajax_load_stages'),
     path('ajax/load-stage-fields/', views.ajax_load_stage_fields, name='ajax_load_stage_fields'),
     path('ajax/load-field-info/<int:field_id>/', views.ajax_load_field_info, name='ajax_load_field_info'),

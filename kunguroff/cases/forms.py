@@ -60,6 +60,9 @@ class CaseParticipantForm(forms.ModelForm):
 
         self.fields['trustor'].label_from_instance = label
 
+# cases/forms.py
+from django import forms
+from .models import Case, CaseStage, CaseCategory, User  # проверь импорты
 
 class CaseForm(forms.ModelForm):
     category = forms.ModelChoiceField(
@@ -67,7 +70,8 @@ class CaseForm(forms.ModelForm):
         widget=forms.Select(attrs={
             'class': 'form-select',
             'id': 'id_category',
-            'onchange': 'loadStagesAndRoles(this.value);'
+            # убираем несуществующую функцию loadStagesAndRoles
+            'onchange': 'loadStages(this.value);'
         }),
         label="Категория дела*"
     )
@@ -79,7 +83,6 @@ class CaseForm(forms.ModelForm):
         label="Текущий этап"
     )
 
-    # ИЗМЕНЕНИЕ: Заменяем responsible_lawyer на responsible_lawyer
     responsible_lawyer = forms.ModelMultipleChoiceField(
         queryset=User.objects.filter(role__in=['lawyer', 'advocate']).order_by('last_name', 'first_name'),
         required=False,
@@ -91,44 +94,17 @@ class CaseForm(forms.ModelForm):
         label="Ответственные юристы/адвокаты"
     )
 
-    court_name = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        label="Наименование суда"
-    )
-    case_number = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        label="Номер дела в суде"
-    )
-    judge_name = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        label="ФИО судьи"
-    )
-
     class Meta:
         model = Case
         fields = [
-            'title', 'description', 'category', 'responsible_lawyer',  # ИЗМЕНЕНИЕ
-            'manager', 'current_stage', 'status', 'contract_amount',  # НОВОЕ поле в форме
+            'title', 'description', 'category', 'responsible_lawyer',
+            'manager', 'current_stage', 'status', 'contract_amount',
             'court_name', 'case_number', 'judge_name'
         ]
         widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Введите название дела'
-            }),
-            'contract_amount': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'step': '0.01',
-                'placeholder': 'Полная стоимость дела (100%)',
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'rows': 4,
-                'placeholder': 'Подробное описание дела...'
-            }),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите название дела'}),
+            'contract_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Полная стоимость дела (100%)'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Подробное описание дела...'}),
             'manager': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
@@ -144,35 +120,152 @@ class CaseForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        # ДОБАВЛЕНО: Устанавливаем обязательные поля
         self.fields['title'].required = True
         self.fields['category'].required = True
         self.fields['status'].required = True
 
-        if user:
-            # Для юристов/адвокатов автоматически выбираем текущего пользователя
-            if user.role in ['lawyer', 'advocate']:
-                self.fields['responsible_lawyer'].initial = [user]
-            
-            # Настройка менеджера
-            if user.role in ['manager', 'director', 'deputy_director', 'admin']:
-                self.fields['manager'].queryset = User.objects.filter(
-                    role__in=['manager', 'director', 'deputy_director']
-                )
-            else:
-                self.fields['manager'].queryset = User.objects.filter(
-                    role__in=['manager', 'director', 'deputy_director']
-                )
+        if user and user.role in ['lawyer', 'advocate']:
+            self.fields['responsible_lawyer'].initial = [user]
 
-        # Если редактируем существующее дело
-        if self.instance and self.instance.pk and self.instance.category:
+        # менеджеры
+        self.fields['manager'].queryset = User.objects.filter(
+            role__in=['manager', 'director', 'deputy_director']
+        )
+
+        # 1) Редактирование — подставить этапы категории инстанса
+        if self.instance and self.instance.pk and self.instance.category_id:
             self.fields['current_stage'].queryset = CaseStage.objects.filter(
-                category=self.instance.category
+                category_id=self.instance.category_id
             ).order_by('order')
-
-
-            if self.instance.current_stage:
+            if self.instance.current_stage_id:
                 self.fields['current_stage'].initial = self.instance.current_stage
+
+        # 2) Создание/POST — подставить этапы выбранной категории из self.data
+        if 'category' in self.data:
+            try:
+                cat_id = int(self.data.get('category')) if self.data.get('category') else None
+            except (TypeError, ValueError):
+                cat_id = None
+
+            if cat_id:
+                qs = CaseStage.objects.filter(category_id=cat_id).order_by('order')
+                self.fields['current_stage'].queryset = qs
+                # Если пользователь ещё не выбрал этап — предложим первый
+                if not self.data.get('current_stage') and qs.exists():
+                    self.fields['current_stage'].initial = qs.first()
+
+# class CaseForm(forms.ModelForm):
+#     category = forms.ModelChoiceField(
+#         queryset=CaseCategory.objects.all(),
+#         widget=forms.Select(attrs={
+#             'class': 'form-select',
+#             'id': 'id_category',
+#             'onchange': 'loadStagesAndRoles(this.value);'
+#         }),
+#         label="Категория дела*"
+#     )
+
+#     current_stage = forms.ModelChoiceField(
+#         queryset=CaseStage.objects.none(),
+#         required=False,
+#         widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_current_stage'}),
+#         label="Текущий этап"
+#     )
+
+#     # ИЗМЕНЕНИЕ: Заменяем responsible_lawyer на responsible_lawyer
+#     responsible_lawyer = forms.ModelMultipleChoiceField(
+#         queryset=User.objects.filter(role__in=['lawyer', 'advocate']).order_by('last_name', 'first_name'),
+#         required=False,
+#         widget=forms.SelectMultiple(attrs={
+#             'class': 'form-select select2-multiple',
+#             'data-placeholder': 'Выберите ответственных юристов...',
+#             'style': 'width: 100%'
+#         }),
+#         label="Ответственные юристы/адвокаты"
+#     )
+
+#     court_name = forms.CharField(
+#         required=False,
+#         widget=forms.TextInput(attrs={'class': 'form-control'}),
+#         label="Наименование суда"
+#     )
+#     case_number = forms.CharField(
+#         required=False,
+#         widget=forms.TextInput(attrs={'class': 'form-control'}),
+#         label="Номер дела в суде"
+#     )
+#     judge_name = forms.CharField(
+#         required=False,
+#         widget=forms.TextInput(attrs={'class': 'form-control'}),
+#         label="ФИО судьи"
+#     )
+
+#     class Meta:
+#         model = Case
+#         fields = [
+#             'title', 'description', 'category', 'responsible_lawyer',  # ИЗМЕНЕНИЕ
+#             'manager', 'current_stage', 'status', 'contract_amount',  # НОВОЕ поле в форме
+#             'court_name', 'case_number', 'judge_name'
+#         ]
+#         widgets = {
+#             'title': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Введите название дела'
+#             }),
+#             'contract_amount': forms.NumberInput(attrs={
+#                 'class': 'form-control',
+#                 'step': '0.01',
+#                 'placeholder': 'Полная стоимость дела (100%)',
+#             }),
+#             'description': forms.Textarea(attrs={
+#                 'class': 'form-control', 
+#                 'rows': 4,
+#                 'placeholder': 'Подробное описание дела...'
+#             }),
+#             'manager': forms.Select(attrs={'class': 'form-select'}),
+#             'status': forms.Select(attrs={'class': 'form-select'}),
+#         }
+#         labels = {
+#             'title': 'Название дела*',
+#             'description': 'Описание',
+#             'category': 'Категория дела*',
+#             'manager': 'Менеджер',
+#             'status': 'Статус*',
+#         }
+
+#     def __init__(self, *args, **kwargs):
+#         user = kwargs.pop('user', None)
+#         super().__init__(*args, **kwargs)
+
+#         # ДОБАВЛЕНО: Устанавливаем обязательные поля
+#         self.fields['title'].required = True
+#         self.fields['category'].required = True
+#         self.fields['status'].required = True
+
+#         if user:
+#             # Для юристов/адвокатов автоматически выбираем текущего пользователя
+#             if user.role in ['lawyer', 'advocate']:
+#                 self.fields['responsible_lawyer'].initial = [user]
+            
+#             # Настройка менеджера
+#             if user.role in ['manager', 'director', 'deputy_director', 'admin']:
+#                 self.fields['manager'].queryset = User.objects.filter(
+#                     role__in=['manager', 'director', 'deputy_director']
+#                 )
+#             else:
+#                 self.fields['manager'].queryset = User.objects.filter(
+#                     role__in=['manager', 'director', 'deputy_director']
+#                 )
+
+#         # Если редактируем существующее дело
+#         if self.instance and self.instance.pk and self.instance.category:
+#             self.fields['current_stage'].queryset = CaseStage.objects.filter(
+#                 category=self.instance.category
+#             ).order_by('order')
+
+
+#             if self.instance.current_stage:
+#                 self.fields['current_stage'].initial = self.instance.current_stage
                        
 
  

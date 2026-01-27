@@ -102,6 +102,36 @@
         {% endif %}
       </div>
     </div>
+   
+{% if case.finance and case.finance.shares.all %}
+  <div class="card mt-3">
+    <div class="card-header"><h6 class="mb-0">Доли сотрудников (70%)</h6></div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Сотрудник</th>
+              <th>% от 70</th>
+              <th>При полной оплате</th>
+              <th>На текущий момент</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in case.finance.shares.all %}
+              <tr>
+                <td>{{ s.employee.get_full_name|default:s.employee.username }}</td>
+                <td>{{ s.percent_of_pool }}%</td>
+                <td>{{ s.amount_full }} сом</td>
+                <td>{{ s.amount_current }} сом</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endif %}
 
     {% if case.finance %}
       <div class="card mt-3">
@@ -177,7 +207,7 @@
         {% endif %}
       </div>
     </div>
-
+   
     <!-- Даты -->
     <div class="card mb-4">
       <div class="card-header">
@@ -194,7 +224,49 @@
         </div>
       </div>
     </div>
+     <div class="card mb-4"> 
+      {% if case.finance %}
+    <div class="card mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Финансы по делу</h5>
+      <a href="{% url 'finance:case_finance_update' case.id %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+    </div>
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-5">Сумма договора (100%)</dt>
+        <dd class="col-sm-7">{{ case.finance.contract_amount }} сом</dd>
+
+        <dt class="col-sm-5">Оплачено по договору</dt>
+        <dd class="col-sm-7">{{ case.finance.paid_amount }} сом</dd>
+
+        <dt class="col-sm-5">30% компании (при полной оплате)</dt>
+        <dd class="col-sm-7">{{ case.finance.company_share_amount }} сом</dd>
+
+        <dt class="col-sm-5">70% юристов (при полной оплате)</dt>
+        <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount }} сом</dd>
+
+        <!-- НОВОЕ: реальные доли на текущий момент -->
+        <dt class="col-sm-5">30% компании — на текущий момент</dt>
+        <dd class="col-sm-7">{{ case.finance.company_share_amount_current }} сом</dd>
+
+        <dt class="col-sm-5">70% юристов — на текущий момент</dt>
+        <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount_current }} сом</dd>
+
+        <!-- НОВОЕ: остатки к выплате -->
+        <dt class="col-sm-5">Остаток оплаты по договору</dt>
+        <dd class="col-sm-7">{{ case.finance.remaining_amount }} сом</dd>
+
+        <dt class="col-sm-5">Остаток 30% компании</dt>
+        <dd class="col-sm-7">{{ case.finance.company_share_amount_remaining }} сом</dd>
+
+        <dt class="col-sm-5">Остаток 70% юристов</dt>
+        <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount_remaining }} сом</dd>
+      </dl>
+    </div>
   </div>
+{% endif %} </div>
+  </div>
+    
 </div>
 
 <!-- Участники дела -->
@@ -372,7 +444,11 @@
               {% endwith %}
 
               <!-- Форма добавления документа -->
-              {% if stage == case.current_stage and (user.role == 'lawyer' or user.role == 'advocate' or user.role == 'director' or user.role == 'deputy_director' or user.role == 'manager') %}
+              {# показываем блок только на текущем этапе и только для ролей lawyer/advocate/director #}
+{% if case.current_stage_id and stage.id == case.current_stage_id %}
+  {% if user.role == 'lawyer' or user.role == 'advocate' or user.role == 'director' %}
+    ...тут твои кнопки/формы...
+
                 <hr>
                 <h6 class="mt-3 mb-3">{% trans "Добавить документ:" %}</h6>
 
@@ -407,7 +483,9 @@
 
                   <button type="submit" class="btn btn-primary">{% trans "Добавить документ" %}</button>
                 </form>
-              {% endif %}
+                {% endif %}
+{% endif %}
+
             </div>
           </div>
         </div>

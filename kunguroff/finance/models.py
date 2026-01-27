@@ -90,7 +90,49 @@ class CaseFinance(models.Model):
         if not self.contract_amount:
             return Decimal('0.00')
         return (self.contract_amount * self.company_share_percent / Decimal('100')).quantize(Decimal('0.01'))
+    @property
+    def company_share_amount(self):
+        if not self.contract_amount:
+            return Decimal('0.00')
+        return (self.contract_amount * self.company_share_percent / Decimal('100')).quantize(Decimal('0.01'))
 
+    @property
+    def lawyers_pool_amount(self):
+        if not self.contract_amount:
+            return Decimal('0.00')
+        return (self.contract_amount * self.lawyers_share_percent / Decimal('100')).quantize(Decimal('0.01'))
+
+    @property
+    def paid_ratio(self):
+        if not self.contract_amount or self.contract_amount == 0:
+            return Decimal('0')
+        return (self.paid_amount / self.contract_amount).quantize(Decimal('0.0001'))
+
+    # >>> НОВОЕ: реальная доля на текущий момент (от оплаченной части)
+    @property
+    def company_share_amount_current(self):
+        return (self.company_share_amount * self.paid_ratio).quantize(Decimal('0.01'))
+
+    @property
+    def lawyers_pool_amount_current(self):
+        return (self.lawyers_pool_amount * self.paid_ratio).quantize(Decimal('0.01'))
+
+    # >>> НОВОЕ: остатки
+    @property
+    def remaining_amount(self):
+        # сколько ещё клиент должен оплатить по договору
+        rem = (self.contract_amount - self.paid_amount)
+        return rem if rem > 0 else Decimal('0.00')
+
+    @property
+    def company_share_amount_remaining(self):
+        rem = (self.company_share_amount - self.company_share_amount_current)
+        return rem if rem > 0 else Decimal('0.00')
+
+    @property
+    def lawyers_pool_amount_remaining(self):
+        rem = (self.lawyers_pool_amount - self.lawyers_pool_amount_current)
+        return rem if rem > 0 else Decimal('0.00')
     @property
     def lawyers_pool_amount(self):
         """
@@ -187,81 +229,7 @@ class CaseFinanceShare(models.Model):
 
         if save:
             self.save()
-# class CaseFinanceShare(models.Model):
-#     """
-#     Доля конкретного сотрудника из 70% (lawyers_pool_amount).
 
-#     percent_of_pool — это % от этих 70 (должна суммарно быть 100).
-#     Например:
-#       - два юриста по 50.00 => каждый получает 50% от 70% (т.е. 35% от договора).
-#     """
-#     case_finance = models.ForeignKey(
-#         CaseFinance,
-#         on_delete=models.CASCADE,
-#         related_name='shares',
-#         verbose_name='Финансы дела'
-#     )
-#     employee = models.ForeignKey(
-#         User,
-#         on_delete=models.CASCADE,
-#         verbose_name='Сотрудник (юрист/адвокат)'
-#     )
-
-#     percent_of_pool = models.DecimalField(
-#         'Доля от 70% (в %)',
-#         max_digits=5,
-#         decimal_places=2,
-#         validators=[MinValueValidator(0)]
-#     )
-
-#     # Расчётные поля (можно держать для отчётов / Excel)
-#     amount_full = models.DecimalField(
-#         'Сумма при полной оплате договора',
-#         max_digits=12,
-#         decimal_places=2,
-#         default=0
-#     )
-#     amount_current = models.DecimalField(
-#         'Сумма к выплате с учётом текущей оплаты',
-#         max_digits=12,
-#         decimal_places=2,
-#         default=0
-#     )
-
-#     is_manual = models.BooleanField(
-#         'Ручная корректировка',
-#         default=False,
-#         help_text='Если включено — доля выставлена вручную бухгалтером/директором.'
-#     )
-
-#     class Meta:
-#         verbose_name = 'Доля сотрудника в 70%'
-#         verbose_name_plural = 'Доли сотрудников в 70%'
-#         unique_together = ('case_finance', 'employee')
-
-#     def __str__(self):
-#         return f'{self.employee} — {self.percent_of_pool}% от 70% по делу #{self.case_finance.case_id}'
-
-#     def recalc_amounts(self, pool_amount=None, paid_ratio=None, save=True):
-#         """
-#         Пересчитать amount_full и amount_current.
-#         pool_amount — общий котёл 70% (Decimal)
-#         paid_ratio — доля оплаченности договора (0..1)
-#         """
-#         from decimal import Decimal
-
-#         if pool_amount is None:
-#             pool_amount = self.case_finance.lawyers_pool_amount
-#         if paid_ratio is None:
-#             paid_ratio = self.case_finance.paid_ratio
-
-#         # сколько этому сотруднику при полной оплате договора
-#         self.amount_full = (pool_amount * self.percent_of_pool / Decimal('100')).quantize(Decimal('0.01'))
-#         # сколько ему сейчас, с учётом фактически оплаченной суммы
-#         self.amount_current = (self.amount_full * paid_ratio).quantize(Decimal('0.01'))
-
-#         if save:
-#             self.save()
 
 class IncomeCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название категории")
@@ -402,86 +370,6 @@ class FinancialTransaction(models.Model):
             finance.save(update_fields=['paid_amount', 'updated_at'])
             
             
-# class FinancialTransaction(models.Model):
-#     TRANSACTION_TYPES = [
-#         ('income', 'Приход'),
-#         ('expense', 'Расход'),
-#     ]
-    
-#     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES, verbose_name="Тип операции")
-#     amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Сумма")
-#     date = models.DateField(verbose_name="Дата операции")
-#     description = models.TextField(verbose_name="Описание")
-    
-#     # Связи с другими моделями
-#     category = models.ForeignKey(
-#         'finance.IncomeCategory', 
-#         on_delete=models.SET_NULL, 
-#         null=True, 
-#         blank=True,
-#         verbose_name="Категория"
-#     )
-#     expense_category = models.ForeignKey(
-#         'finance.ExpenseCategory', 
-#         on_delete=models.SET_NULL, 
-#         null=True, 
-#         blank=True,
-#         verbose_name="Категория расхода"
-#     )
-#     case = models.ForeignKey(
-#         Case, 
-#         on_delete=models.SET_NULL, 
-#         null=True, 
-#         blank=True,
-#         verbose_name="Дело"
-#     )
-#     stage = models.ForeignKey(
-#         CaseStage, 
-#         on_delete=models.SET_NULL, 
-#         null=True, 
-#         blank=True,
-#         verbose_name="Этап дела"
-#     )
-#     client = models.ForeignKey(
-#         Trustor, 
-#         on_delete=models.SET_NULL, 
-#         null=True, 
-#         blank=True,
-#         verbose_name="Клиент"
-#     )
-#     employee = models.ForeignKey(
-#         User, 
-#         on_delete=models.SET_NULL, 
-#         null=True, 
-#         blank=True,
-#         verbose_name="Сотрудник"
-#     )
-    
-#     created_by = models.ForeignKey(
-#         User, 
-#         on_delete=models.CASCADE, 
-#         related_name='created_transactions',
-#         verbose_name="Кем создана"
-#     )
-#     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-#     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
-    
-#     class Meta:
-#         verbose_name = "Финансовая операция"
-#         verbose_name_plural = "Финансовые операции"
-#         ordering = ['-date', '-created_at']
-    
-#     def __str__(self):
-#         return f"{self.get_transaction_type_display()} - {self.amount} - {self.date}"
-    
-#     def save(self, *args, **kwargs):
-#         # Автоматическое определение категории на основе типа операции
-#         if self.transaction_type == 'income' and not self.category:
-#             self.category = IncomeCategory.objects.get_or_create(name='Прочие доходы')[0]
-#         elif self.transaction_type == 'expense' and not self.expense_category:
-#             self.expense_category = ExpenseCategory.objects.get_or_create(name='Прочие расходы')[0]
-        
-#         super().save(*args, **kwargs)
 
 
 from django.db.models.signals import post_save
