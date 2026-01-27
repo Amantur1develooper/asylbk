@@ -51,7 +51,11 @@ urlpatterns += i18n_patterns(
     prefix_default_language=False,  # ru без /ru/, ky/en с /ky/ и /en/
 )
 
+from django.contrib import admin
 
+admin.site.site_header = "Администрирование Kunguroff"
+admin.site.site_title = "Kunguroff"
+admin.site.index_title = "Панель управления"
 # urlpatterns = [
 #     path('admin/', admin.site.urls),
     
