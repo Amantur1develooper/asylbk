@@ -1219,7 +1219,7 @@ msgstr ""
 
 #: templates/clients/client_list.html:24 templates/public/news_detail.html:91
 msgid "Email"
-msgstr ""
+msgstr "Почта"
 
 #: templates/clients/client_list.html:83
 #, fuzzy

@@ -224,49 +224,48 @@
         </div>
       </div>
     </div>
-     <div class="card mb-4"> 
-      {% if case.finance %}
+
+    {% if case.finance %}
     <div class="card mt-3">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Финансы по делу</h5>
-      <a href="{% url 'finance:case_finance_update' case.id %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Финансы по делу</h5>
+        <a href="{% url 'finance:case_finance_update' case.id %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-5">Сумма договора (100%)</dt>
+          <dd class="col-sm-7">{{ case.finance.contract_amount }} сом</dd>
+
+          <dt class="col-sm-5">Оплачено по договору</dt>
+          <dd class="col-sm-7">{{ case.finance.paid_amount }} сом</dd>
+
+          <dt class="col-sm-5">30% компании (при полной оплате)</dt>
+          <dd class="col-sm-7">{{ case.finance.company_share_amount }} сом</dd>
+
+          <dt class="col-sm-5">70% юристов (при полной оплате)</dt>
+          <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount }} сом</dd>
+
+          <!-- НОВОЕ: реальные доли на текущий момент -->
+          <dt class="col-sm-5">30% компании — на текущий момент</dt>
+          <dd class="col-sm-7">{{ case.finance.company_share_amount_current }} сом</dd>
+
+          <dt class="col-sm-5">70% юристов — на текущий момент</dt>
+          <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount_current }} сом</dd>
+
+          <!-- НОВОЕ: остатки к выплате -->
+          <dt class="col-sm-5">Остаток оплаты по договору</dt>
+          <dd class="col-sm-7">{{ case.finance.remaining_amount }} сом</dd>
+
+          <dt class="col-sm-5">Остаток 30% компании</dt>
+          <dd class="col-sm-7">{{ case.finance.company_share_amount_remaining }} сом</dd>
+
+          <dt class="col-sm-5">Остаток 70% юристов</dt>
+          <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount_remaining }} сом</dd>
+        </dl>
+      </div>
     </div>
-    <div class="card-body">
-      <dl class="row mb-0">
-        <dt class="col-sm-5">Сумма договора (100%)</dt>
-        <dd class="col-sm-7">{{ case.finance.contract_amount }} сом</dd>
-
-        <dt class="col-sm-5">Оплачено по договору</dt>
-        <dd class="col-sm-7">{{ case.finance.paid_amount }} сом</dd>
-
-        <dt class="col-sm-5">30% компании (при полной оплате)</dt>
-        <dd class="col-sm-7">{{ case.finance.company_share_amount }} сом</dd>
-
-        <dt class="col-sm-5">70% юристов (при полной оплате)</dt>
-        <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount }} сом</dd>
-
-        <!-- НОВОЕ: реальные доли на текущий момент -->
-        <dt class="col-sm-5">30% компании — на текущий момент</dt>
-        <dd class="col-sm-7">{{ case.finance.company_share_amount_current }} сом</dd>
-
-        <dt class="col-sm-5">70% юристов — на текущий момент</dt>
-        <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount_current }} сом</dd>
-
-        <!-- НОВОЕ: остатки к выплате -->
-        <dt class="col-sm-5">Остаток оплаты по договору</dt>
-        <dd class="col-sm-7">{{ case.finance.remaining_amount }} сом</dd>
-
-        <dt class="col-sm-5">Остаток 30% компании</dt>
-        <dd class="col-sm-7">{{ case.finance.company_share_amount_remaining }} сом</dd>
-
-        <dt class="col-sm-5">Остаток 70% юристов</dt>
-        <dd class="col-sm-7">{{ case.finance.lawyers_pool_amount_remaining }} сом</dd>
-      </dl>
-    </div>
+    {% endif %}
   </div>
-{% endif %} </div>
-  </div>
-    
 </div>
 
 <!-- Участники дела -->
@@ -356,10 +355,9 @@
       {% for stage in case.category.stages.all %}
         <div class="accordion-item">
           <h2 class="accordion-header" id="heading{{ stage.id }}">
-            <button class="accordion-button {% if forloop.first %}collapsed{% endif %}" type="button"
+            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button"
                     data-bs-toggle="collapse" data-bs-target="#collapse{{ stage.id }}"
-                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
-                    aria-controls="collapse{{ stage.id }}">
+                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
               {% trans "Этап" %} {{ stage.order }}: {{ stage.name }}
               {% if stage == case.current_stage %}
                 <span class="badge bg-primary ms-2">{% trans "Текущий" %}</span>
@@ -368,99 +366,115 @@
           </h2>
 
           <div id="collapse{{ stage.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
-               aria-labelledby="heading{{ stage.id }}" data-bs-parent="#stagesAccordion">
+               data-bs-parent="#stagesAccordion">
             <div class="accordion-body">
               <p class="text-muted">{{ stage.description|default:_("Описание этапа отсутствует") }}</p>
 
-              <h6 class="mt-3 mb-3">{% trans "Документы этапа:" %}</h6>
+              <h6 class="mt-3 mb-3">{% trans "Поля этапа:" %}</h6>
 
-              {% with documents=documents_by_stage|get_item:stage %}
-                {% if documents %}
+              {% with rows=stage_field_rows|get_item:stage.id %}
+                {% if rows and rows|length > 0 %}
                   <div class="table-responsive">
                     <table class="table table-sm">
                       <thead>
                         <tr>
                           <th>{% trans "Поле" %}</th>
                           <th>{% trans "Тип" %}</th>
-                          <th>{% trans "Значение" %}</th>
+                          <th>{% trans "Значение / файл" %}</th>
                           <th>{% trans "Загружено" %}</th>
                           <th>{% trans "Действия" %}</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {% for document in documents %}
-                          <tr>
-                            <td>{{ document.field.name }}</td>
-                            <td>
-                              <span class="badge bg-secondary">{{ document.field.get_field_type_display }}</span>
-                            </td>
-                            <td>
-                              {% if document.field.field_type == 'file' and document.file_value %}
-                                <a href="{{ document.file_value.url }}" target="_blank">
-                                  {{ document.file_value.name|slice:"20:" }}{% if document.file_value.name|length > 20 %}...{% endif %}
-                                </a>
-                              {% elif document.field.field_type == 'text' %}
-                                {{ document.text_value|truncatewords:5 }}
-                              {% elif document.field.field_type == 'date' %}
-                                {{ document.date_value|date:"d.m.Y" }}
-                              {% else %}
-                                <span class="text-muted">{% trans "Не заполнено" %}</span>
-                              {% endif %}
-                            </td>
-                            <td>
-                              {{ document.created_at|date:"d.m.Y" }}<br>
-                              <small class="text-muted">
-                                {{ document.created_by.get_full_name|default:document.created_by.username }}
-                              </small>
-                            </td>
-                            <td>
-                              <div class="btn-group btn-group-sm">
-                                {% if document.field.field_type == 'file' and document.file_value %}
-                                  <a href="{{ document.file_value.url }}" target="_blank"
-                                     class="btn btn-outline-primary" title="{% trans 'Скачать' %}">
-                                    <i class="bi bi-download"></i>
-                                  </a>
+                        {% for r in rows %}
+                          {% with f=r.field doc=r.document %}
+                            <tr>
+                              <td>
+                                {{ f.name }}
+                                {% if f.is_required %}
+                                  <span class="badge bg-warning text-dark ms-1">{% trans "обязательное" %}</span>
                                 {% endif %}
+                              </td>
+                              <td><span class="badge bg-secondary">{{ f.get_field_type_display }}</span></td>
+                              <td>
+                                {% if doc %}
+                                  {% if f.field_type == 'file' and doc.file_value %}
+                                    <a href="{{ doc.file_value.url }}" target="_blank">
+                                      {{ doc.file_value.name|slice:"20:" }}{% if doc.file_value.name|length > 20 %}...{% endif %}
+                                    </a>
+                                  {% elif f.field_type == 'text' %}
+                                    {{ doc.text_value|default:_("Не заполнено")|truncatewords:5 }}
+                                  {% elif f.field_type == 'date' %}
+                                    {{ doc.date_value|date:"d.m.Y"|default:_("Не заполнено") }}
+                                  {% else %}
+                                    <span class="text-muted">{% trans "Не заполнено" %}</span>
+                                  {% endif %}
+                                {% else %}
+                                  <span class="text-muted">{% trans "Нет документа" %}</span>
+                                {% endif %}
+                              </td>
+                              <td>
+                                {% if doc %}
+                                  {{ doc.created_at|date:"d.m.Y" }}<br>
+                                  <small class="text-muted">
+                                    {{ doc.created_by.get_full_name|default:doc.created_by.username }}
+                                  </small>
+                                {% else %}
+                                  &mdash;
+                                {% endif %}
+                              </td>
+                              <td>
+                                <div class="btn-group btn-group-sm">
+                                  {% if doc and f.field_type == 'file' and doc.file_value %}
+                                    <a href="{{ doc.file_value.url }}" target="_blank"
+                                       class="btn btn-outline-primary" title="{% trans 'Скачать' %}">
+                                      <i class="bi bi-download"></i>
+                                    </a>
+                                  {% endif %}
 
-                                {% if user == document.created_by or user.role == 'director' or user.role == 'deputy_director' or user.role == 'manager' %}
-                                  <a href="{% url 'cases:document_delete' case.pk stage.id document.field.id %}"
-                                     class="btn btn-outline-danger"
-                                     title="{% trans 'Удалить (будет подтверждение)' %}">
-                                    <i class="bi bi-trash"></i>
-                                  </a>
-                                {% endif %}
-                              </div>
-                            </td>
-                          </tr>
+                                  {% if doc %}
+                                    {% if user == doc.created_by or user.role == 'director' or user.role == 'deputy_director' or user.role == 'manager' %}
+                                      <a href="{% url 'cases:document_delete' case.pk stage.id f.id %}"
+                                         class="btn btn-outline-danger" title="{% trans 'Удалить' %}">
+                                        <i class="bi bi-trash"></i>
+                                      </a>
+                                    {% endif %}
+                                  {% else %}
+                                    {% if case.current_stage_id and stage.id == case.current_stage_id and user.role in allowed_roles_for_stage_edit %}
+                                      <a href="#add-doc-{{ stage.id }}" class="btn btn-outline-primary"
+                                         onclick="prefillField({{ stage.id }}, {{ f.id }})">
+                                        <i class="bi bi-plus"></i> {% trans "Добавить" %}
+                                      </a>
+                                    {% endif %}
+                                  {% endif %}
+                                </div>
+                              </td>
+                            </tr>
+                          {% endwith %}
                         {% endfor %}
                       </tbody>
                     </table>
                   </div>
                 {% else %}
                   <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> {% trans "Документы для этого этапа еще не добавлены." %}
+                    <i class="bi bi-info-circle"></i> {% trans "Для этого этапа поля не настроены." %}
                   </div>
                 {% endif %}
               {% endwith %}
 
-              <!-- Форма добавления документа -->
-              {# показываем блок только на текущем этапе и только для ролей lawyer/advocate/director #}
-{% if case.current_stage_id and stage.id == case.current_stage_id %}
-  {% if user.role == 'lawyer' or user.role == 'advocate' or user.role == 'director' %}
-    ...тут твои кнопки/формы...
-
+              {# Форма добавления документа — только на текущем этапе и для ролей #}
+              {% if case.current_stage_id and stage.id == case.current_stage_id and user.role in allowed_roles_for_stage_edit %}
                 <hr>
                 <h6 class="mt-3 mb-3">{% trans "Добавить документ:" %}</h6>
-
-                <form method="post" action="{% url 'cases:case_add_document' case.pk %}" enctype="multipart/form-data">
+                <form id="add-doc-{{ stage.id }}" method="post" action="{% url 'cases:case_add_document' case.pk %}" enctype="multipart/form-data">
                   {% csrf_token %}
                   <input type="hidden" name="stage" value="{{ stage.id }}">
 
                   <div class="row">
                     <div class="col-md-4">
                       <div class="mb-3">
-                        <label for="id_document_field" class="form-label">{% trans "Поле" %}</label>
-                        <select name="field" class="form-select" id="id_document_field" required>
+                        <label for="id_document_field_{{ stage.id }}" class="form-label">{% trans "Поле" %}</label>
+                        <select name="field" class="form-select" id="id_document_field_{{ stage.id }}" onchange="onFieldChange({{ stage.id }})" required>
                           <option value="">{% trans "Выберите поле" %}</option>
                           {% for field in stage.fields.all %}
                             <option value="{{ field.id }}" data-type="{{ field.field_type }}">
@@ -474,8 +488,8 @@
                     <div class="col-md-8">
                       <div class="mb-3">
                         <label class="form-label">{% trans "Значение" %}</label>
-                        <div id="document-value-container">
-                          <p class="text-muted">{% trans "Выберите поле для отображения формы ввода" %}</p>
+                        <div id="document-value-container-{{ stage.id }}">
+                          <p class="text-muted mb-0">{% trans "Выберите поле для отображения формы ввода" %}</p>
                         </div>
                       </div>
                     </div>
@@ -483,8 +497,7 @@
 
                   <button type="submit" class="btn btn-primary">{% trans "Добавить документ" %}</button>
                 </form>
-                {% endif %}
-{% endif %}
+              {% endif %}
 
             </div>
           </div>
@@ -497,58 +510,61 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const fieldSelect = document.getElementById('id_document_field');
-  const valueContainer = document.getElementById('document-value-container');
+function onFieldChange(stageId) {
+  const select = document.getElementById(`id_document_field_${stageId}`);
+  const valueContainer = document.getElementById(`document-value-container-${stageId}`);
+  if (!select || !valueContainer) return;
 
-  if (fieldSelect && valueContainer) {
-    fieldSelect.addEventListener('change', function() {
-      const selectedOption = this.options[this.selectedIndex];
-      const fieldType = selectedOption.getAttribute('data-type');
+  const selectedOption = select.options[select.selectedIndex];
+  const fieldType = selectedOption.getAttribute('data-type');
 
-      if (!fieldType) {
-        valueContainer.innerHTML = '<p class="text-muted">{% trans "Выберите поле для отображения формы ввода" %}</p>';
-        return;
-      }
-
-      if (fieldType === 'text') {
-        valueContainer.innerHTML = `
-          <textarea name="text_value" class="form-control" rows="3"
-            placeholder="{% trans "Введите текстовое значение" %}" required></textarea>
-        `;
-      } else if (fieldType === 'file') {
-        valueContainer.innerHTML = `
-          <input type="file" name="file_value" class="form-control" required>
-        `;
-      } else if (fieldType === 'date') {
-        valueContainer.innerHTML = `
-          <input type="date" name="date_value" class="form-control" required>
-        `;
-      } else if (fieldType === 'select') {
-        const fieldId = this.value;
-
-        fetch(`/cases/ajax/field-options/${fieldId}/`)
-          .then(response => response.json())
-          .then(data => {
-            let optionsHtml = '';
-            data.options.forEach(option => {
-              optionsHtml += `<option value="${option}">${option}</option>`;
-            });
-
-            valueContainer.innerHTML = `
-              <select name="text_value" class="form-select" required>
-                <option value="">{% trans "Выберите значение" %}</option>
-                ${optionsHtml}
-              </select>
-            `;
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            valueContainer.innerHTML = '<p class="text-danger">{% trans "Ошибка загрузки опций" %}</p>';
-          });
-      }
-    });
+  if (!fieldType) {
+    valueContainer.innerHTML = '<p class="text-muted">{% trans "Выберите поле для отображения формы ввода" %}</p>';
+    return;
   }
-});
+
+  if (fieldType === 'text') {
+    valueContainer.innerHTML = `
+      <textarea name="text_value" class="form-control" rows="3"
+        placeholder="{% trans "Введите текстовое значение" %}" required></textarea>
+    `;
+  } else if (fieldType === 'file') {
+    valueContainer.innerHTML = `
+      <input type="file" name="file_value" class="form-control" required>
+    `;
+  } else if (fieldType === 'date') {
+    valueContainer.innerHTML = `
+      <input type="date" name="date_value" class="form-control" required>
+    `;
+  } else if (fieldType === 'select') {
+    const fieldId = select.value;
+    fetch(`/cases/ajax/field-options/${fieldId}/`)
+      .then(response => response.json())
+      .then(data => {
+        let optionsHtml = '';
+        data.options.forEach(option => {
+          optionsHtml += `<option value="${option}">${option}</option>`;
+        });
+
+        valueContainer.innerHTML = `
+          <select name="text_value" class="form-select" required>
+            <option value="">{% trans "Выберите значение" %}</option>
+            ${optionsHtml}
+          </select>
+        `;
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        valueContainer.innerHTML = '<p class="text-danger">{% trans "Ошибка загрузки опций" %}</p>';
+      });
+  }
+}
+
+function prefillField(stageId, fieldId) {
+  const select = document.getElementById(`id_document_field_${stageId}`);
+  if (!select) return;
+  select.value = String(fieldId);
+  onFieldChange(stageId);
+}
 </script>
 {% endblock %}
