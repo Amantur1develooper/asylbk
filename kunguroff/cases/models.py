@@ -14,6 +14,7 @@ class CaseCategory(models.Model):
         ('civil_administrative', 'Гражданский – Административный'),
         ('criminal', 'Уголовные дела'),
         ('offenses', 'Правонарушения'),
+        # ('', 'Административный'),
     ]
     
     name = models.CharField(max_length=50, choices=CATEGORY_TYPES, unique=True, verbose_name="Название категории")

@@ -71,11 +71,13 @@ class CaseDetailView(DetailView):
     model = PublicCase
     slug_field = "slug"
     slug_url_kwarg = "slug"
+    context_object_name = "case"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["site"] = get_settings()
         return ctx
+
 
 class NewsListView(ListView):
     template_name = "public/news_list.html"
