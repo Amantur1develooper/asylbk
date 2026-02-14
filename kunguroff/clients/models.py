@@ -17,23 +17,23 @@ class Trustor(models.Model):
     
     # Контактная информация
     phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,15}$',
-        message="Номер телефона должен быть в формате: '+999999999'. Допускается до 15 цифр."
+        regex=r'^\+?1?\d{9,15}$', 
+        message="Номер телефона должен быть в формате: '+99655090400'. Допускается до 15 цифр."
     )
-    phone = models.CharField(validators=[phone_regex], max_length=17, verbose_name="Телефон")
-    email = models.EmailField(blank=True, verbose_name="Email")
+    phone = models.CharField(validators=[phone_regex],blank=True, null=True, max_length=17, verbose_name="Телефон")
+    email = models.EmailField(blank=True, null=True, verbose_name="Email")
     
     # Паспортные данные
-    passport_series = models.CharField(max_length=14, verbose_name="Серия паспорта")
-    passport_number = models.CharField(max_length=7, verbose_name="Номер паспорта")
-    passport_issued_by = models.TextField(verbose_name="Кем выдан")
-    passport_issue_date = models.DateField(verbose_name="Дата выдачи")
-    registration_address = models.TextField(verbose_name="Адрес регистрации")
-    residence_address = models.TextField(blank=True, verbose_name="Адрес проживания")
+    passport_series = models.CharField(max_length=14,blank=True, null=True, verbose_name="Серия паспорта")
+    passport_number = models.CharField(max_length=7,blank=True, null=True, verbose_name="Номер паспорта")
+    passport_issued_by = models.TextField(blank=True, null=True, verbose_name="Кем выдан")
+    passport_issue_date = models.DateField(blank=True, null=True, verbose_name="Дата выдачи")
+    registration_address = models.TextField(blank=True, null=True, verbose_name="Адрес регистрации")
+    residence_address = models.TextField(blank=True, null=True, verbose_name="Адрес проживания")
     
     # Дополнительная информация
-    inn = models.CharField(max_length=14, blank=True, verbose_name="ИНН")
-    notes = models.TextField(blank=True, verbose_name="Заметки")
+    inn = models.CharField(max_length=14, null=True, blank=True, verbose_name="ИНН")
+    notes = models.TextField(blank=True, null=True, verbose_name="Заметки")
     
     # Связи
     
@@ -46,8 +46,8 @@ class Trustor(models.Model):
         verbose_name="Ответственные (юрист/адвокат)"
     )
     
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Дата обновления")
 
     class Meta:
         verbose_name = "Доверитель"

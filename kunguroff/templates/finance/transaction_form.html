@@ -2,64 +2,212 @@
 {% load i18n %}
 
 {% block title %}
-    {% if object %}
-        {% trans "Редактирование операции" %}
-    {% else %}
-        {% trans "Новая финансовая операция" %}
-    {% endif %} - Kunguroff & Partners
+  {% if object %}{% trans "Редактирование операции" %}{% else %}{% trans "Новая финансовая операция" %}{% endif %} - Kunguroff & Partners
 {% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-md-8 offset-md-2">
-        <div class="app-card">
-            <div class="app-card-header d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">
-                    {% if object %}
-                        {% trans "Редактирование операции" %}
-                    {% else %}
-                        {% trans "Новая финансовая операция" %}
-                    {% endif %}
-                </h2>
-                <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-left me-1"></i> {% trans "К списку операций" %}
-                </a>
+  <div class="col-md-10 col-lg-8 offset-md-1 offset-lg-2">
+
+    <div class="app-card">
+      <div class="app-card-header d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">
+          {% if object %}{% trans "Редактирование операции" %}{% else %}{% trans "Новая финансовая операция" %}{% endif %}
+        </h2>
+        <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left me-1"></i> {% trans "К списку операций" %}
+        </a>
+      </div>
+
+      <div class="app-card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.transaction_type.id_for_label }}">{% trans "Тип операции" %}</label>
+              {{ form.transaction_type }}
+              {% for e in form.transaction_type.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
             </div>
 
-            <div class="app-card-body">
-                <form method="post">
-                    {% csrf_token %}
-
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                    {% endif %}
-
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check2-circle me-1"></i> {% trans "Сохранить" %}
-                        </button>
-                        <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary">
-                            {% trans "Отмена" %}
-                        </a>
-                    </div>
-                </form>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.amount.id_for_label }}">{% trans "Сумма" %}</label>
+              {{ form.amount }}
+              {% for e in form.amount.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
             </div>
-        </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.date.id_for_label }}">{% trans "Дата" %}</label>
+              {{ form.date }}
+              {% for e in form.date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6" id="income-category-group">
+              <label class="form-label" for="{{ form.category.id_for_label }}">{% trans "Категория дохода" %}</label>
+              {{ form.category }}
+              {% for e in form.category.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6 d-none" id="expense-category-group">
+              <label class="form-label" for="{{ form.expense_category.id_for_label }}">{% trans "Категория расхода" %}</label>
+              {{ form.expense_category }}
+              {% for e in form.expense_category.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.case.id_for_label }}">{% trans "Дело" %}</label>
+              {{ form.case }}
+              {% for e in form.case.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              <div class="form-text">{% trans "Если выбрать дело — этап подтянется автоматически." %}</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.stage.id_for_label }}">{% trans "Этап дела" %}</label>
+              {{ form.stage }}
+              {% for e in form.stage.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.client.id_for_label }}">{% trans "Клиент" %}</label>
+              {{ form.client }}
+              {% for e in form.client.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.employee.id_for_label }}">{% trans "Сотрудник" %}</label>
+              {{ form.employee }}
+              {% for e in form.employee.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="{{ form.description.id_for_label }}">{% trans "Описание" %}</label>
+              {{ form.description }}
+              {% for e in form.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check2-circle me-1"></i> {% trans "Сохранить" %}
+            </button>
+            <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary">
+              {% trans "Отмена" %}
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
+
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+(function() {
+  function initAjaxSelect(selector, url, placeholder) {
+    const $el = $(selector);
+    if (!$el.length) return;
+
+    $el.select2({
+      width: '100%',
+      placeholder: placeholder || '— поиск —',
+      allowClear: true,
+      minimumInputLength: 1,
+      ajax: {
+        url: url,
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return { q: params.term };
+        },
+        processResults: function (data) {
+          return { results: data.results || [] };
+        }
+      }
+    });
+  }
+
+  initAjaxSelect('.js-s2-case', "{% url 'finance:ajax_cases' %}", "Поиск дела…");
+  initAjaxSelect('.js-s2-client', "{% url 'finance:ajax_clients' %}", "Поиск клиента…");
+  initAjaxSelect('.js-s2-employee', "{% url 'finance:ajax_employees' %}", "Поиск сотрудника…");
+  initAjaxSelect('.js-s2-income-cat', "{% url 'finance:ajax_income_categories' %}", "Поиск категории дохода…");
+  initAjaxSelect('.js-s2-expense-cat', "{% url 'finance:ajax_expense_categories' %}", "Поиск категории расхода…");
+})();
+</script>
+
+
+<script>
+(function() {
+  const typeEl = document.getElementById('id_transaction_type');
+  const incomeGroup = document.getElementById('income-category-group');
+  const expenseGroup = document.getElementById('expense-category-group');
+
+  const caseEl = document.getElementById('id_case');
+  const stageEl = document.getElementById('id_stage');
+
+  function toggleCategory() {
+    const t = typeEl ? typeEl.value : '';
+    if (t === 'expense') {
+      incomeGroup.classList.add('d-none');
+      expenseGroup.classList.remove('d-none');
+    } else {
+      expenseGroup.classList.add('d-none');
+      incomeGroup.classList.remove('d-none');
+    }
+  }
+
+  async function loadStages() {
+    if (!caseEl || !stageEl) return;
+
+    const caseId = caseEl.value;
+    const current = stageEl.value;
+
+    stageEl.innerHTML = '';
+    const opt0 = document.createElement('option');
+    opt0.value = '';
+    opt0.textContent = '— выберите —';
+    stageEl.appendChild(opt0);
+
+    if (!caseId) return;
+
+    stageEl.disabled = true;
+    try {
+      const res = await fetch("{% url 'finance:ajax_case_stages' %}?case_id=" + encodeURIComponent(caseId));
+      const data = await res.json();
+
+      (data.stages || []).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = String(s.id);
+        opt.textContent = s.name;
+        stageEl.appendChild(opt);
+      });
+
+      if (current) stageEl.value = current;
+    } catch (e) {
+      console.error(e);
+    } finally {
+      stageEl.disabled = false;
+    }
+  }
+
+  if (typeEl) {
+    typeEl.addEventListener('change', toggleCategory);
+    toggleCategory();
+  }
+
+  if (caseEl) {
+    caseEl.addEventListener('change', loadStages);
+    loadStages();
+  }
+})();
+</script>
 {% endblock %}

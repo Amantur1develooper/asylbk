@@ -56,25 +56,6 @@ from django.contrib import admin
 admin.site.site_header = "Администрирование Kunguroff"
 admin.site.site_title = "Kunguroff"
 admin.site.index_title = "Панель управления"
-# urlpatterns = [
-#     path('admin/', admin.site.urls),
-    
 
-#     path("i18n/", include("django.conf.urls.i18n")),  # для set_language
-#     path('dashboard/', DashboardView.as_view(), name='dashboard'),
-#     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-#     path('logout/', user_logout, name='logout'),
-#     path('cases/', include('cases.urls')),
-#     path('clients/', include('clients.urls')),
-#     # path('users/', include('users.urls')),
-#     path('finance/', include('finance.urls')),
-#     path('calendar/', include('calendar1.urls')),
-#     path('ratings/', include('ratings.urls')),
-#     # path('users/', include('users.urls')),
-# ]
-# urlpatterns += i18n_patterns(
-#     path("", include("public.urls")),
-#     prefix_default_language=False,  # ru без префикса, ky/en с префиксом
-# )
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

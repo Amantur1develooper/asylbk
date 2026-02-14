@@ -40,6 +40,85 @@ from openpyxl.utils import get_column_letter
 
 from core.permissions import AccountantRequiredMixin
 from .models import FinancialTransaction, IncomeCategory, ExpenseCategory
+# finance/views.py
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+
+from cases.models import Case
+from users.models import User              # если у тебя другая модель сотрудников — замени
+from clients.models import Trustor         # если у тебя client другая модель — замени
+
+from .models import IncomeCategory, ExpenseCategory  # замени на свои модели категорий
+
+
+def _select2(queryset, label_func, q, limit=20):
+    if q:
+        queryset = queryset[:limit]
+    else:
+        queryset = queryset[:limit]
+    return [{"id": obj.pk, "text": label_func(obj)} for obj in queryset]
+
+
+@login_required
+def ajax_cases(request):
+    q = (request.GET.get("q") or "").strip()
+    qs = Case.objects.all().order_by("-id")
+    if q:
+        qs = qs.filter(Q(title__icontains=q) | Q(case_number__icontains=q))
+    results = _select2(qs, lambda o: f"#{o.id} — {o.title}", q)
+    return JsonResponse({"results": results})
+
+
+@login_required
+def ajax_clients(request):
+    q = (request.GET.get("q") or "").strip()
+    qs = Trustor.objects.all().order_by("id")
+    if q:
+        qs = qs.filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(middle_name__icontains=q) |
+            Q(phone__icontains=q)
+        )
+    results = _select2(qs, lambda o: f"{o.get_full_name()}", q)
+    return JsonResponse({"results": results})
+
+
+@login_required
+def ajax_employees(request):
+    q = (request.GET.get("q") or "").strip()
+    qs = User.objects.all().order_by("id")
+    if q:
+        qs = qs.filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(username__icontains=q) |
+            Q(email__icontains=q)
+        )
+    results = _select2(qs, lambda o: o.get_full_name() or o.username, q)
+    return JsonResponse({"results": results})
+
+
+@login_required
+def ajax_income_categories(request):
+    q = (request.GET.get("q") or "").strip()
+    qs = IncomeCategory.objects.all().order_by("name")
+    if q:
+        qs = qs.filter(name__icontains=q)
+    results = _select2(qs, lambda o: o.name, q)
+    return JsonResponse({"results": results})
+
+
+@login_required
+def ajax_expense_categories(request):
+    q = (request.GET.get("q") or "").strip()
+    qs = ExpenseCategory.objects.all().order_by("name")
+    if q:
+        qs = qs.filter(name__icontains=q)
+    results = _select2(qs, lambda o: o.name, q)
+    return JsonResponse({"results": results})
+
 class FinanceDashboardView(AccountantRequiredMixin, TemplateView):
     template_name = 'finance/dashboard.html'
     
@@ -478,831 +557,27 @@ class TransactionExportView(AccountantRequiredMixin, View):
 
         wb.save(response)
         return response
+# finance/views.py
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from cases.models import Case
+
+@login_required
+def ajax_case_stages(request):
+    case_id = request.GET.get('case_id')
+    if not case_id:
+        return JsonResponse({'stages': []})
+
+    case = Case.objects.select_related('category').filter(pk=case_id).first()
+    if not case or not case.category_id:
+        return JsonResponse({'stages': []})
+
+    stages = [
+        {'id': s.id, 'name': s.name}
+        for s in case.category.stages.all().order_by('order')
+    ]
+    return JsonResponse({'stages': stages})
 
-# class TransactionExportView(AccountantRequiredMixin, View):
-#     def get(self, request, *args, **kwargs):
-#         # Берём те же фильтры, что и в списке операций
-#         queryset = FinancialTransaction.objects.all()
-
-#         filter_params = {}
-
-#         # Тип операции
-#         transaction_type = self.request.GET.get("type")
-#         if transaction_type in ["income", "expense"]:
-#             queryset = queryset.filter(transaction_type=transaction_type)
-#             filter_params["Тип операции"] = (
-#                 "Приход" if transaction_type == "income" else "Расход"
-#             )
-
-#         # Даты
-#         date_from = self.request.GET.get("date_from")
-#         date_to = self.request.GET.get("date_to")
-#         if date_from:
-#             queryset = queryset.filter(date__gte=date_from)
-#             filter_params["Дата с"] = date_from
-#         if date_to:
-#             queryset = queryset.filter(date__lte=date_to)
-#             filter_params["Дата по"] = date_to
-
-#         # Категория
-#         category = self.request.GET.get("category")
-#         if category:
-#             queryset = queryset.filter(
-#                 Q(category_id=category) | Q(expense_category_id=category)
-#             )
-#             cat = (
-#                 IncomeCategory.objects.filter(id=category).first()
-#                 or ExpenseCategory.objects.filter(id=category).first()
-#             )
-#             if cat:
-#                 filter_params["Категория"] = cat.name
-
-#         # Дело
-#         case = self.request.GET.get("case")
-#         if case:
-#             queryset = queryset.filter(case_id=case)
-#             filter_params["Дело"] = f"ID: {case}"
-
-#         # Итоги
-#         total_income = (
-#             queryset.filter(transaction_type="income").aggregate(Sum("amount"))[
-#                 "amount__sum"
-#             ]
-#             or 0
-#         )
-#         total_expense = (
-#             queryset.filter(transaction_type="expense").aggregate(Sum("amount"))[
-#                 "amount__sum"
-#             ]
-#             or 0
-#         )
-#         net_income = total_income - total_expense
-
-#         # Готовим ответ
-#         response = HttpResponse(
-#             content_type=(
-#                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-#             )
-#         )
-#         filename = f"financial_report_{timezone.now().strftime('%Y-%m-%d_%H-%M')}.xlsx"
-#         response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-#         wb = Workbook()
-#         ws = wb.active
-#         ws.title = "Финансовый отчет"
-
-#         # Стили
-#         header_fill = PatternFill(
-#             start_color="366092", end_color="366092", fill_type="solid"
-#         )
-#         header_font = Font(color="FFFFFF", bold=True)
-#         border = Border(
-#             left=Side(style="thin"),
-#             right=Side(style="thin"),
-#             top=Side(style="thin"),
-#             bottom=Side(style="thin"),
-#         )
-#         total_fill = PatternFill(
-#             start_color="F2F2F2", end_color="F2F2F2", fill_type="solid"
-#         )
-#         income_font = Font(color="00B050", bold=True)
-#         expense_font = Font(color="FF0000", bold=True)
-
-#         # Заголовок
-#         ws.merge_cells("A1:M1")
-#         title_cell = ws["A1"]
-#         title_cell.value = "Отчет по финансовым операциям"
-#         title_cell.font = Font(size=16, bold=True)
-#         title_cell.alignment = Alignment(horizontal="center")
-
-#         # Параметры фильтрации
-#         row_num = 3
-#         if filter_params:
-#             ws.merge_cells(f"A{row_num}:M{row_num}")
-#             filter_cell = ws[f"A{row_num}"]
-#             filter_cell.value = "Параметры фильтрации:"
-#             filter_cell.font = Font(bold=True)
-#             row_num += 1
-
-#             for key, value in filter_params.items():
-#                 ws.merge_cells(f"A{row_num}:B{row_num}")
-#                 param_cell = ws[f"A{row_num}"]
-#                 param_cell.value = f"{key}: {value}"
-#                 param_cell.font = Font(bold=True)
-#                 row_num += 1
-
-#         row_num += 1  # пустая строка
-
-#         # 🔹 Обновлённые заголовки: добавили Доверителя и данные соглашения
-#         headers = [
-#             "Дата",               # A
-#             "Тип операции",       # B
-#             "Сумма",              # C
-#             "Описание",           # D
-#             "Категория",          # E
-#             "Дело",               # F
-#             "Доверитель (осн.)",  # G
-#             "№ соглашения",       # H
-#             "Дата соглашения",    # I
-#             "Клиент",             # J (из поля client)
-#             "Сотрудник",          # K
-#             "Создано",            # L
-#             "Кем создано",        # M
-#         ]
-
-#         for col_num, header in enumerate(headers, 1):
-#             cell = ws.cell(row=row_num, column=col_num)
-#             cell.value = header
-#             cell.fill = header_fill
-#             cell.font = header_font
-#             cell.border = border
-#             cell.alignment = Alignment(horizontal="center", vertical="center")
-
-#         row_num += 1
-#         start_data_row = row_num
-
-#         # Данные
-#         for transaction in queryset.order_by("-date", "-created_at"):
-#             case_obj = transaction.case
-#             main_trustor = getattr(case_obj, "main_trustor", None) if case_obj else None
-
-#             finance = getattr(case_obj, "finance", None) if case_obj else None
-#             agreement_number = finance.agreement_number if finance and finance.agreement_number else "-"
-#             if finance and finance.agreement_date:
-#                 agreement_date = finance.agreement_date.strftime("%d.%m.%Y")
-#             else:
-#                 agreement_date = "-"
-
-#             # A: Дата
-#             ws.cell(row=row_num, column=1).value = transaction.date.strftime("%d.%m.%Y")
-#             # B: Тип
-#             ws.cell(row=row_num, column=2).value = transaction.get_transaction_type_display()
-
-#             # C: Сумма
-#             amount_cell = ws.cell(row=row_num, column=3)
-#             amount_cell.value = float(transaction.amount)
-#             amount_cell.font = income_font if transaction.transaction_type == "income" else expense_font
-
-#             # D: Описание
-#             ws.cell(row=row_num, column=4).value = transaction.description
-
-#             # E: Категория
-#             if transaction.transaction_type == "income":
-#                 cat_name = transaction.category.name if transaction.category else "-"
-#             else:
-#                 cat_name = (
-#                     transaction.expense_category.name
-#                     if transaction.expense_category
-#                     else "-"
-#                 )
-#             ws.cell(row=row_num, column=5).value = cat_name
-
-#             # F: Дело
-#             ws.cell(row=row_num, column=6).value = (
-#                 f"#{case_obj.id} - {case_obj.title}"
-#                 if case_obj
-#                 else "-"
-#             )
-
-#             # G: Доверитель (осн.)
-#             ws.cell(row=row_num, column=7).value = (
-#                 str(main_trustor) if main_trustor else "-"
-#             )
-
-#             # H: № соглашения
-#             ws.cell(row=row_num, column=8).value = agreement_number
-
-#             # I: Дата соглашения
-#             ws.cell(row=row_num, column=9).value = agreement_date
-
-#             # J: Клиент (из поля client)
-#             ws.cell(row=row_num, column=10).value = (
-#                 str(transaction.client) if transaction.client else "-"
-#             )
-
-#             # K: Сотрудник
-#             ws.cell(row=row_num, column=11).value = (
-#                 str(transaction.employee) if transaction.employee else "-"
-#             )
-
-#             # L: Создано
-#             ws.cell(row=row_num, column=12).value = transaction.created_at.strftime(
-#                 "%d.%m.%Y %H:%M"
-#             )
-
-#             # M: Кем создано
-#             ws.cell(row=row_num, column=13).value = str(transaction.created_by)
-
-#             # Границы
-#             for col_num in range(1, len(headers) + 1):
-#                 ws.cell(row=row_num, column=col_num).border = border
-
-#             row_num += 1
-
-#         end_data_row = row_num - 1
-
-#         # Итоги
-#         row_num += 1  # пустая строка
-
-#         # Общий доход
-#         ws.merge_cells(f"A{row_num}:B{row_num}")
-#         total_income_label = ws.cell(row=row_num, column=1)
-#         total_income_label.value = "Общий доход:"
-#         total_income_label.font = Font(bold=True)
-#         total_income_label.fill = total_fill
-#         total_income_label.border = border
-
-#         total_income_value = ws.cell(row=row_num, column=3)
-        
-#         total_income_value.font = income_font
-#         total_income_value.fill = total_fill
-#         total_income_value.border = border
-
-#         income_col_letter = get_column_letter(3)
-#         total_income_value.value = (
-#             f'=SUMIF(B{start_data_row}:B{end_data_row}, "Приход", '
-#             f"{income_col_letter}{start_data_row}:{income_col_letter}{end_data_row})"
-#         )
-
-#         # Общий расход
-#         row_num += 1
-#         ws.merge_cells(f"A{row_num}:B{row_num}")
-#         total_expense_label = ws.cell(row=row_num, column=1)
-#         total_expense_label.value = "Общий расход:"
-#         total_expense_label.font = Font(bold=True)
-#         total_expense_label.fill = total_fill
-#         total_expense_label.border = border
-
-#         total_expense_value = ws.cell(row=row_num, column=3)
-#         total_expense_value.font = expense_font
-#         total_expense_value.fill = total_fill
-#         total_expense_value.border = border
-#         total_expense_value.value = (
-#             f'=SUMIF(B{start_data_row}:B{end_data_row}, "Расход", '
-#             f"{income_col_letter}{start_data_row}:{income_col_letter}{end_data_row})"
-#         )
-
-#         # Чистая прибыль
-#         row_num += 1
-#         ws.merge_cells(f"A{row_num}:B{row_num}")
-#         net_income_label = ws.cell(row=row_num, column=1)
-#         net_income_label.value = "Чистая прибыль:"
-#         net_income_label.font = Font(bold=True)
-#         net_income_label.fill = total_fill
-#         net_income_label.border = border
-
-#         net_income_value = ws.cell(row=row_num, column=3)
-#         net_income_value.font = Font(bold=True)
-#         net_income_value.fill = total_fill
-#         net_income_value.border = border
-
-#         prev_income_row = row_num - 2
-#         prev_expense_row = row_num - 1
-#         net_income_value.value = (
-#             f"={income_col_letter}{prev_income_row}-"
-#             f"{income_col_letter}{prev_expense_row}"
-#         )
-
-#         # Кол-во операций
-#         row_num += 2
-#         ws.merge_cells(f"A{row_num}:B{row_num}")
-#         count_label = ws.cell(row=row_num, column=1)
-#         count_label.value = "Количество операций:"
-#         count_label.font = Font(bold=True)
-
-#         count_value = ws.cell(row=row_num, column=3)
-#         count_value.value = queryset.count()
-#         count_value.font = Font(bold=True)
-
-#         # Ширина колонок
-#         column_widths = {
-#             "A": 12,  # Дата
-#             "B": 12,  # Тип
-#             "C": 12,  # Сумма
-#             "D": 40,  # Описание
-#             "E": 20,  # Категория
-#             "F": 25,  # Дело
-#             "G": 20,  # Доверитель
-#             "H": 16,  # № согл.
-#             "I": 16,  # Дата согл.
-#             "J": 20,  # Клиент
-#             "K": 20,  # Сотрудник
-#             "L": 16,  # Создано
-#             "M": 20,  # Кем создано
-#         }
-#         for col_letter, width in column_widths.items():
-#             ws.column_dimensions[col_letter].width = width
-
-#         # Формат денег
-#         for row in range(start_data_row, end_data_row + 1):
-#             ws.cell(row=row, column=3).number_format = '#,##0.00" сом"'
-
-#         for row in [
-#             start_data_row + queryset.count() + 2,
-#             start_data_row + queryset.count() + 3,
-#             start_data_row + queryset.count() + 4,
-#         ]:
-#             ws.cell(row=row, column=3).number_format = '#,##0.00" сом"'
-
-#         wb.save(response)
-        
-#         return responsed
-
-# class TransactionExportView(AccountantRequiredMixin, View):
-
-#     def get(self, request, *args, **kwargs):
-
-#         queryset = FinancialTransaction.objects.all()
-
-#         # Параметры фильтрации
-#         filter_params = {}
-
-#         transaction_type = self.request.GET.get('type')
-#         if transaction_type in ['income', 'expense']:
-#             queryset = queryset.filter(transaction_type=transaction_type)
-#             filter_params['Тип операции'] = 'Приход' if transaction_type == 'income' else 'Расход'
-
-#         date_from = self.request.GET.get('date_from')
-#         date_to = self.request.GET.get('date_to')
-#         if date_from:
-#             queryset = queryset.filter(date__gte=date_from)
-#             filter_params['Дата с'] = date_from
-#         if date_to:
-#             queryset = queryset.filter(date__lte=date_to)
-#             filter_params['Дата по'] = date_to
-
-#         category = self.request.GET.get('category')
-#         if category:
-#             queryset = queryset.filter(Q(category_id=category) | Q(expense_category_id=category))
-#             cat = IncomeCategory.objects.filter(id=category).first() or \
-#                   ExpenseCategory.objects.filter(id=category).first()
-#             if cat:
-#                 filter_params['Категория'] = cat.name
-
-#         case_id = self.request.GET.get('case')
-#         if case_id:
-#             queryset = queryset.filter(case_id=case_id)
-#             filter_params['Дело'] = f"ID: {case_id}"
-
-#         total_income = queryset.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
-#         total_expense = queryset.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
-#         net_income = total_income - total_expense
-
-#         response = HttpResponse(
-#             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-#         )
-#         filename = f"financial_report_{timezone.now().strftime('%Y-%m-%d_%H-%M')}.xlsx"
-#         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-
-#         wb = Workbook()
-#         ws = wb.active
-#         ws.title = "Финансовый отчет"
-
-#         header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
-#         header_font = Font(color="FFFFFF", bold=True)
-#         border = Border(
-#             left=Side(style='thin'),
-#             right=Side(style='thin'),
-#             top=Side(style='thin'),
-#             bottom=Side(style='thin'),
-#         )
-#         total_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-#         income_font = Font(color="00B050", bold=True)
-#         expense_font = Font(color="FF0000", bold=True)
-
-#         # Заголовок
-#         ws.merge_cells('A1:M1')
-#         title_cell = ws['A1']
-#         title_cell.value = "Отчет по финансовым операциям"
-#         title_cell.font = Font(size=16, bold=True)
-#         title_cell.alignment = Alignment(horizontal='center')
-
-#         # Параметры фильтрации
-#         row_num = 3
-#         if filter_params:
-#             ws.merge_cells(f'A{row_num}:M{row_num}')
-#             filter_cell = ws[f'A{row_num}']
-#             filter_cell.value = "Параметры фильтрации:"
-#             filter_cell.font = Font(bold=True)
-#             row_num += 1
-
-#             for key, value in filter_params.items():
-#                 ws.merge_cells(f'A{row_num}:M{row_num}')
-#                 param_cell = ws[f'A{row_num}']
-#                 param_cell.value = f"{key}: {value}"
-#                 param_cell.font = Font(bold=True)
-#                 row_num += 1
-
-#         row_num += 1
-
-#         # Заголовки таблицы
-#         headers = [
-#             'Дата',
-#             'Тип операции',
-#             'Сумма',
-#             'Описание',
-#             'Категория',
-#             'Дело',
-#             'Номер согл.',
-#             'Дата согл.',
-#             'Доверитель (осн.)',
-#             'Клиент',
-#             'Сотрудник',
-#             'Создано',
-#             'Кем создано',
-#         ]
-
-#         for col_num, header in enumerate(headers, 1):
-#             cell = ws.cell(row=row_num, column=col_num)
-#             cell.value = header
-#             cell.fill = header_fill
-#             cell.font = header_font
-#             cell.border = border
-#             cell.alignment = Alignment(horizontal='center', vertical='center')
-
-#         row_num += 1
-#         start_data_row = row_num
-
-#         for transaction in queryset.order_by('-date', '-created_at'):
-#             case = transaction.case
-#             finance = getattr(case, 'finance', None) if case else None
-
-#             agreement_number = finance.agreement_number if finance and finance.agreement_number else '-'
-#             agreement_date_str = (
-#                 finance.agreement_date.strftime('%d.%m.%Y')
-#                 if finance and finance.agreement_date
-#                 else '-'
-#             )
-
-#             # основной доверитель
-#             main_trustor = case.main_trustor if case else None
-#             main_trustor_name = getattr(main_trustor, 'full_name', None) or str(main_trustor) if main_trustor else '-'
-
-#             ws.cell(row=row_num, column=1).value = transaction.date.strftime('%d.%m.%Y')
-#             ws.cell(row=row_num, column=2).value = transaction.get_transaction_type_display()
-
-#             amount_cell = ws.cell(row=row_num, column=3)
-#             amount_cell.value = float(transaction.amount)
-#             amount_cell.font = income_font if transaction.transaction_type == 'income' else expense_font
-
-#             ws.cell(row=row_num, column=4).value = transaction.description
-#             ws.cell(row=row_num, column=5).value = (
-#                 transaction.category.name if transaction.transaction_type == 'income' and transaction.category
-#                 else transaction.expense_category.name if transaction.expense_category
-#                 else '-'
-#             )
-#             ws.cell(row=row_num, column=6).value = (
-#                 f"#{case.id} - {case.title}" if case else '-'
-#             )
-#             ws.cell(row=row_num, column=7).value = agreement_number
-#             ws.cell(row=row_num, column=8).value = agreement_date_str
-#             ws.cell(row=row_num, column=9).value = main_trustor_name
-#             ws.cell(row=row_num, column=10).value = str(transaction.client) if transaction.client else '-'
-#             ws.cell(row=row_num, column=11).value = str(transaction.employee) if transaction.employee else '-'
-#             ws.cell(row=row_num, column=12).value = transaction.created_at.strftime('%d.%m.%Y %H:%M')
-#             ws.cell(row=row_num, column=13).value = str(transaction.created_by)
-
-#             for col_num in range(1, 14):
-#                 ws.cell(row=row_num, column=col_num).border = border
-
-#             row_num += 1
-
-#         end_data_row = row_num - 1
-
-#         row_num += 1
-
-#         # Итог по доходам
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         total_income_label = ws.cell(row=row_num, column=1)
-#         total_income_label.value = "Общий доход:"
-#         total_income_label.font = Font(bold=True)
-#         total_income_label.fill = total_fill
-#         total_income_label.border = border
-
-#         total_income_value = ws.cell(row=row_num, column=3)
-#         income_col_letter = get_column_letter(3)
-#         total_income_value.value = f"=SUMIF(B{start_data_row}:B{end_data_row}, \"Приход\", {income_col_letter}{start_data_row}:{income_col_letter}{end_data_row})"
-#         total_income_value.font = income_font
-#         total_income_value.fill = total_fill
-#         total_income_value.border = border
-
-#         # Итог по расходам
-#         row_num += 1
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         total_expense_label = ws.cell(row=row_num, column=1)
-#         total_expense_label.value = "Общий расход:"
-#         total_expense_label.font = Font(bold=True)
-#         total_expense_label.fill = total_fill
-#         total_expense_label.border = border
-
-#         total_expense_value = ws.cell(row=row_num, column=3)
-#         total_expense_value.value = f"=SUMIF(B{start_data_row}:B{end_data_row}, \"Расход\", {income_col_letter}{start_data_row}:{income_col_letter}{end_data_row})"
-#         total_expense_value.font = expense_font
-#         total_expense_value.fill = total_fill
-#         total_expense_value.border = border
-
-#         # Чистая прибыль
-#         row_num += 1
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         net_income_label = ws.cell(row=row_num, column=1)
-#         net_income_label.value = "Чистая прибыль:"
-#         net_income_label.font = Font(bold=True)
-#         net_income_label.fill = total_fill
-#         net_income_label.border = border
-
-#         net_income_value = ws.cell(row=row_num, column=3)
-#         prev_income_row = row_num - 2
-#         prev_expense_row = row_num - 1
-#         net_income_value.value = f"={income_col_letter}{prev_income_row}-{income_col_letter}{prev_expense_row}"
-#         net_income_value.font = Font(bold=True)
-#         net_income_value.fill = total_fill
-#         net_income_value.border = border
-
-#         # Кол-во операций
-#         row_num += 2
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         count_label = ws.cell(row=row_num, column=1)
-#         count_label.value = "Количество операций:"
-#         count_label.font = Font(bold=True)
-
-#         count_value = ws.cell(row=row_num, column=3)
-#         count_value.value = queryset.count()
-#         count_value.font = Font(bold=True)
-
-#         # Ширина столбцов
-#         column_widths = {
-#             'A': 12,
-#             'B': 12,
-#             'C': 12,
-#             'D': 40,
-#             'E': 20,
-#             'F': 25,
-#             'G': 16,
-#             'H': 12,
-#             'I': 25,
-#             'J': 20,
-#             'K': 20,
-#             'L': 16,
-#             'M': 20,
-#         }
-#         for col_letter, width in column_widths.items():
-#             ws.column_dimensions[col_letter].width = width
-
-#         # Формат суммы
-#         for row in range(start_data_row, end_data_row + 1):
-#             cell = ws.cell(row=row, column=3)
-#             cell.number_format = '#,##0.00" сом"'
-
-#         # Формат итогов
-#         for row in [start_data_row + queryset.count() + 2,
-#                     start_data_row + queryset.count() + 3,
-#                     start_data_row + queryset.count() + 4]:
-#             cell = ws.cell(row=row, column=3)
-#             cell.number_format = '#,##0.00" сом"'
-
-#         wb.save(response)
-        
-#         return response
-
-# class TransactionExportView(AccountantRequiredMixin, View):
-#     def get(self, request, *args, **kwargs):
-#         # Применяем те же фильтры, что и в TransactionListView
-#         queryset = FinancialTransaction.objects.all()
-        
-#         # Сохраняем параметры фильтрации для отчета
-#         filter_params = {}
-        
-#         # Фильтрация по типу операции
-#         transaction_type = self.request.GET.get('type')
-#         if transaction_type in ['income', 'expense']:
-#             queryset = queryset.filter(transaction_type=transaction_type)
-#             filter_params['Тип операции'] = 'Приход' if transaction_type == 'income' else 'Расход'
-        
-#         # Фильтрация по дате
-#         date_from = self.request.GET.get('date_from')
-#         date_to = self.request.GET.get('date_to')
-#         if date_from:
-#             queryset = queryset.filter(date__gte=date_from)
-#             filter_params['Дата с'] = date_from
-#         if date_to:
-#             queryset = queryset.filter(date__lte=date_to)
-#             filter_params['Дата по'] = date_to
-        
-#         # Фильтрация по категории
-#         category = self.request.GET.get('category')
-#         if category:
-#             queryset = queryset.filter(Q(category_id=category) | Q(expense_category_id=category))
-#             try:
-#                 # Пытаемся найти категорию
-#                 cat = IncomeCategory.objects.filter(id=category).first()
-#                 if not cat:
-#                     cat = ExpenseCategory.objects.filter(id=category).first()
-#                 if cat:
-#                     filter_params['Категория'] = cat.name
-#             except:
-#                 pass
-        
-#         # Фильтрация по делу
-#         case = self.request.GET.get('case')
-#         if case:
-#             queryset = queryset.filter(case_id=case)
-#             filter_params['Дело'] = f"ID: {case}"
-        
-#         # Вычисляем итоги
-#         total_income = queryset.filter(transaction_type='income').aggregate(Sum('amount'))['amount__sum'] or 0
-#         total_expense = queryset.filter(transaction_type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
-#         net_income = total_income - total_expense
-        
-#         # Создаем HTTP-ответ с Excel-файлом
-#         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#         filename = f"financial_report_{timezone.now().strftime('%Y-%m-%d_%H-%M')}.xlsx"
-#         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-#         # Создаем книгу Excel
-#         wb = Workbook()
-#         ws = wb.active
-#         ws.title = "Финансовый отчет"
-        
-#         # Стили
-#         header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
-#         header_font = Font(color="FFFFFF", bold=True)
-#         border = Border(left=Side(style='thin'), 
-#                        right=Side(style='thin'), 
-#                        top=Side(style='thin'), 
-#                        bottom=Side(style='thin'))
-#         total_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-#         income_font = Font(color="00B050", bold=True)  # Зеленый для доходов
-#         expense_font = Font(color="FF0000", bold=True)  # Красный для расходов
-        
-#         # Заголовок отчета
-#         ws.merge_cells('A1:J1')
-#         title_cell = ws['A1']
-#         title_cell.value = "Отчет по финансовым операциям"
-#         title_cell.font = Font(size=16, bold=True)
-#         title_cell.alignment = Alignment(horizontal='center')
-        
-#         # Параметры фильтрации
-#         row_num = 3
-#         if filter_params:
-#             ws.merge_cells(f'A{row_num}:J{row_num}')
-#             filter_cell = ws[f'A{row_num}']
-#             filter_cell.value = "Параметры фильтрации:"
-#             filter_cell.font = Font(bold=True)
-#             row_num += 1
-            
-#             for key, value in filter_params.items():
-#                 ws.merge_cells(f'A{row_num}:B{row_num}')
-#                 param_cell = ws[f'A{row_num}']
-#                 param_cell.value = f"{key}: {value}"
-#                 param_cell.font = Font(bold=True)
-#                 row_num += 1
-        
-#         # Пропускаем строку
-#         row_num += 1
-        
-#         # Заголовки таблицы
-#         headers = ['Дата', 'Тип операции', 'Сумма', 'Описание', 'Категория', 'Дело', 'Клиент', 'Сотрудник', 'Создано', 'Кем создано']
-        
-#         for col_num, header in enumerate(headers, 1):
-#             cell = ws.cell(row=row_num, column=col_num)
-#             cell.value = header
-#             cell.fill = header_fill
-#             cell.font = header_font
-#             cell.border = border
-#             cell.alignment = Alignment(horizontal='center', vertical='center')
-        
-#         # Данные
-#         row_num += 1
-#         start_data_row = row_num
-        
-#         for transaction in queryset.order_by('-date', '-created_at'):
-#             ws.cell(row=row_num, column=1).value = transaction.date.strftime('%d.%m.%Y')
-#             ws.cell(row=row_num, column=2).value = transaction.get_transaction_type_display()
-            
-#             amount_cell = ws.cell(row=row_num, column=3)
-#             amount_cell.value = float(transaction.amount)
-#             if transaction.transaction_type == 'income':
-#                 amount_cell.font = income_font
-#             else:
-#                 amount_cell.font = expense_font
-            
-#             ws.cell(row=row_num, column=4).value = transaction.description
-#             ws.cell(row=row_num, column=5).value = transaction.category.name if transaction.transaction_type == 'income' and transaction.category else transaction.expense_category.name if transaction.expense_category else '-'
-#             ws.cell(row=row_num, column=6).value = f"#{transaction.case.id} - {transaction.case.title}" if transaction.case else '-'
-#             ws.cell(row=row_num, column=7).value = str(transaction.client) if transaction.client else '-'
-#             ws.cell(row=row_num, column=8).value = str(transaction.employee) if transaction.employee else '-'
-#             ws.cell(row=row_num, column=9).value = transaction.created_at.strftime('%d.%m.%Y %H:%M')
-#             ws.cell(row=row_num, column=10).value = str(transaction.created_by)
-            
-#             # Применяем границы ко всем ячейкам строки
-#             for col_num in range(1, 11):
-#                 ws.cell(row=row_num, column=col_num).border = border
-            
-#             row_num += 1
-        
-#         # Итоги
-#         end_data_row = row_num - 1
-        
-#         # Пропускаем строку
-#         row_num += 1
-        
-#         # Итог по доходам
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         total_income_label = ws.cell(row=row_num, column=1)
-#         total_income_label.value = "Общий доход:"
-#         total_income_label.font = Font(bold=True)
-#         total_income_label.fill = total_fill
-#         total_income_label.border = border
-        
-#         total_income_value = ws.cell(row=row_num, column=3)
-#         total_income_value.value = float(total_income)
-#         total_income_value.font = income_font
-#         total_income_value.fill = total_fill
-#         total_income_value.border = border
-        
-#         # Формула для суммирования доходов
-#         income_col_letter = get_column_letter(3)
-#         total_income_value.value = f"=SUMIF(B{start_data_row}:B{end_data_row}, \"Приход\", {income_col_letter}{start_data_row}:{income_col_letter}{end_data_row})"
-        
-#         # Итог по расходам
-#         row_num += 1
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         total_expense_label = ws.cell(row=row_num, column=1)
-#         total_expense_label.value = "Общий расход:"
-#         total_expense_label.font = Font(bold=True)
-#         total_expense_label.fill = total_fill
-#         total_expense_label.border = border
-        
-#         total_expense_value = ws.cell(row=row_num, column=3)
-#         total_expense_value.font = expense_font
-#         total_expense_value.fill = total_fill
-#         total_expense_value.border = border
-        
-#         # Формула для суммирования расходов
-#         total_expense_value.value = f"=SUMIF(B{start_data_row}:B{end_data_row}, \"Расход\", {income_col_letter}{start_data_row}:{income_col_letter}{end_data_row})"
-        
-#         # Чистая прибыль
-#         row_num += 1
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         net_income_label = ws.cell(row=row_num, column=1)
-#         net_income_label.value = "Чистая прибыль:"
-#         net_income_label.font = Font(bold=True)
-#         net_income_label.fill = total_fill
-#         net_income_label.border = border
-        
-#         net_income_value = ws.cell(row=row_num, column=3)
-#         net_income_value.font = Font(bold=True)
-#         net_income_value.fill = total_fill
-#         net_income_value.border = border
-        
-#         # Формула для расчета чистой прибыли
-#         prev_income_row = row_num - 2
-#         prev_expense_row = row_num - 1
-#         net_income_value.value = f"={income_col_letter}{prev_income_row}-{income_col_letter}{prev_expense_row}"
-        
-#         # Количество операций
-#         row_num += 2
-#         ws.merge_cells(f'A{row_num}:B{row_num}')
-#         count_label = ws.cell(row=row_num, column=1)
-#         count_label.value = "Количество операций:"
-#         count_label.font = Font(bold=True)
-        
-#         count_value = ws.cell(row=row_num, column=3)
-#         count_value.value = queryset.count()
-#         count_value.font = Font(bold=True)
-        
-#         # Настраиваем ширину столбцов
-#         column_widths = {
-#             'A': 12,  # Дата
-#             'B': 12,  # Тип операции
-#             'C': 12,  # Сумма
-#             'D': 40,  # Описание
-#             'E': 20,  # Категория
-#             'F': 25,  # Дело
-#             'G': 20,  # Клиент
-#             'H': 20,  # Сотрудник
-#             'I': 16,  # Создано
-#             'J': 20,  # Кем создано
-#         }
-        
-#         for col_letter, width in column_widths.items():
-#             ws.column_dimensions[col_letter].width = width
-        
-#         # Форматируем столбец с суммой как денежный
-#         for row in range(start_data_row, end_data_row + 1):
-#             cell = ws.cell(row=row, column=3)
-#             cell.number_format = '#,##0.00" сом"'
-        
-#         # Форматируем итоговые значения
-#         for row in [start_data_row + queryset.count() + 2, start_data_row + queryset.count() + 3, start_data_row + queryset.count() + 4]:
-#             cell = ws.cell(row=row, column=3)
-#             cell.number_format = '#,##0.00" сом"'
-        
-#         # Сохраняем книгу
-#         wb.save(response)
-        
-#         return response
-    
 class TransactionListView(AccountantRequiredMixin, ListView):
     model = FinancialTransaction
     template_name = 'finance/transaction_list.html'

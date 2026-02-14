@@ -17,7 +17,7 @@ class ClientForm(forms.ModelForm):
         max_length=17,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': '+79991234567'
+            'placeholder': '+996..'
         }),
         label="Телефон"
     )
@@ -125,11 +125,7 @@ class ClientForm(forms.ModelForm):
         # ДОБАВЛЕНО: Делаем поля обязательными
         self.fields['first_name'].required = True
         self.fields['last_name'].required = True
-        self.fields['passport_series'].required = True
-        self.fields['passport_number'].required = True
-        self.fields['passport_issued_by'].required = True
-        self.fields['passport_issue_date'].required = True
-        self.fields['registration_address'].required = True
+       
     
     def clean_passport_series(self):
         data = self.cleaned_data.get('passport_series', '')
