@@ -48,7 +48,14 @@ class Trustor(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True, verbose_name="Дата обновления")
-
+    representatives = models.ManyToManyField(
+        "self",
+        through="TrustorRepresentation",
+        symmetrical=False,
+        related_name="represented_trustors",
+        blank=True,
+        verbose_name="Представители"
+    )
     class Meta:
         verbose_name = "Доверитель"
         verbose_name_plural = "Доверители"
@@ -64,4 +71,33 @@ class Trustor(models.Model):
         """Возвращает строку с именами ответственных юристов"""
         return ", ".join([lawyer.get_full_name() or lawyer.username 
                          for lawyer in self.primary_contact.all()])
-# User = get_user_model()
+
+class TrustorRepresentation(models.Model):
+    trustor = models.ForeignKey(
+        Trustor,
+        on_delete=models.CASCADE,
+        related_name="representation_links",
+        verbose_name="Доверитель"
+    )
+    representative = models.ForeignKey(
+        Trustor,
+        on_delete=models.CASCADE,
+        related_name="as_representative_links",
+        verbose_name="Представитель"
+    )
+
+    basis = models.CharField(max_length=255, blank=True, default="", verbose_name="Основание (доверенность/ордер)")
+    doc_number = models.CharField(max_length=100, blank=True, default="", verbose_name="№ документа")
+    issue_date = models.DateField(null=True, blank=True, verbose_name="Дата выдачи")
+    expires_at = models.DateField(null=True, blank=True, verbose_name="Срок действия до")
+    notes = models.TextField(blank=True, default="", verbose_name="Заметки")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Связь доверитель-представитель"
+        verbose_name_plural = "Связи доверитель-представитель"
+        unique_together = ("trustor", "representative")
+
+    def __str__(self):
+        return f"{self.representative} представляет {self.trustor}"

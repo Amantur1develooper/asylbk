@@ -33,13 +33,18 @@
               {{ form.transaction_type }}
               {% for e in form.transaction_type.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
             </div>
-
+            {# ✅ НОВОЕ: номер соглашения #}
+<div class="col-md-6" id="group-agreement_number">
+  <label class="form-label" for="{{ form.agreement_number.id_for_label }}">{% trans "Номер соглашения" %}</label>
+  {{ form.agreement_number }}
+  {% for e in form.agreement_number.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+</div>
             <div class="col-md-6">
               <label class="form-label" for="{{ form.amount.id_for_label }}">{% trans "Сумма" %}</label>
               {{ form.amount }}
               {% for e in form.amount.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
             </div>
-
+            
             <div class="col-md-6">
               <label class="form-label" for="{{ form.date.id_for_label }}">{% trans "Дата" %}</label>
               {{ form.date }}
@@ -89,7 +94,7 @@
               {% for e in form.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
             </div>
           </div>
-
+         
           <div class="mt-4 d-flex gap-2">
             <button type="submit" class="btn btn-primary">
               <i class="bi bi-check2-circle me-1"></i> {% trans "Сохранить" %}
@@ -208,6 +213,18 @@
     caseEl.addEventListener('change', loadStages);
     loadStages();
   }
+})();
+</script>
+<script>
+(function(){
+  const typeEl = document.getElementById('id_transaction_type');
+  const group = document.getElementById('group-agreement_number');
+  function toggle(){
+    if (!typeEl || !group) return;
+    group.style.display = (typeEl.value === 'income') ? '' : 'none';
+  }
+  if (typeEl) typeEl.addEventListener('change', toggle);
+  toggle();
 })();
 </script>
 {% endblock %}

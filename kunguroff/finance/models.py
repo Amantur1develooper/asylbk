@@ -6,8 +6,8 @@ from django.core.validators import MinValueValidator
 from django.db.models import Sum
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
+from django.utils import timezone
 User = get_user_model()
-# finance/models.py
 from decimal import Decimal
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -74,7 +74,23 @@ class CaseFinance(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+    payment_due_date = models.DateField(
+        'Срок погашения по соглашению',
+        null=True,
+        blank=True
+    )
 
+    @property
+    def days_to_due(self):
+        """Сколько дней до срока (может быть отрицательным)."""
+        if not self.payment_due_date:
+            return None
+        return (self.payment_due_date - timezone.localdate()).days
+
+    @property
+    def is_overdue(self):
+        """Просрочено ли (если есть остаток и срок уже прошёл)."""
+        return bool(self.payment_due_date and self.remaining_amount > 0 and timezone.localdate() > self.payment_due_date)
     class Meta:
         verbose_name = 'Финансы дела'
         verbose_name_plural = 'Финансы дел'
@@ -252,6 +268,8 @@ class ExpenseCategory(models.Model):
     
     def __str__(self):
         return self.name
+    
+    
 class FinancialTransaction(models.Model):
     TRANSACTION_TYPES = [
         ('income', 'Приход'),
@@ -262,7 +280,12 @@ class FinancialTransaction(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Сумма")
     date = models.DateField(verbose_name="Дата операции")
     description = models.TextField(verbose_name="Описание")
-
+    agreement_number = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        verbose_name="Номер соглашения"
+    )
     # Связи с другими моделями
     category = models.ForeignKey(
         'finance.IncomeCategory',
@@ -324,8 +347,11 @@ class FinancialTransaction(models.Model):
     def __str__(self):
         return f"{self.get_transaction_type_display()} - {self.amount} - {self.date}"
 
+    # finance/models.py (внутри FinancialTransaction.save)
+    from decimal import Decimal
+    from django.db.models import Sum
+
     def save(self, *args, **kwargs):
-        # Автоматическое определение категории на основе типа операции
         if self.transaction_type == 'income' and not self.category:
             self.category, _ = IncomeCategory.objects.get_or_create(name='Прочие доходы')
         elif self.transaction_type == 'expense' and not self.expense_category:
@@ -333,23 +359,33 @@ class FinancialTransaction(models.Model):
 
         super().save(*args, **kwargs)
 
-        # После сохранения обновляем "сколько отдал от договора" (paid_amount) по делу — по всем приходам
+    # ✅ Если приход по делу — обновляем финкарточку (paid_amount + номер соглашения)
         if self.case_id and self.transaction_type == 'income':
             total_income = FinancialTransaction.objects.filter(
                 case_id=self.case_id,
                 transaction_type='income'
             ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
             try:
                 finance = self.case.finance
             except CaseFinance.DoesNotExist:
                 finance = CaseFinance.objects.create(
-                    case=self.case,
-                    contract_amount=getattr(self.case, 'contract_amount', Decimal('0.00')) or Decimal('0.00'),
-                    paid_amount=Decimal('0.00')
-                )
+                case=self.case,
+                contract_amount=getattr(self.case, 'contract_amount', Decimal('0.00')) or Decimal('0.00'),
+                paid_amount=Decimal('0.00')
+            )
+
             finance.paid_amount = total_income
+
+        # ✅ НОВОЕ: проставляем номер соглашения из операции
+            if (self.agreement_number or '').strip():
+                finance.agreement_number = self.agreement_number.strip()
+            # по желанию — если дата соглашения не заполнена, подставим дату операции
+                if not finance.agreement_date:
+                    finance.agreement_date = self.date
+
             finance.recalc_shares()
-            finance.save(update_fields=['paid_amount', 'updated_at'])
+            finance.save(update_fields=['paid_amount', 'agreement_number', 'agreement_date', 'updated_at'])
 
     def delete(self, *args, **kwargs):
         case_id = self.case_id

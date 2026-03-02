@@ -318,6 +318,24 @@
                     </a>
                   </div>
                 </td>
+                <td>
+  <a href="{% url 'clients:trustor_detail' participant.trustor.pk %}">
+    {{ participant.trustor.get_full_name }}
+  </a>
+
+  {% if participant.participant_type == 'trustor' %}
+    <span class="badge bg-primary ms-1">Доверитель</span>
+  {% else %}
+    <span class="badge bg-info text-dark ms-1">Представитель</span>
+    {% if participant.represents %}
+      <div class="small text-muted">представляет: {{ participant.represents.get_full_name }}</div>
+    {% endif %}
+  {% endif %}
+
+  {% if participant.main_participant %}
+    <span class="badge bg-success ms-1">Основной</span>
+  {% endif %}
+</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -461,6 +479,23 @@
                   </div>
                 {% endif %}
               {% endwith %}
+{% if case.finance.payment_due_date %}
+  <dt class="col-sm-5">Срок погашения</dt>
+  <dd class="col-sm-7">
+    {{ case.finance.payment_due_date|date:"d.m.Y" }}
+    {% if case.finance.is_overdue %}
+      <span class="badge bg-danger ms-2">Просрочено</span>
+    {% else %}
+      {% if case.finance.days_to_due != None %}
+        <span class="badge bg-secondary ms-2">Осталось: {{ case.finance.days_to_due }} дн.</span>
+      {% endif %}
+    {% endif %}
+  </dd>
+{% else %}
+  <dt class="col-sm-5">Срок погашения</dt>
+  <dd class="col-sm-7">—</dd>
+{% endif %}
+
 
               {# Форма добавления документа — только на текущем этапе и для ролей #}
               {% if case.current_stage_id and stage.id == case.current_stage_id and user.role in allowed_roles_for_stage_edit %}

@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from clients.models import Trustor
 from decimal import Decimal
 from django.core.validators import MinValueValidator
-
+from django.core.validators import RegexValidator
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -88,7 +89,19 @@ class Case(models.Model):
         ('completed', 'Завершено'),
         ('archived', 'Архив'),
     ]
-    
+    internal_number = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Номер дела (внутренний)",
+        help_text="Напр.: KP-001, 2026-15, A/12"
+    )
+
+    internal_year = models.PositiveIntegerField(
+        default=timezone.now().year,
+        verbose_name="Год номера",
+        help_text="Для уникальности нумерации по году"
+    )
     title = models.CharField(max_length=200, verbose_name="Статья ук - описание")
     description = models.TextField(blank=True, verbose_name="Описание")
     category = models.ForeignKey(
@@ -205,7 +218,10 @@ class Case(models.Model):
             self.save(update_fields=['progress', 'updated_at'])
         
         return self.progress
-
+    @property
+    def main_trustor(self):
+        p = self.participants.filter(main_participant=True, participant_type="trustor").first()
+        return p.trustor if p else None
 class CaseDocument(models.Model):
     case = models.ForeignKey(
         Case, 
@@ -329,7 +345,10 @@ class CaseParticipantRole(models.Model):
 
 class CaseParticipant(models.Model):
     """Участник дела с определенной ролью"""
-    
+    PARTICIPANT_TYPES = [
+        ("trustor", "Доверитель"),
+        ("representative", "Представитель"),
+    ]
     case = models.ForeignKey(
         Case, 
         on_delete=models.CASCADE, 
@@ -347,12 +366,25 @@ class CaseParticipant(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Статус в деле"
     )
+    participant_type = models.CharField(
+        max_length=20,
+        choices=PARTICIPANT_TYPES,
+        default="trustor",
+        verbose_name="Тип участия"
+    )
     main_participant = models.BooleanField(
         default=False,
         verbose_name="Основной доверитель",
         help_text="Является ли этот доверитель основным по делу"
     )
-    
+    represents = models.ForeignKey(
+        Trustor,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="represented_in_cases",
+        verbose_name="Кого представляет"
+    )
     # Дополнительная информация об участии
     representation_basis = models.TextField(
         blank=True,
@@ -369,16 +401,28 @@ class CaseParticipant(models.Model):
     class Meta:
         verbose_name = "Участник дела"
         verbose_name_plural = "Участники дела"
-        unique_together = ['case', 'trustor', 'role']
+        unique_together = ['case', 'trustor', 'role', 'participant_type', 'represents']
     
     def __str__(self):
-        return f"{self.trustor} - {self.role.role_name} в деле {self.case}"
+        if self.participant_type == "representative" and self.represents:
+            return f"{self.trustor} (представитель {self.represents}) — {self.role.role_name} — дело {self.case}"
+        return f"{self.trustor} — {self.role.role_name} — дело {self.case}"
     
     def save(self, *args, **kwargs):
-        """Если отмечаем как основного, снимаем отметку с других участников"""
-        if self.main_participant:
+        # если доверитель — убираем represents
+        if self.participant_type == "trustor":
+            self.represents = None
+
+        # если представитель — нельзя быть "основным доверителем"
+        if self.participant_type == "representative":
+            self.main_participant = False
+
+        # логика основного доверителя только для trustor
+        if self.main_participant and self.participant_type == "trustor":
             CaseParticipant.objects.filter(
-                case=self.case, 
-                main_participant=True
+                case=self.case,
+                main_participant=True,
+                participant_type="trustor",
             ).exclude(pk=self.pk).update(main_participant=False)
+
         super().save(*args, **kwargs)

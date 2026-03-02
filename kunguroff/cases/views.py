@@ -491,7 +491,11 @@ class CaseParticipantCreateView(LawyerRequiredMixin, CreateView):
         
         # Если отмечаем как основного, снимаем отметку с других
         if form.cleaned_data.get('main_participant'):
-            CaseParticipant.objects.filter(case=case, main_participant=True).update(main_participant=False)
+            CaseParticipant.objects.filter(
+        case=case,
+        main_participant=True,
+        participant_type='trustor'
+    ).update(main_participant=False)
         
         return super().form_valid(form)
     

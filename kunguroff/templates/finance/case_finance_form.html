@@ -37,7 +37,12 @@
                      value="{{ case.main_trustor.full_name|default:'-' }}"
                      disabled>
             </div>
-
+             
+              <div class="col-md-4">
+              <label class="form-label">{{ form.payment_due_date.label }}</label>
+              {{ form.payment_due_date }}
+              {{ form.payment_due_date.errors }}
+            </div>
             <div class="col-md-4">
               <label class="form-label">{{ form.agreement_number.label }}</label>
               {{ form.agreement_number }}
