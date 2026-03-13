@@ -103,83 +103,8 @@ class CaseDetailView(DetailView):
         context['allowed_roles_for_stage_edit'] = ['lawyer', 'advocate', 'director']
         return context
 
-# class CaseDetailView(DetailView):
-#     model = Case
-#     template_name = 'cases/case_detail.html'
-#     context_object_name = 'case'
 
-#     @method_decorator(login_required)
-#     def dispatch(self, *args, **kwargs):
-#         return super().dispatch(*args, **kwargs)
 
-#     def get_queryset(self):
-#         user = self.request.user
-#         qs = Case.objects.all()
-#         # подтянем связанные объекты для экономии запросов
-#         qs = qs.select_related('category', 'current_stage', 'manager').prefetch_related(
-#             'responsible_lawyer',
-#             Prefetch('category__stages', queryset=CaseStage.objects.all().prefetch_related('fields'))
-#         )
-#         if user.role in ['lawyer', 'advocate']:
-#             qs = qs.filter(responsible_lawyer=user)
-#         return qs
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-
-#         context['document_form'] = CaseDocumentForm()
-
-#         # Документы по делу (последние по каждому полю)
-#         docs = (CaseDocument.objects
-#                 .filter(case=self.object)
-#                 .select_related('stage', 'field', 'created_by')
-#                 .order_by('-created_at'))
-
-#         # stage_id -> { field_id -> document }
-#         doc_by_stage_field = defaultdict(dict)
-#         for d in docs:
-#             # берём первый в порядке -created_at (последний добавленный)
-#             if d.field_id not in doc_by_stage_field[d.stage_id]:
-#                 doc_by_stage_field[d.stage_id][d.field_id] = d
-
-#         context['doc_by_stage_field'] = dict(doc_by_stage_field)
-
-#         # Оставим старое для обратной совместимости, если где-то используешь:
-#         context['documents_by_stage'] = {}
-#         for stage in self.object.category.stages.all():
-#             context['documents_by_stage'][stage] = [v for fid, v in doc_by_stage_field.get(stage.id, {}).items()]
-
-#         return context
-
-# Детальная информация о деле
-# class CaseDetailView(DetailView):
-#     model = Case
-#     template_name = 'cases/case_detail.html'
-#     context_object_name = 'case'
-    
-#     @method_decorator(login_required)
-#     def dispatch(self, *args, **kwargs):
-#         return super().dispatch(*args, **kwargs)
-    
-#     def get_queryset(self):
-#         # Проверка прав доступа
-#         user = self.request.user
-#         if user.role in ['lawyer', 'advocate']:
-#             # ИЗМЕНЕНИЕ: Фильтруем по связи ManyToMany
-#             return Case.objects.filter(responsible_lawyer=user)
-#         return Case.objects.all()
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         # Добавляем форму для загрузки документов
-#         context['document_form'] = CaseDocumentForm()
-#         # Добавляем список документов по этапам
-#         context['documents_by_stage'] = {}
-#         for stage in self.object.category.stages.all():
-#             context['documents_by_stage'][stage] = CaseDocument.objects.filter(
-#                 case=self.object, stage=stage
-#             )
-#         return context
 
 # cases/views.py
 class CaseCreateView(LawyerRequiredMixin, CreateView):

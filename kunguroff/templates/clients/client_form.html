@@ -98,7 +98,66 @@
           </div>
         </div>
       </div>
+<hr>
+<h5 class="mb-3">{% trans "Местонахождение" %}</h5>
 
+<div class="mb-3">
+  <label for="{{ form.location_status.id_for_label }}" class="form-label">
+    {{ form.location_status.label }}
+  </label>
+  {% render_field form.location_status class="form-select" %}
+  {% if form.location_status.errors %}
+    <div class="invalid-feedback d-block">{{ form.location_status.errors.0 }}</div>
+  {% endif %}
+</div>
+
+<div class="mb-3" id="location-details-wrap">
+  <label for="{{ form.location_details.id_for_label }}" class="form-label">
+    {{ form.location_details.label }}
+  </label>
+  {% render_field form.location_details class="form-control" %}
+  {% if form.location_details.errors %}
+    <div class="invalid-feedback d-block">{{ form.location_details.errors.0 }}</div>
+  {% endif %}
+  {% if form.location_details.help_text %}
+    <div class="form-text">{{ form.location_details.help_text }}</div>
+  {% endif %}
+</div>
+<hr>
+<h5 class="mb-3">{% trans "Мера пресечения" %}</h5>
+
+<div class="mb-3">
+  <label for="{{ form.preventive_measure.id_for_label }}" class="form-label">
+    {{ form.preventive_measure.label }}
+  </label>
+  {% render_field form.preventive_measure class="form-select" %}
+  {% if form.preventive_measure.errors %}
+    <div class="invalid-feedback d-block">{{ form.preventive_measure.errors.0 }}</div>
+  {% endif %}
+</div>
+
+<div class="mb-3" id="pm-date-wrap">
+  <label for="{{ form.preventive_measure_date.id_for_label }}" class="form-label">
+    {{ form.preventive_measure_date.label }}
+  </label>
+  {% render_field form.preventive_measure_date class="form-control" %}
+  {% if form.preventive_measure_date.errors %}
+    <div class="invalid-feedback d-block">{{ form.preventive_measure_date.errors.0 }}</div>
+  {% endif %}
+</div>
+
+<div class="mb-3" id="pm-details-wrap">
+  <label for="{{ form.preventive_measure_details.id_for_label }}" class="form-label">
+    {{ form.preventive_measure_details.label }}
+  </label>
+  {% render_field form.preventive_measure_details class="form-control" %}
+  {% if form.preventive_measure_details.errors %}
+    <div class="invalid-feedback d-block">{{ form.preventive_measure_details.errors.0 }}</div>
+  {% endif %}
+  {% if form.preventive_measure_details.help_text %}
+    <div class="form-text">{{ form.preventive_measure_details.help_text }}</div>
+  {% endif %}
+</div>
       <hr>
 
       <div class="row">
@@ -127,11 +186,11 @@
       </div>
 
       <div class="d-flex justify-content-between">
-        <a href="{% if object %}{% url 'clients:client_detail' object.pk %}{% else %}{% url 'clients:client_list' %}{% endif %}"
+         <a href="{% if object %}{% url 'clients:trustor_detail' object.pk %}{% else %}{% url 'clients:client_list' %}{% endif %}"
            class="btn btn-secondary">
           {% trans "Отмена" %}
-        </a>
-        <button type="submit" class="btn btn-primary">
+        </a> 
+        <button  type="submit" class="btn btn-primary">
           {% if object %}{% trans "Сохранить изменения" %}{% else %}{% trans "Сохранить" %}{% endif %}
         </button>
       </div>
@@ -141,6 +200,23 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const pm = document.getElementById('{{ form.preventive_measure.id_for_label }}');
+  const wrapDate = document.getElementById('pm-date-wrap');
+  const wrapDetails = document.getElementById('pm-details-wrap');
+
+  function togglePM() {
+    if (!pm) return;
+    const show = pm.value !== 'none';
+    if (wrapDate) wrapDate.style.display = show ? '' : 'none';
+    if (wrapDetails) wrapDetails.style.display = show ? '' : 'none';
+  }
+
+  if (pm) pm.addEventListener('change', togglePM);
+  togglePM();
+});
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('form').forEach(form => {
@@ -152,6 +228,20 @@ document.addEventListener('DOMContentLoaded', function() {
       form.classList.add('was-validated');
     });
   });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const statusEl = document.getElementById('{{ form.location_status.id_for_label }}');
+  const detailsWrap = document.getElementById('location-details-wrap');
+
+  function toggleDetails() {
+    if (!statusEl || !detailsWrap) return;
+    detailsWrap.style.display = (statusEl.value === 'free') ? 'none' : '';
+  }
+
+  if (statusEl) statusEl.addEventListener('change', toggleDetails);
+  toggleDetails();
 });
 </script>
 {% endblock %}

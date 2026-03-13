@@ -61,7 +61,30 @@
           </div>
         </div>
       </div>
+      <div class="row">
+  <div class="col-md-6">
+    <div class="mb-3">
+      <label for="{{ form.internal_number.id_for_label }}" class="form-label">{{ form.internal_number.label }}</label>
+      {{ form.internal_number }}
+      {% if form.internal_number.errors %}
+        <div class="invalid-feedback d-block">{{ form.internal_number.errors.0 }}</div>
+      {% endif %}
+      {% if form.internal_number.help_text %}
+        <div class="form-text">{{ form.internal_number.help_text }}</div>
+      {% endif %}
+    </div>
+  </div>
 
+  <div class="col-md-6">
+    <div class="mb-3">
+      <label for="{{ form.internal_year.id_for_label }}" class="form-label">{{ form.internal_year.label }}</label>
+      {{ form.internal_year }}
+      {% if form.internal_year.errors %}
+        <div class="invalid-feedback d-block">{{ form.internal_year.errors.0 }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
       <div class="mb-3">
         <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
         {{ form.description }}

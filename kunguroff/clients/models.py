@@ -9,7 +9,21 @@ User = get_user_model()
 
 class Trustor(models.Model):
     """Модель доверителя (бывший клиент)"""
-    
+    LOCATION_CHOICES = [
+        ('free', 'На свободе'),
+        ('ukzh', 'УКЖ'),
+        ('ivs', 'ИВС'),
+        ('ik', 'ИК'),
+        ('sizo', 'СИЗО'),
+       
+    ]
+    PREVENTIVE_MEASURE_CHOICES = [
+        ('none', 'Нет'),
+        ('detention', 'Заключение под стражу'),
+        ('house_arrest', 'Домашний арест'),
+        ('arrest', 'Арест'),
+        ('other', 'Другое'),
+    ]
     # Основная информация
     first_name = models.CharField(max_length=100, verbose_name="Имя")
     last_name = models.CharField(max_length=100, verbose_name="Фамилия")
@@ -34,8 +48,40 @@ class Trustor(models.Model):
     # Дополнительная информация
     inn = models.CharField(max_length=14, null=True, blank=True, verbose_name="ИНН")
     notes = models.TextField(blank=True, null=True, verbose_name="Заметки")
-    
-    # Связи
+    preventive_measure = models.CharField(
+        max_length=20,
+        choices=PREVENTIVE_MEASURE_CHOICES,
+        default='none',
+        verbose_name="Мера пресечения"
+    )
+
+    preventive_measure_details = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        verbose_name="Детали меры пресечения",
+        help_text="Напр.: постановление суда, срок до, условия и т.д."
+    )
+
+    preventive_measure_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Дата избрания меры"
+    )
+    location_status = models.CharField(
+        max_length=20,
+        choices=LOCATION_CHOICES,
+        default='free',
+        verbose_name="Местонахождение"
+    )
+
+    location_details = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        verbose_name="Детали местонахождения",
+        help_text="Напр.: СИЗО-1, г. Бишкек, камера 12 / адрес учреждения"
+    )
     
     primary_contact = models.ManyToManyField(
         User, 

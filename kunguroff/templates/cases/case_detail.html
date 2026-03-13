@@ -33,7 +33,16 @@
         <div class="row mb-3">
           <div class="col-sm-4 fw-bold">{% trans "Название:" %}</div>
           <div class="col-sm-8">{{ case.title }}</div>
-        </div>
+        </div> 
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Номер:" %}</div>
+          <div class="col-sm-8">{{case.internal_number}}</div>
+        </div>  
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Номер года:" %}</div>
+          <div class="col-sm-8"> {{case.internal_year}}</div>
+        </div> 
+   
 
         <div class="row mb-3">
           <div class="col-sm-4 fw-bold">{% trans "Категория:" %}</div>
@@ -224,7 +233,7 @@
         </div>
       </div>
     </div>
-
+  
     {% if case.finance %}
     <div class="card mt-3">
       <div class="card-header d-flex justify-content-between align-items-center">
@@ -290,55 +299,78 @@
             </tr>
           </thead>
           <tbody>
-            {% for participant in case.participants.all %}
-              <tr>
-                <td>
-                  <a href="{% url 'clients:trustor_detail' participant.trustor.pk %}">
-                    {{ participant.trustor.get_full_name }}
-                  </a>
-                  {% if participant.main_participant %}
-                    <span class="badge bg-primary ms-1">{% trans "Основной" %}</span>
-                  {% endif %}
-                </td>
-                <td>{{ participant.role.role_name }}</td>
-                <td>
-                  <span class="badge bg-secondary">
-                    {{ participant.trustor.get_status_display }}
-                  </span>
-                </td>
-                <td>
-                  <div class="btn-group btn-group-sm">
-                    <a href="{% url 'cases:case_update_participant' participant.pk %}"
-                       class="btn btn-outline-secondary" title="{% trans 'Редактировать' %}">
-                      <i class="bi bi-pencil"></i>
-                    </a>
-                    <a href="{% url 'cases:case_delete_participant' participant.pk %}"
-                       class="btn btn-outline-danger" title="{% trans 'Удалить' %}">
-                      <i class="bi bi-trash"></i>
-                    </a>
-                  </div>
-                </td>
-                <td>
-  <a href="{% url 'clients:trustor_detail' participant.trustor.pk %}">
-    {{ participant.trustor.get_full_name }}
-  </a>
+  {% for participant in case.participants.all %}
+    <tr>
+      <td>
+        <a href="{% url 'clients:trustor_detail' participant.trustor.pk %}">
+          {{ participant.trustor.get_full_name }}
+        </a>
 
-  {% if participant.participant_type == 'trustor' %}
-    <span class="badge bg-primary ms-1">Доверитель</span>
-  {% else %}
-    <span class="badge bg-info text-dark ms-1">Представитель</span>
-    {% if participant.represents %}
-      <div class="small text-muted">представляет: {{ participant.represents.get_full_name }}</div>
-    {% endif %}
-  {% endif %}
+        {# тип: доверитель / представитель #}
+        {% if participant.participant_type == 'trustor' %}
+          <span class="badge bg-primary ms-1">{% trans "Доверитель" %}</span>
+        {% else %}
+          <span class="badge bg-info text-dark ms-1">{% trans "Представитель" %}</span>
+          {% if participant.represents %}
+            <div class="small text-muted">
+              {% trans "представляет:" %} {{ participant.represents.get_full_name }}
+            </div>
+          {% endif %}
+        {% endif %}
 
-  {% if participant.main_participant %}
-    <span class="badge bg-success ms-1">Основной</span>
-  {% endif %}
-</td>
-              </tr>
-            {% endfor %}
-          </tbody>
+        {% if participant.main_participant %}
+          <span class="badge bg-success ms-1">{% trans "Основной" %}</span>
+        {% endif %}
+
+        {# ✅ Локация (если есть) #}
+        {% if participant.trustor.location_status and participant.trustor.location_status != 'free' %}
+          <div class="small mt-2">
+            <span class="badge bg-secondary">{% trans "Местонахождение" %}:</span>
+            {{ participant.trustor.get_location_status_display }}
+            {% if participant.trustor.location_details %}
+              <span class="text-muted"> — {{ participant.trustor.location_details }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {# ✅ Мера пресечения (если есть) #}
+        {% if participant.trustor.preventive_measure and participant.trustor.preventive_measure != 'none' %}
+          <div class="small mt-1">
+            <span class="badge bg-info text-dark">{% trans "Мера" %}:</span>
+            {{ participant.trustor.get_preventive_measure_display }}
+            {% if participant.trustor.preventive_measure_date %}
+              <span class="text-muted">({{ participant.trustor.preventive_measure_date|date:"d.m.Y" }})</span>
+            {% endif %}
+            {% if participant.trustor.preventive_measure_details %}
+              <div class="text-muted">{{ participant.trustor.preventive_measure_details }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </td>
+
+      <td>{{ participant.role.role_name }}</td>
+
+      <td>
+        <span class="badge bg-secondary">
+          {{ participant.trustor.get_status_display }}
+        </span>
+      </td>
+
+      <td>
+        <div class="btn-group btn-group-sm">
+          <a href="{% url 'cases:case_update_participant' participant.pk %}"
+             class="btn btn-outline-secondary" title="{% trans 'Редактировать' %}">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <a href="{% url 'cases:case_delete_participant' participant.pk %}"
+             class="btn btn-outline-danger" title="{% trans 'Удалить' %}">
+            <i class="bi bi-trash"></i>
+          </a>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+</tbody>
         </table>
       </div>
 

@@ -33,10 +33,13 @@
 from django.contrib import admin
 from .models import Trustor
 
+
+# clients/admin.py
 @admin.register(Trustor)
 class TrustorAdmin(admin.ModelAdmin):
-    list_display = ['last_name', 'first_name', 'phone', 'get_primary_contact']
-    filter_horizontal = ['primary_contact']  # Для удобного выбора
+    list_display = ('last_name', 'first_name', 'phone', 'location_status')
+    list_filter = ('location_status',)
+    search_fields = ('last_name', 'first_name', 'phone', 'inn')
     
     def get_primary_contact(self, obj):
         return obj.get_primary_contact_names()

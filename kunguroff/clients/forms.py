@@ -41,17 +41,27 @@ class ClientForm(forms.ModelForm):
             'phone', 'email',
             'passport_series', 'passport_number', 'passport_issued_by',
             'passport_issue_date', 'registration_address', 'residence_address',
-            'inn', 'notes', 'primary_contact'
+            'inn', 'notes', 'primary_contact',
+            'location_status',
+            'location_details',
+            'preventive_measure',
+            'preventive_measure_date',
+            'preventive_measure_details',
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите имя'
             }),
+            'preventive_measure': forms.Select(attrs={'class': 'form-select'}),
+            'preventive_measure_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'preventive_measure_details': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите фамилию'
             }),
+             'location_status': forms.Select(attrs={'class': 'form-select'}),
+            'location_details': forms.TextInput(attrs={'class': 'form-control'}),
             'middle_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите отчество (необязательно)'

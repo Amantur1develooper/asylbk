@@ -245,28 +245,7 @@ class ClientUpdateView(UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-# class ClientUpdateView(UpdateView):
-#     model = Trustor
-#     form_class = ClientForm
-#     template_name = 'clients/client_form.html'
-#     success_url = reverse_lazy('clients:client_list')
-    
-#     @method_decorator(login_required)
-#     def dispatch(self, *args, **kwargs):
-#         # Проверка прав доступа
-#         client = self.get_object()
-#         user = self.request.user
-#         allowed_roles = ['manager', 'director', 'deputy_director']
-        
-#         # Юристы могут редактировать только своих клиентов
-#         if user.role in ['lawyer', 'advocate'] and client.primary_contact != user:
-#             return redirect('permission_denied')
-        
-#         # Менеджеры и директора могут редактировать всех
-#         if user.role not in allowed_roles + ['lawyer', 'advocate']:
-#             return redirect('permission_denied')
-            
-#         return super().dispatch(*args, **kwargs)
+
 
 # Удаление клиента
 class ClientDeleteView(DeleteView):

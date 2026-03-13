@@ -222,6 +222,8 @@ class Case(models.Model):
     def main_trustor(self):
         p = self.participants.filter(main_participant=True, participant_type="trustor").first()
         return p.trustor if p else None
+    
+    
 class CaseDocument(models.Model):
     case = models.ForeignKey(
         Case, 

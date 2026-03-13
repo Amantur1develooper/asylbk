@@ -10,7 +10,7 @@
     <a href="{% url 'clients:client_update' client.pk %}" class="btn btn-outline-primary">
       <i class="bi bi-pencil"></i> {% trans "Редактировать" %}
     </a>
-    {% if user.role in 'director deputy_director' %}
+    {% if user.role == 'director' or user.role == 'deputy_director' %}
       <a href="{% url 'clients:client_delete' client.pk %}" class="btn btn-outline-danger">
         <i class="bi bi-trash"></i> {% trans "Удалить" %}
       </a>
@@ -37,7 +37,7 @@
 
         <div class="row mb-3">
           <div class="col-sm-4 fw-bold">{% trans "Телефон:" %}</div>
-          <div class="col-sm-8">{{ client.phone }}</div>
+          <div class="col-sm-8">{{ client.phone|default:"—" }}</div>
         </div>
 
         <div class="row mb-3">
@@ -45,20 +45,62 @@
           <div class="col-sm-8">{{ client.email|default:"—" }}</div>
         </div>
 
-        <div class="row mb-3">
-          <div class="col-sm-4 fw-bold">{% trans "Ответственный:" %}</div>
+        <div class="row mb-0">
+          <div class="col-sm-4 fw-bold">{% trans "Ответственные:" %}</div>
           <div class="col-sm-8">
             {% if client.primary_contact.all %}
-              <ul class="list-group">
+              <ul class="list-group list-group-flush">
                 {% for lawyer in client.primary_contact.all %}
-                  <li class="list-group-item">
+                  <li class="list-group-item px-0">
+                    <i class="bi bi-person-badge me-1"></i>
                     {{ lawyer.get_full_name|default:lawyer.username }}
-                    ({{ lawyer.get_role_display }})
+                    <span class="text-muted">({{ lawyer.get_role_display }})</span>
                   </li>
                 {% endfor %}
               </ul>
             {% else %}
               <p class="text-muted mb-0">{% trans "Ответственные не назначены" %}</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Статус клиента (место + мера) -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">{% trans "Статус" %}</h5>
+      </div>
+      <div class="card-body">
+
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Местонахождение:" %}</div>
+          <div class="col-sm-8">
+            <span class="badge bg-secondary">
+              {{ client.get_location_status_display|default:"—" }}
+            </span>
+            {% if client.location_details %}
+              <div class="text-muted small mt-1">{{ client.location_details }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-4 fw-bold">{% trans "Мера пресечения:" %}</div>
+          <div class="col-sm-8">
+            <span class="badge bg-info text-dark">
+              {{ client.get_preventive_measure_display|default:"—" }}
+            </span>
+
+            {% if client.preventive_measure_date %}
+              <div class="text-muted small mt-1">
+                {% trans "Дата:" %} {{ client.preventive_measure_date|date:"d.m.Y" }}
+              </div>
+            {% endif %}
+
+            {% if client.preventive_measure_details %}
+              <div class="text-muted small">{{ client.preventive_measure_details }}</div>
             {% endif %}
           </div>
         </div>
@@ -77,37 +119,37 @@
 
         <div class="row mb-3">
           <div class="col-sm-4 fw-bold">{% trans "Паспорт:" %}</div>
-          <div class="col-sm-8">{{ client.passport_series }} {{ client.passport_number }}</div>
+          <div class="col-sm-8">
+            {{ client.passport_series|default:"—" }} {{ client.passport_number|default:"" }}
+          </div>
         </div>
 
         <div class="row mb-3">
           <div class="col-sm-4 fw-bold">{% trans "Кем выдан:" %}</div>
-          <div class="col-sm-8">{{ client.passport_issued_by }}</div>
+          <div class="col-sm-8">{{ client.passport_issued_by|default:"—" }}</div>
         </div>
 
         <div class="row mb-3">
           <div class="col-sm-4 fw-bold">{% trans "Дата выдачи:" %}</div>
-          <div class="col-sm-8">{{ client.passport_issue_date|date:"d.m.Y" }}</div>
+          <div class="col-sm-8">
+            {% if client.passport_issue_date %}{{ client.passport_issue_date|date:"d.m.Y" }}{% else %}—{% endif %}
+          </div>
         </div>
 
         <div class="row mb-3">
           <div class="col-sm-4 fw-bold">{% trans "Адрес регистрации:" %}</div>
-          <div class="col-sm-8">{{ client.registration_address }}</div>
+          <div class="col-sm-8">{{ client.registration_address|default:"—" }}</div>
         </div>
 
-        {% if client.residence_address %}
-          <div class="row mb-3">
-            <div class="col-sm-4 fw-bold">{% trans "Адрес проживания:" %}</div>
-            <div class="col-sm-8">{{ client.residence_address }}</div>
-          </div>
-        {% endif %}
+        <div class="row mb-3">
+          <div class="col-sm-4 fw-bold">{% trans "Адрес проживания:" %}</div>
+          <div class="col-sm-8">{{ client.residence_address|default:"—" }}</div>
+        </div>
 
-        {% if client.inn %}
-          <div class="row mb-3">
-            <div class="col-sm-4 fw-bold">{% trans "ИНН:" %}</div>
-            <div class="col-sm-8">{{ client.inn }}</div>
-          </div>
-        {% endif %}
+        <div class="row">
+          <div class="col-sm-4 fw-bold">{% trans "ИНН:" %}</div>
+          <div class="col-sm-8">{{ client.inn|default:"—" }}</div>
+        </div>
 
       </div>
     </div>
@@ -126,21 +168,23 @@
   <div class="card-body">
     {% if cases %}
       <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover align-middle">
           <thead>
             <tr>
               <th>{% trans "Название дела" %}</th>
               <th>{% trans "Категория" %}</th>
               <th>{% trans "Статус" %}</th>
               <th>{% trans "Прогресс" %}</th>
-              <th>{% trans "Действия" %}</th>
+              <th class="text-end">{% trans "Действия" %}</th>
             </tr>
           </thead>
           <tbody>
             {% for case in cases %}
               <tr>
                 <td>
-                  <a href="{% url 'cases:case_detail' case.pk %}">{{ case.title }}</a>
+                  <a href="{% url 'cases:case_detail' case.pk %}">
+                    {{ case.title }}
+                  </a>
                 </td>
                 <td>{{ case.category.get_name_display }}</td>
                 <td>
@@ -148,7 +192,7 @@
                     {{ case.get_status_display }}
                   </span>
                 </td>
-                <td>
+                <td style="min-width:180px;">
                   <div class="d-flex align-items-center">
                     <div class="progress flex-grow-1 me-2" style="height:10px;">
                       <div class="progress-bar" role="progressbar" style="width: {{ case.progress }}%;"
@@ -157,7 +201,7 @@
                     <small>{{ case.progress }}%</small>
                   </div>
                 </td>
-                <td>
+                <td class="text-end">
                   <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-eye"></i>
                   </a>

@@ -23,7 +23,7 @@
         {% csrf_token %}
         <div class="mt-3">
           <button type="submit" class="btn btn-danger">{% trans "Да, удалить" %}</button>
-          <a href="{% url 'clients:client_detail' object.pk %}" class="btn btn-secondary">
+         <a href="{% url 'clients:trustor_detail' object.pk %}" class="btn btn-secondary">
             {% trans "Отмена" %}
           </a>
         </div>

@@ -16,13 +16,13 @@ class ExpenseCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(FinancialTransaction)
 class FinancialTransactionAdmin(admin.ModelAdmin):
-    list_display = ('transaction_type', 'amount', 'date', 'category', 'expense_category', 'case', 'created_by')
+    list_display = ('transaction_type','agreement_number', 'amount', 'date', 'category', 'expense_category', 'case', 'created_by')
     list_filter = ('transaction_type', 'date', 'category', 'expense_category')
     search_fields = ('description', 'case__title', 'client__last_name')
     readonly_fields = ('created_by', 'created_at', 'updated_at')
     fieldsets = (
         (None, {
-            'fields': ('transaction_type', 'amount', 'date', 'description')
+            'fields': ('transaction_type', 'amount', 'date', 'description','agreement_number')
         }),
         ('Категории', {
             'fields': ('category', 'expense_category')

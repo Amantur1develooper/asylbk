@@ -132,15 +132,26 @@ class CaseForm(forms.ModelForm):
         }),
         label="Ответственные юристы/адвокаты"
     )
-
+# cases/forms.py
     class Meta:
         model = Case
         fields = [
+            'internal_number', 'internal_year',  # ✅ ДОБАВИТЬ СЮДА
             'title', 'description', 'category', 'responsible_lawyer',
             'manager', 'current_stage', 'status', 'contract_amount',
             'court_name', 'case_number', 'judge_name'
         ]
         widgets = {
+            'internal_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Напр.: KP-001'
+            }),
+            'internal_year': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 2000,
+                'max': 2100
+            }),
+
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите название дела'}),
             'contract_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Полная стоимость дела (100%)'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Подробное описание дела...'}),
@@ -148,12 +159,35 @@ class CaseForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
         labels = {
+            'internal_number': 'Номер дела (внутренний)',
+            'internal_year': 'Год номера',
             'title': 'Название дела*',
             'description': 'Описание',
             'category': 'Категория дела*',
             'manager': 'Менеджер',
             'status': 'Статус*',
         }
+    # class Meta:
+    #     model = Case
+    #     fields = [
+    #         'title', 'description', 'category', 'responsible_lawyer',
+    #         'manager', 'current_stage', 'status', 'contract_amount',
+    #         'court_name', 'case_number', 'judge_name'
+    #     ]
+    #     widgets = {
+    #         'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите название дела'}),
+    #         'contract_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Полная стоимость дела (100%)'}),
+    #         'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Подробное описание дела...'}),
+    #         'manager': forms.Select(attrs={'class': 'form-select'}),
+    #         'status': forms.Select(attrs={'class': 'form-select'}),
+    #     }
+    #     labels = {
+    #         'title': 'Название дела*',
+    #         'description': 'Описание',
+    #         'category': 'Категория дела*',
+    #         'manager': 'Менеджер',
+    #         'status': 'Статус*',
+    #     }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
