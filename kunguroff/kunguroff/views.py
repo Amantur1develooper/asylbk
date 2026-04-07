@@ -40,7 +40,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.contrib.auth.views import LoginView
 
 def user_logout(request):
-    logout(request)  # очищает сессию пользователя
-    return redirect('login')  # перенаправляем на страницу входа
+    logout(request)
+    return redirect('login')
+
+
+class SmartLoginView(LoginView):
+    """Если пользователь уже вошёл — сразу перенаправляем на дашборд."""
+    template_name = 'login.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('dashboard')
+        return super().dispatch(request, *args, **kwargs)
