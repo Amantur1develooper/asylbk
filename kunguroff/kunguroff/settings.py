@@ -196,6 +196,11 @@ USE_TZ = True
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
+
+# ── Постоянные сессии (не сбрасываются при закрытии браузера) ──
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False   # сессия живёт после закрытия браузера
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30   # 30 дней в секундах
+SESSION_SAVE_EVERY_REQUEST = True          # обновляет срок при каждом запросе
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 MEDIA_URL = '/media/'

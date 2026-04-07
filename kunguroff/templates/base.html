@@ -5,133 +5,658 @@
 <html lang="{% get_current_language as LANGUAGE_CODE %}{{ LANGUAGE_CODE|default:'ru' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% trans "Kunguroff & Partners" %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>{% block title %}Kunguroff & Partners{% endblock %}</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/k-logo-blue.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/k-logo-blue.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/k-logo-blue.png' %}">
     <link rel="apple-touch-icon" href="{% static 'img/k-logo-blue.png' %}">
-    <link rel="shortcut icon" href="{% static 'img/k-logo-blue.png' %}">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-
-    <!-- Custom -->
-    {% block linkk %}{% endblock linkk %}
+    {% block linkk %}{% endblock %}
 
     <style>
-        .sidebar {
-            min-height: calc(100vh - 56px);
-            background-color: #f8f9fa;
-            border-right: 1px solid #dee2e6;
+    /* ─── VARIABLES ─── */
+    :root {
+        --nav-h: 56px;
+        --bottom-h: 62px;
+        --sidebar-w: 260px;
+        --primary: #1a3a5c;
+        --primary-hover: #2a5298;
+        --accent: #c9a84c;
+        --bg: #f0f4f8;
+        --sidebar-bg: #0f2540;
+        --sidebar-text: rgba(255,255,255,0.85);
+        --sidebar-active: rgba(201,168,76,0.15);
+        --border: #dee2e6;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        /* оставляем место для нижнего таббара на мобиле */
+        padding-bottom: var(--bottom-h);
+    }
+    @media (min-width: 768px) {
+        body { padding-bottom: 0; }
+    }
+
+    /* ─── TOP NAVBAR ─── */
+    .top-navbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: var(--nav-h);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        z-index: 1040;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        gap: 10px;
+    }
+    .burger-btn {
+        background: rgba(255,255,255,0.1);
+        border: none;
+        border-radius: 10px;
+        width: 40px; height: 40px;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff;
+        font-size: 1.2rem;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s;
+    }
+    .burger-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .nav-brand {
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        letter-spacing: 0.3px;
+        flex-grow: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-brand span { color: var(--accent); }
+
+    .nav-user-btn {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        color: #fff;
+        font-size: 0.8rem;
+        padding: 5px 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        text-decoration: none;
+        flex-shrink: 0;
+        position: relative;
+    }
+    .nav-user-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .user-avatar {
+        width: 26px; height: 26px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    /* ─── USER DROPDOWN ─── */
+    .user-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        min-width: 200px;
+        overflow: hidden;
+        display: none;
+        z-index: 2000;
+    }
+    .user-dropdown.open { display: block; }
+    .user-dropdown-header {
+        background: var(--primary);
+        color: #fff;
+        padding: 14px 16px;
+    }
+    .user-dropdown a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        color: #212529;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background 0.15s;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    .user-dropdown a:last-child { border-bottom: none; }
+    .user-dropdown a:hover { background: #f8f9fa; }
+    .user-dropdown a.danger { color: #dc3545; }
+
+    /* ─── DRAWER (SIDEBAR) ─── */
+    .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1050;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+    }
+    .drawer-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+    .drawer {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: var(--sidebar-w);
+        background: var(--sidebar-bg);
+        z-index: 1060;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .drawer.open { transform: translateX(0); }
+
+    /* Desktop: drawer всегда виден */
+    @media (min-width: 768px) {
+        .drawer {
+            transform: translateX(0) !important;
+            top: var(--nav-h);
         }
-        .content { padding: 20px; }
-        .progress { height: 20px; }
+        .drawer-overlay { display: none !important; }
+        .burger-btn { display: none; }
+    }
+
+    .drawer-header {
+        background: rgba(0,0,0,0.2);
+        padding: 20px 16px 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+    .drawer-logo {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        text-decoration: none;
+    }
+    .drawer-logo span { color: var(--accent); }
+    .drawer-close {
+        background: rgba(255,255,255,0.1);
+        border: none;
+        border-radius: 8px;
+        color: rgba(255,255,255,0.7);
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    @media (min-width: 768px) {
+        .drawer-header { display: none; }
+    }
+
+    /* User block inside drawer */
+    .drawer-user {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+    .drawer-user-avatar {
+        width: 36px; height: 36px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+    .drawer-user-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .drawer-user-role {
+        font-size: 0.72rem;
+        color: var(--accent);
+        margin-top: 1px;
+    }
+
+    /* Nav links */
+    .drawer-nav {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+    }
+    .drawer-nav::-webkit-scrollbar { width: 4px; }
+    .drawer-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+    .drawer-section-title {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: rgba(255,255,255,0.35);
+        padding: 14px 20px 4px;
+        font-weight: 700;
+    }
+    .drawer-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 20px;
+        color: var(--sidebar-text);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-left: 3px solid transparent;
+        transition: all 0.15s;
+        position: relative;
+    }
+    .drawer-link:hover {
+        background: rgba(255,255,255,0.06);
+        color: #fff;
+        border-left-color: rgba(201,168,76,0.5);
+    }
+    .drawer-link.active {
+        background: var(--sidebar-active);
+        color: var(--accent);
+        border-left-color: var(--accent);
+        font-weight: 600;
+    }
+    .drawer-link i {
+        font-size: 1.1rem;
+        width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    /* Язык в drawer */
+    .drawer-lang {
+        padding: 12px 16px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        flex-shrink: 0;
+    }
+    .drawer-lang select {
+        width: 100%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        border-radius: 8px;
+        padding: 7px 10px;
+        font-size: 0.82rem;
+    }
+    .drawer-lang select option { background: var(--sidebar-bg); color: #fff; }
+
+    .drawer-logout {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 20px;
+        color: #ff7979;
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 500;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        transition: background 0.15s;
+        flex-shrink: 0;
+    }
+    .drawer-logout:hover { background: rgba(255,0,0,0.08); color: #ff6b6b; }
+
+    /* ─── MAIN LAYOUT ─── */
+    .main-wrapper {
+        margin-top: var(--nav-h);
+        display: flex;
+    }
+    @media (min-width: 768px) {
+        .main-wrapper {
+            margin-left: var(--sidebar-w);
+        }
+    }
+    .main-content {
+        flex: 1;
+        min-width: 0;
+        padding: 20px 16px;
+    }
+    @media (min-width: 992px) {
+        .main-content { padding: 24px 28px; }
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .page-header h2 {
+        font-size: clamp(1.1rem, 3vw, 1.5rem);
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    /* ─── ALERTS ─── */
+    .alert { border-radius: 12px; }
+
+    /* ─── BOTTOM TABBAR (mobile only) ─── */
+    .bottom-tabbar {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: var(--bottom-h);
+        background: #fff;
+        border-top: 1px solid var(--border);
+        z-index: 1030;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+    @media (min-width: 768px) {
+        .bottom-tabbar { display: none; }
+    }
+    .tab-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-decoration: none;
+        color: #9ca3af;
+        font-size: 0.62rem;
+        font-weight: 600;
+        padding: 6px 2px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        transition: color 0.15s;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .tab-item i { font-size: 1.35rem; }
+    .tab-item.active { color: var(--primary); }
+    .tab-item.active i { color: var(--accent); }
+    .tab-item:hover { color: var(--primary); }
+
+    /* ─── CARDS & TABLES MOBILE FIX ─── */
+    .table-responsive { border-radius: 10px; }
+    .card { border-radius: 14px; border: 1px solid var(--border); }
+    .card-header { border-radius: 14px 14px 0 0 !important; }
+
+    /* Прогрессбар */
+    .progress { height: 8px; border-radius: 4px; }
+
+    /* ─── MISC ─── */
+    .sidebar { display: none; } /* скрываем старый sidebar если где-то используется */
     </style>
 
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">{% trans "Kunguroff & Partners" %}</a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+<!-- ═══ TOP NAVBAR ═══ -->
+<nav class="top-navbar">
+    <button class="burger-btn" id="burgerBtn" aria-label="Меню">
+        <i class="bi bi-list"></i>
+    </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'cases:case_list' %}">{% trans "Дела" %}</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'clients:client_list' %}">{% trans "Доверители" %}</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'finance:transaction_list' %}">{% trans "Транзакции" %}</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/grafik/">📅 {% trans "График" %}</a>
-                    </li>
-                    <li><li><form action="{% url 'set_language' %}" method="post" class="ms-lg-3">
-  {% csrf_token %}
-  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-  <select name="language" class="form-select form-select-sm"
-          onchange="this.form.submit()" style="border-radius:999px;">
-    {% get_current_language as LANGUAGE_CODE %}
-    {% get_available_languages as LANGUAGES %}
-    {% for lang in LANGUAGES %}
-      <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
-        {{ lang.1 }}
-      </option>
-    {% endfor %}
-  </select>
-</form>
-</li></li>
-                    {# другие пункты меню #}
-                </ul>
+    <a class="nav-brand" href="{% url 'dashboard' %}">
+        Kunguroff <span>&</span> Partners
+    </a>
 
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            {{ user.get_full_name|default:user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">{% trans "Профиль" %}</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">{% trans "Выйти" %}</a></li>
-                        </ul>
-                    </li>
-                </ul>
-
+    <!-- User button (desktop) -->
+    <div style="position:relative;" class="d-none d-md-block">
+        <button class="nav-user-btn" id="userMenuBtn">
+            <div class="user-avatar">
+                {{ user.get_full_name|default:user.username|slice:":1"|upper }}
             </div>
-        </div>
-    </nav>
-
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-2 sidebar p-3">
-                {% include 'includes/sidebar.html' %}
+            <span class="d-none d-lg-inline">{{ user.get_full_name|default:user.username|truncatechars:18 }}</span>
+            <i class="bi bi-chevron-down" style="font-size:0.65rem;"></i>
+        </button>
+        <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-header">
+                <div style="font-weight:700;font-size:0.95rem;">{{ user.get_full_name|default:user.username }}</div>
+                <div style="font-size:0.75rem;opacity:0.7;margin-top:2px;">{{ user.get_role_display|default:user.role }}</div>
             </div>
-
-            <!-- Main content -->
-            <div class="col-md-10 content">
-                <!-- Messages -->
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                <!-- Page header -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>{% block page_title %}{% endblock %}</h2>
-                    {% block page_actions %}{% endblock %}
-                </div>
-
-                <!-- Page content -->
-                {% block content %}{% endblock %}
-            </div>
+            <a href="{% url 'logout' %}" class="danger">
+                <i class="bi bi-box-arrow-right"></i> Выйти
+            </a>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Lang switcher (navbar, compact) -->
+    <form action="{% url 'set_language' %}" method="post" class="d-none d-md-flex ms-1">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% get_current_language as LANGUAGE_CODE %}
+        {% get_available_languages as LANGUAGES %}
+        <select name="language" onchange="this.form.submit()"
+                style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:8px;padding:4px 8px;font-size:0.78rem;cursor:pointer;">
+            {% for lang in LANGUAGES %}
+            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}
+                    style="background:#1a3a5c;color:#fff;">{{ lang.0|upper }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</nav>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- ═══ DRAWER OVERLAY ═══ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 
-    {% block extra_js %}{% endblock %}
+<!-- ═══ DRAWER (SIDEBAR) ═══ -->
+<aside class="drawer" id="drawer">
+
+    <!-- Header (mobile only) -->
+    <div class="drawer-header">
+        <a href="{% url 'dashboard' %}" class="drawer-logo">
+            Kunguroff <span>&</span> Partners
+        </a>
+        <button class="drawer-close" onclick="closeDrawer()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <!-- User block -->
+    <div class="drawer-user">
+        <div class="drawer-user-avatar">
+            {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+        </div>
+        <div style="min-width:0;">
+            <div class="drawer-user-name">{{ user.get_full_name|default:user.username }}</div>
+            <div class="drawer-user-role">{{ user.get_role_display|default:user.role }}</div>
+        </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="drawer-nav">
+        <div class="drawer-section-title">Навигация</div>
+
+        <a href="{% url 'dashboard' %}" class="drawer-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i> Дашборд
+        </a>
+        <a href="{% url 'cases:case_list' %}" class="drawer-link {% if 'cases' in request.path %}active{% endif %}">
+            <i class="bi bi-folder2-open"></i> Дела
+        </a>
+        <a href="{% url 'clients:client_list' %}" class="drawer-link {% if 'clients' in request.path %}active{% endif %}">
+            <i class="bi bi-people"></i> Доверители
+        </a>
+        <a href="{% url 'calendar1:calendar' %}" class="drawer-link {% if 'calendar' in request.path %}active{% endif %}">
+            <i class="bi bi-calendar3"></i> Календарь
+        </a>
+        <a href="/grafik/" class="drawer-link {% if 'grafik' in request.path %}active{% endif %}">
+            <i class="bi bi-calendar-week"></i> График дел
+        </a>
+
+        <div class="drawer-section-title">Финансы</div>
+        <a href="{% url 'finance:dashboard' %}" class="drawer-link {% if 'finance' in request.path %}active{% endif %}">
+            <i class="bi bi-cash-coin"></i> Бухгалтерия
+        </a>
+        <a href="{% url 'finance:transaction_list' %}" class="drawer-link">
+            <i class="bi bi-arrow-left-right"></i> Транзакции
+        </a>
+
+        <div class="drawer-section-title">Аналитика</div>
+        <a href="{% url 'ratings:dashboard' %}" class="drawer-link {% if 'ratings' in request.path %}active{% endif %}">
+            <i class="bi bi-graph-up-arrow"></i> Рейтинги
+        </a>
+
+        {% if user.is_staff %}
+        <div class="drawer-section-title">Система</div>
+        <a href="/admin/" class="drawer-link">
+            <i class="bi bi-gear"></i> Администратор
+        </a>
+        {% endif %}
+    </nav>
+
+    <!-- Language switcher (mobile) -->
+    <div class="drawer-lang d-md-none">
+        <form action="{% url 'set_language' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% get_current_language as LANGUAGE_CODE %}
+            {% get_available_languages as LANGUAGES %}
+            <select name="language" onchange="this.form.submit()">
+                {% for lang in LANGUAGES %}
+                <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>{{ lang.1 }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Logout -->
+    <a href="{% url 'logout' %}" class="drawer-logout">
+        <i class="bi bi-box-arrow-right"></i> Выйти из системы
+    </a>
+</aside>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div class="main-wrapper">
+    <div class="main-content">
+
+        <!-- Alerts -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Page header -->
+        <div class="page-header">
+            <h2>{% block page_title %}{% endblock %}</h2>
+            <div>{% block page_actions %}{% endblock %}</div>
+        </div>
+
+        <!-- Content -->
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<!-- ═══ BOTTOM TABBAR (mobile) ═══ -->
+<nav class="bottom-tabbar">
+    <a href="{% url 'dashboard' %}" class="tab-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+        <i class="bi bi-speedometer2"></i>
+        <span>Дашборд</span>
+    </a>
+    <a href="{% url 'cases:case_list' %}" class="tab-item {% if 'cases' in request.path %}active{% endif %}">
+        <i class="bi bi-folder2-open"></i>
+        <span>Дела</span>
+    </a>
+    <a href="{% url 'clients:client_list' %}" class="tab-item {% if 'clients' in request.path %}active{% endif %}">
+        <i class="bi bi-people"></i>
+        <span>Клиенты</span>
+    </a>
+    <a href="/grafik/" class="tab-item {% if 'grafik' in request.path %}active{% endif %}">
+        <i class="bi bi-calendar-week"></i>
+        <span>График</span>
+    </a>
+    <button class="tab-item" onclick="openDrawer()">
+        <i class="bi bi-grid-3x3-gap"></i>
+        <span>Ещё</span>
+    </button>
+</nav>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+/* ── Drawer ── */
+function openDrawer() {
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.getElementById('burgerBtn').addEventListener('click', function() {
+    const d = document.getElementById('drawer');
+    d.classList.contains('open') ? closeDrawer() : openDrawer();
+});
+
+/* Закрывать drawer при клике на ссылку (мобиле) */
+document.querySelectorAll('.drawer-link, .drawer-logout').forEach(link => {
+    link.addEventListener('click', function() {
+        if (window.innerWidth < 768) closeDrawer();
+    });
+});
+
+/* ── User dropdown ── */
+const userMenuBtn = document.getElementById('userMenuBtn');
+const userDropdown = document.getElementById('userDropdown');
+if (userMenuBtn) {
+    userMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        userDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', function() {
+        userDropdown.classList.remove('open');
+    });
+}
+
+/* ── Swipe to open drawer (mobile) ── */
+let touchStartX = 0;
+document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+}, { passive: true });
+document.addEventListener('touchend', function(e) {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (touchStartX < 24 && dx > 60) openDrawer();  // свайп вправо от края
+    if (dx < -80 && document.getElementById('drawer').classList.contains('open')) closeDrawer();
+}, { passive: true });
+</script>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>
