@@ -15,7 +15,9 @@ class ScheduleEntryForm(forms.ModelForm):
         widgets = {
             'time': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',
-                'placeholder': 'Например: 10:00 или 10:00-11:30',
+                'id': 'id_time',
+                'placeholder': 'Например: 10:00',
+                'readonly': 'readonly',
             }),
             'client_name': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',
