@@ -14,10 +14,9 @@ class ScheduleEntryForm(forms.ModelForm):
                   'responsible_staff', 'case_description', 'notes']
         widgets = {
             'time': forms.TextInput(attrs={
+                'type': 'time',
                 'class': 'form-control form-control-lg',
-                'id': 'id_time',
-                'placeholder': 'Например: 10:00',
-                'readonly': 'readonly',
+                'placeholder': '10:00',
             }),
             'client_name': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',

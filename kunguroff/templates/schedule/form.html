@@ -4,13 +4,48 @@
 
 {% block fab %}{% endblock %}
 
+{% block extra_css %}
+<style>
+.quick-time {
+  border: 1.5px solid #c9a84c;
+  background: #fff;
+  color: #856404;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.quick-time:hover, .quick-time:active {
+  background: #c9a84c;
+  color: #fff;
+}
+.desc-btn {
+  border: 1.5px solid #dee2e6;
+  background: #f8f9fa;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.desc-btn:hover { opacity: 0.8; }
+.desc-ud { background: #fff3cd; color: #856404; border-color: #ffc107; }
+.desc-gd { background: #cff4fc; color: #0c5460; border-color: #0dcaf0; }
+.desc-ad { background: #d1e7dd; color: #0a3622; border-color: #198754; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div style="padding-bottom: 24px;">
   <div class="form-card">
 
     <div class="form-card-header">
       <div class="d-flex align-items-center gap-3">
-        <a href="/grafik/" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:1.1rem;">
+        <a href="javascript:history.back()" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:1.2rem;">
           <i class="bi bi-arrow-left"></i>
         </a>
         <div>
@@ -24,9 +59,9 @@
       <form method="post" novalidate>
         {% csrf_token %}
 
-        <!-- Дата + Время (в ряд на мобиле) -->
+        <!-- Дата + Время -->
         <div class="row g-3 mb-3">
-          <div class="col-7">
+          <div class="col-6">
             <label class="form-label">
               <i class="bi bi-calendar-event me-1"></i>Дата *
             </label>
@@ -35,21 +70,38 @@
               <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
             {% endif %}
           </div>
-          <div class="col-5">
+          <div class="col-6">
             <label class="form-label">
               <i class="bi bi-clock me-1"></i>Время
             </label>
             {{ form.time }}
-            {% if form.time.errors %}
-              <div class="text-danger small mt-1">{{ form.time.errors.0 }}</div>
-            {% endif %}
-            <!-- Кнопка открыть пикер -->
-            <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-1 rounded-3"
-                    onclick="openTimePicker()" style="font-size:0.8rem;">
-              <i class="bi bi-clock me-1"></i>Выбрать время
-            </button>
           </div>
         </div>
+
+        <!-- Быстрый выбор времени -->
+        <div class="mb-3">
+          <div class="text-muted small mb-2">Быстрый выбор времени:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button type="button" class="quick-time" onclick="setTime('09:00')">09:00</button>
+            <button type="button" class="quick-time" onclick="setTime('09:30')">09:30</button>
+            <button type="button" class="quick-time" onclick="setTime('10:00')">10:00</button>
+            <button type="button" class="quick-time" onclick="setTime('10:30')">10:30</button>
+            <button type="button" class="quick-time" onclick="setTime('11:00')">11:00</button>
+            <button type="button" class="quick-time" onclick="setTime('11:30')">11:30</button>
+            <button type="button" class="quick-time" onclick="setTime('12:00')">12:00</button>
+            <button type="button" class="quick-time" onclick="setTime('13:00')">13:00</button>
+            <button type="button" class="quick-time" onclick="setTime('13:30')">13:30</button>
+            <button type="button" class="quick-time" onclick="setTime('14:00')">14:00</button>
+            <button type="button" class="quick-time" onclick="setTime('14:30')">14:30</button>
+            <button type="button" class="quick-time" onclick="setTime('15:00')">15:00</button>
+            <button type="button" class="quick-time" onclick="setTime('15:30')">15:30</button>
+            <button type="button" class="quick-time" onclick="setTime('16:00')">16:00</button>
+            <button type="button" class="quick-time" onclick="setTime('16:30')">16:30</button>
+            <button type="button" class="quick-time" onclick="setTime('17:00')">17:00</button>
+          </div>
+        </div>
+
+        <hr class="my-3">
 
         <!-- Клиент -->
         <div class="mb-3">
@@ -77,32 +129,26 @@
             <i class="bi bi-building me-1"></i>Судебная инстанция / орган / место
           </label>
           {{ form.court }}
-          {% if form.court.errors %}
-            <div class="text-danger small mt-1">{{ form.court.errors.0 }}</div>
-          {% endif %}
         </div>
 
-        <!-- Ответственный + Описание -->
-        <div class="row g-3 mb-3">
-          <div class="col-7">
-            <label class="form-label">
-              <i class="bi bi-person-badge me-1"></i>Ответственный
-            </label>
-            {{ form.responsible_staff }}
-          </div>
-          <div class="col-5">
-            <label class="form-label">
-              <i class="bi bi-tag me-1"></i>Тип дела
-            </label>
-            {{ form.case_description }}
-            <div class="mt-1 d-flex flex-wrap gap-1">
-              <button type="button" class="badge badge-ud border-0" style="cursor:pointer;font-size:0.72rem;padding:3px 8px;"
-                      onclick="setDesc('УД')">УД</button>
-              <button type="button" class="badge badge-gd border-0" style="cursor:pointer;font-size:0.72rem;padding:3px 8px;"
-                      onclick="setDesc('ГД')">ГД</button>
-              <button type="button" class="badge badge-ad border-0" style="cursor:pointer;font-size:0.72rem;padding:3px 8px;"
-                      onclick="setDesc('АД')">АД</button>
-            </div>
+        <!-- Ответственный -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-person-badge me-1"></i>Ответственный сотрудник
+          </label>
+          {{ form.responsible_staff }}
+        </div>
+
+        <!-- Тип дела -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-tag me-1"></i>Тип дела
+          </label>
+          {{ form.case_description }}
+          <div class="mt-2 d-flex gap-2">
+            <button type="button" class="desc-btn desc-ud" onclick="setDesc('УД')">УД</button>
+            <button type="button" class="desc-btn desc-gd" onclick="setDesc('ГД')">ГД</button>
+            <button type="button" class="desc-btn desc-ad" onclick="setDesc('АД')">АД</button>
           </div>
         </div>
 
@@ -126,201 +172,16 @@
 </div>
 {% endblock %}
 
-<!-- ── TIME PICKER MODAL ── -->
-<div class="modal fade" id="timePickerModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width:340px;margin:auto;">
-    <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden;">
-
-      <!-- Header -->
-      <div class="modal-header border-0 pb-0"
-           style="background:linear-gradient(135deg,#1a3a5c,#2a5298);color:#fff;padding:20px 20px 16px;">
-        <div>
-          <div style="font-size:0.75rem;opacity:0.7;text-transform:uppercase;letter-spacing:1px;">Выберите время</div>
-          <div id="tpPreview" style="font-size:2.5rem;font-weight:800;letter-spacing:2px;line-height:1.1;">
-            --:--
-          </div>
-        </div>
-        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body p-0">
-
-        <!-- Часы -->
-        <div style="padding:16px 16px 8px;">
-          <div style="font-size:0.72rem;font-weight:700;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
-            Часы
-          </div>
-          <div id="tpHours" style="display:flex;flex-wrap:wrap;gap:6px;">
-            <!-- генерируется JS -->
-          </div>
-        </div>
-
-        <hr style="margin:0 16px;">
-
-        <!-- Минуты -->
-        <div style="padding:10px 16px 8px;">
-          <div style="font-size:0.72rem;font-weight:700;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
-            Минуты
-          </div>
-          <div id="tpMinutes" style="display:flex;flex-wrap:wrap;gap:6px;">
-            <!-- генерируется JS -->
-          </div>
-        </div>
-
-        <!-- Быстрые варианты -->
-        <hr style="margin:0 16px;">
-        <div style="padding:10px 16px 16px;">
-          <div style="font-size:0.72rem;font-weight:700;color:#6c757d;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
-            Частые варианты
-          </div>
-          <div id="tpPresets" style="display:flex;flex-wrap:wrap;gap:6px;">
-            <!-- генерируется JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer border-0 pt-0 gap-2" style="padding:0 16px 16px;">
-        <button type="button" class="btn btn-light rounded-3 flex-grow-1"
-                data-bs-dismiss="modal">Отмена</button>
-        <button type="button" class="btn rounded-3 flex-grow-1 fw-bold"
-                style="background:#1a3a5c;color:#fff;"
-                onclick="confirmTime()">
-          <i class="bi bi-check-lg me-1"></i>Готово
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
 {% block extra_js %}
 <script>
-/* ── Описание дела ── */
+function setTime(val) {
+  const f = document.getElementById('id_time');
+  if (f) f.value = val;
+}
+
 function setDesc(val) {
   const f = document.getElementById('id_case_description');
   if (f) f.value = val;
 }
-
-/* badge inline styles */
-document.querySelectorAll('.badge-ud').forEach(b => b.style.cssText += 'background:#fff3cd;color:#856404;');
-document.querySelectorAll('.badge-gd').forEach(b => b.style.cssText += 'background:#cff4fc;color:#0c5460;');
-document.querySelectorAll('.badge-ad').forEach(b => b.style.cssText += 'background:#d1e7dd;color:#0a3622;');
-
-/* ── TIME PICKER ── */
-let tpHour = null, tpMinute = null;
-
-function openTimePicker() {
-  // Парсим текущее значение
-  const cur = (document.getElementById('id_time').value || '').trim();
-  const m = cur.match(/^(\d{1,2}):(\d{2})/);
-  tpHour   = m ? parseInt(m[1]) : null;
-  tpMinute = m ? parseInt(m[2]) : null;
-
-  renderHours();
-  renderMinutes();
-  updatePreview();
-
-  renderPresets();
-  new bootstrap.Modal(document.getElementById('timePickerModal')).show();
-}
-
-function renderHours() {
-  const el = document.getElementById('tpHours');
-  el.innerHTML = '';
-  for (let h = 8; h <= 20; h++) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'tp-chip' + (h === tpHour ? ' active' : '');
-    btn.textContent = String(h).padStart(2, '0');
-    btn.onclick = () => { tpHour = h; renderHours(); updatePreview(); };
-    el.appendChild(btn);
-  }
-}
-
-function renderPresets() {
-  const presets = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00',
-                   '13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
-  const el = document.getElementById('tpPresets');
-  el.innerHTML = '';
-  presets.forEach(t => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'tp-preset';
-    btn.textContent = t;
-    btn.onclick = () => setTime(t);
-    el.appendChild(btn);
-  });
-}
-
-function renderMinutes() {
-  const el = document.getElementById('tpMinutes');
-  el.innerHTML = '';
-  [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].forEach(min => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'tp-chip' + (min === tpMinute ? ' active' : '');
-    btn.textContent = String(min).padStart(2, '0');
-    btn.onclick = () => { tpMinute = min; renderMinutes(); updatePreview(); };
-    el.appendChild(btn);
-  });
-}
-
-function updatePreview() {
-  const h = tpHour   !== null ? String(tpHour).padStart(2,'0')   : '--';
-  const m = tpMinute !== null ? String(tpMinute).padStart(2,'0') : '--';
-  document.getElementById('tpPreview').textContent = h + ':' + m;
-}
-
-function setTime(val) {
-  const [h, m] = val.split(':');
-  tpHour   = parseInt(h);
-  tpMinute = parseInt(m);
-  renderHours();
-  renderMinutes();
-  updatePreview();
-  confirmTime();
-}
-
-function confirmTime() {
-  if (tpHour === null || tpMinute === null) return;
-  const val = String(tpHour).padStart(2,'0') + ':' + String(tpMinute).padStart(2,'0');
-  document.getElementById('id_time').value = val;
-  bootstrap.Modal.getInstance(document.getElementById('timePickerModal'))?.hide();
-}
 </script>
-
-<style>
-.tp-chip {
-  width: 44px; height: 36px;
-  border-radius: 10px;
-  border: 1.5px solid #dee2e6;
-  background: #f8f9fa;
-  color: #212529;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex; align-items: center; justify-content: center;
-}
-.tp-chip:hover { background: #e8f0fd; border-color: #2a5298; color: #1a3a5c; }
-.tp-chip.active {
-  background: #1a3a5c !important;
-  color: #fff !important;
-  border-color: #1a3a5c !important;
-  transform: scale(1.06);
-}
-.tp-preset {
-  border-radius: 20px;
-  border: 1.5px solid #c9a84c;
-  background: #fff;
-  color: #856404;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.tp-preset:hover { background: #c9a84c; color: #fff; }
-</style>
 {% endblock %}
