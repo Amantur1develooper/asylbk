@@ -28,7 +28,7 @@ class LawyerRequiredMixin(RoleRequiredMixin):
     allowed_roles = ['lawyer', 'advocate', 'manager', 'deputy_director', 'director']
 
 class AccountantRequiredMixin(RoleRequiredMixin):
-    allowed_roles = ['accountant', 'deputy_director', 'director']
+    allowed_roles = ['accountant', 'manager', 'deputy_director', 'director']
 
 class HRRequiredMixin(RoleRequiredMixin):
     allowed_roles = ['hr', 'deputy_director', 'director']
