@@ -255,9 +255,9 @@ class ClientDeleteView(DeleteView):
     
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        # Только директора и зам.директора могут удалять клиентов
+        # Директора, зам.директора и менеджеры могут удалять клиентов
         user = self.request.user
-        if user.role not in ['director', 'deputy_director']:
+        if user.role not in ['director', 'deputy_director', 'manager']:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
 # class ClientDeleteView(DeleteView):

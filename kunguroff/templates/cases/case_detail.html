@@ -13,7 +13,7 @@
       <i class="bi bi-pencil"></i> {% trans "Редактировать" %}
     </a>
 
-    {% if user.role == 'director' or user.role == 'deputy_director' %}
+    {% if user.role == 'director' or user.role == 'deputy_director' or user.role == 'manager' %}
       <a href="{% url 'cases:case_delete' case.pk %}" class="btn btn-outline-danger">
         <i class="bi bi-trash"></i> {% trans "Удалить" %}
       </a>
@@ -449,8 +449,9 @@
                               <td>
                                 {% if doc %}
                                   {% if f.field_type == 'file' and doc.file_value %}
-                                    <a href="{{ doc.file_value.url }}" target="_blank">
-                                      {{ doc.file_value.name|slice:"20:" }}{% if doc.file_value.name|length > 20 %}...{% endif %}
+                                    <a href="#" onclick="previewDocument('{{ doc.file_value.url }}', '{{ doc.file_value.name }}'); return false;"
+                                       class="text-primary text-decoration-underline" style="cursor:pointer;">
+                                      <i class="bi bi-file-earmark me-1"></i>{{ doc.file_value.name|slice:"20:" }}{% if doc.file_value.name|length > 20 %}...{% endif %}
                                     </a>
                                   {% elif f.field_type == 'text' %}
                                     {{ doc.text_value|default:_("Не заполнено")|truncatewords:5 }}
@@ -476,7 +477,12 @@
                               <td>
                                 <div class="btn-group btn-group-sm">
                                   {% if doc and f.field_type == 'file' and doc.file_value %}
-                                    <a href="{{ doc.file_value.url }}" target="_blank"
+                                    <button type="button" class="btn btn-outline-info"
+                                            title="{% trans 'Просмотр' %}"
+                                            onclick="previewDocument('{{ doc.file_value.url }}', '{{ doc.file_value.name }}')">
+                                      <i class="bi bi-eye"></i>
+                                    </button>
+                                    <a href="{{ doc.file_value.url }}" download
                                        class="btn btn-outline-primary" title="{% trans 'Скачать' %}">
                                       <i class="bi bi-download"></i>
                                     </a>
@@ -575,8 +581,80 @@
 </div>
 {% endblock %}
 
+<!-- Модальное окно для просмотра документов -->
+<div class="modal fade" id="documentPreviewModal" tabindex="-1" aria-labelledby="documentPreviewLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="documentPreviewLabel">{% trans "Просмотр документа" %}</h5>
+        <div class="ms-auto d-flex gap-2 align-items-center">
+          <a id="previewDownloadBtn" href="#" download class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-download"></i> {% trans "Скачать" %}
+          </a>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="modal-body p-0" style="min-height: 70vh;">
+        <div id="previewContainer" class="w-100 h-100 d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+          <div class="text-center text-muted p-4">
+            <i class="bi bi-hourglass-split fs-1"></i>
+            <p class="mt-2">{% trans "Загрузка..." %}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% block extra_js %}
 <script>
+function previewDocument(url, filename) {
+  const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
+  const container = document.getElementById('previewContainer');
+  const label = document.getElementById('documentPreviewLabel');
+  const downloadBtn = document.getElementById('previewDownloadBtn');
+
+  // Устанавливаем заголовок и кнопку скачать
+  const shortName = filename.split('/').pop();
+  label.textContent = shortName;
+  downloadBtn.href = url;
+  downloadBtn.setAttribute('download', shortName);
+
+  // Определяем расширение
+  const ext = shortName.split('.').pop().toLowerCase();
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+  const pdfExt = 'pdf';
+
+  if (ext === pdfExt) {
+    container.innerHTML = `<iframe src="${url}" style="width:100%;height:75vh;border:none;" title="${shortName}"></iframe>`;
+  } else if (imageExts.includes(ext)) {
+    container.innerHTML = `
+      <div class="p-3 text-center w-100">
+        <img src="${url}" alt="${shortName}" style="max-width:100%;max-height:75vh;object-fit:contain;" />
+      </div>`;
+  } else {
+    container.innerHTML = `
+      <div class="text-center p-5">
+        <i class="bi bi-file-earmark-text fs-1 text-secondary"></i>
+        <p class="mt-3 text-muted">{% trans "Предварительный просмотр недоступен для этого типа файла." %}</p>
+        <a href="${url}" download="${shortName}" class="btn btn-primary mt-2">
+          <i class="bi bi-download me-1"></i> {% trans "Скачать файл" %}
+        </a>
+      </div>`;
+  }
+
+  modal.show();
+
+  // Очищаем содержимое при закрытии (освобождаем iframe)
+  document.getElementById('documentPreviewModal').addEventListener('hidden.bs.modal', function () {
+    container.innerHTML = `
+      <div class="text-center text-muted p-4">
+        <i class="bi bi-hourglass-split fs-1"></i>
+        <p class="mt-2">{% trans "Загрузка..." %}</p>
+      </div>`;
+  }, { once: true });
+}
+
 function onFieldChange(stageId) {
   const select = document.getElementById(`id_document_field_${stageId}`);
   const valueContainer = document.getElementById(`document-value-container-${stageId}`);

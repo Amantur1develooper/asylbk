@@ -1,6 +1,7 @@
-from core.permissions import LawyerRequiredMixin, OwnerOrManagerMixin, DirectorRequiredMixin
+from core.permissions import LawyerRequiredMixin, OwnerOrManagerMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib import messages
@@ -14,7 +15,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from finance.models import CaseFinance, CaseFinanceShare
 
 # Список всех дел
-class CaseListView(LawyerRequiredMixin,DirectorRequiredMixin, ListView):
+class CaseListView(LawyerRequiredMixin, ListView):
     model = Case
     template_name = 'cases/case_list.html'
     context_object_name = 'cases'
@@ -100,7 +101,7 @@ class CaseDetailView(DetailView):
             stage_field_rows[stage.id] = rows
 
         context['stage_field_rows'] = stage_field_rows
-        context['allowed_roles_for_stage_edit'] = ['lawyer', 'advocate', 'director']
+        context['allowed_roles_for_stage_edit'] = ['lawyer', 'advocate', 'director', 'deputy_director', 'manager']
         return context
 
 
@@ -218,16 +219,16 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
 
 
 # Удаление дела
-class CaseDeleteView(DirectorRequiredMixin, DeleteView):
+class CaseDeleteView(LoginRequiredMixin, DeleteView):
     model = Case
     template_name = 'cases/case_confirm_delete.html'
     success_url = reverse_lazy('cases:case_list')
-    
+
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        # Только директора и зам.директора могут удалять дела
+        # Директора, зам.директора и менеджеры могут удалять дела
         user = self.request.user
-        if user.role not in ['director', 'deputy_director']:
+        if user.role not in ['director', 'deputy_director', 'manager']:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
 
