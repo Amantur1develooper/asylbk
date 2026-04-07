@@ -45,6 +45,7 @@ urlpatterns += i18n_patterns(
     path("finance/", include("finance.urls")),
     path("calendar/", include("calendar1.urls")),
     path("ratings/", include("ratings.urls")),
+    path("grafik/", include("schedule.urls")),
 
     path("", include("public.urls")),
 

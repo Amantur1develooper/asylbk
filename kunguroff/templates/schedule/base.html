@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>{% block title %}График дел — Kunguroff & Partners{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a3a5c;
+      --primary-light: #2a5298;
+      --accent: #c9a84c;
+      --bg: #f0f4f8;
+      --card-bg: #ffffff;
+      --text-muted: #6c757d;
+      --danger: #dc3545;
+      --weekend: #fff3f3;
+      --today-bg: #e8f4fd;
+      --border: #dee2e6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #212529;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+    .site-header .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #fff;
+      text-decoration: none;
+    }
+    .site-header .logo span { color: var(--accent); }
+    .header-badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ── MONTH NAV ── */
+    .month-nav {
+      background: var(--card-bg);
+      border-bottom: 2px solid var(--accent);
+      padding: 12px 16px;
+      position: sticky;
+      top: 56px;
+      z-index: 90;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .month-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .nav-arrow {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .nav-arrow:hover { background: var(--primary-light); color: #fff; transform: scale(1.08); }
+
+    /* ── SEARCH ── */
+    .search-bar {
+      background: var(--card-bg);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-bar .input-group { max-width: 520px; }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      z-index: 200;
+      background: linear-gradient(135deg, var(--accent), #e0b94a);
+      color: var(--primary);
+      border: none;
+      border-radius: 50%;
+      width: 58px; height: 58px;
+      font-size: 1.6rem;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.5);
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .fab:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(201,168,76,0.6); color: var(--primary); }
+
+    /* ── DAY CARD ── */
+    .day-card {
+      margin: 8px 12px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+    }
+    .day-card.weekend { background: var(--weekend); border-color: #ffcdd2; }
+    .day-card.today { border: 2px solid var(--accent); background: var(--today-bg); }
+    .day-card.empty { opacity: 0.45; }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.025);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      cursor: pointer;
+      user-select: none;
+    }
+    .day-card.weekend .day-header { background: rgba(220,53,69,0.05); }
+    .day-card.today .day-header { background: rgba(201,168,76,0.1); }
+
+    .day-number {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--primary);
+      min-width: 36px;
+      text-align: center;
+      line-height: 1;
+    }
+    .day-card.weekend .day-number { color: var(--danger); }
+    .day-card.today .day-number { color: var(--accent); }
+
+    .day-name {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .day-count {
+      margin-left: auto;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 20px;
+      padding: 2px 10px;
+    }
+    .day-card.weekend .day-count { background: var(--danger); }
+    .day-card.today .day-count { background: var(--accent); color: var(--primary); }
+
+    .today-badge {
+      font-size: 0.65rem;
+      background: var(--accent);
+      color: var(--primary);
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* ── EVENT ITEM ── */
+    .events-body { padding: 6px 8px 8px; }
+
+    .event-item {
+      background: #fff;
+      border-radius: 10px;
+      border-left: 4px solid var(--primary-light);
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      position: relative;
+      transition: box-shadow 0.15s;
+    }
+    .event-item:last-child { margin-bottom: 0; }
+    .event-item:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+    .event-time {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .event-client {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: #212529;
+      margin: 2px 0;
+    }
+    .event-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .event-meta span { display: flex; align-items: center; gap: 3px; }
+    .event-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 8px;
+      padding: 1px 8px;
+    }
+    .badge-ud { background: #fff3cd; color: #856404; }
+    .badge-gd { background: #cff4fc; color: #0c5460; }
+    .badge-ad { background: #d1e7dd; color: #0a3622; }
+    .badge-other { background: #e2e3e5; color: #41464b; }
+
+    .event-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-action {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.15s;
+    }
+    .btn-action:hover { opacity: 0.85; }
+    .btn-edit { background: var(--primary); color: #fff; }
+    .btn-delete { background: #fde8e8; color: var(--danger); }
+
+    /* ── NOTES ── */
+    .event-notes {
+      font-size: 0.78rem;
+      color: #6c757d;
+      margin-top: 4px;
+      padding: 4px 8px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-style: italic;
+    }
+
+    /* ── ADD TO DAY BUTTON ── */
+    .btn-add-day {
+      display: block;
+      text-align: center;
+      padding: 7px;
+      background: rgba(26,58,92,0.04);
+      border-radius: 8px;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: 1px dashed rgba(26,58,92,0.25);
+      margin: 6px 8px 8px;
+      transition: background 0.15s;
+    }
+    .btn-add-day:hover { background: rgba(26,58,92,0.09); color: var(--primary); }
+
+    /* ── FORM PAGE ── */
+    .form-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin: 16px;
+    }
+    .form-card-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      padding: 20px 24px;
+    }
+    .form-card-header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; }
+    .form-card-body { padding: 20px; }
+
+    .form-label { font-weight: 600; font-size: 0.88rem; color: var(--primary); margin-bottom: 4px; }
+
+    .btn-submit {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      width: 100%;
+      letter-spacing: 0.3px;
+    }
+    .btn-cancel {
+      background: #f1f3f5;
+      color: var(--primary);
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      width: 100%;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* ── DELETE PAGE ── */
+    .delete-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      margin: 16px;
+      overflow: hidden;
+    }
+    .delete-header {
+      background: #fde8e8;
+      padding: 20px;
+      border-bottom: 1px solid #f5c6cb;
+    }
+    .delete-body { padding: 20px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-month {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .empty-month i { font-size: 3rem; opacity: 0.3; }
+
+    /* ── DESKTOP ── */
+    @media (min-width: 768px) {
+      .day-card { margin: 10px auto; max-width: 860px; }
+      .search-bar .input-group { max-width: 400px; }
+      .form-card, .delete-card { max-width: 640px; margin: 24px auto; }
+    }
+
+    /* ── COLLAPSE ANIMATION ── */
+    .events-collapse { transition: all 0.2s ease; }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="d-flex align-items-center gap-2">
+    <a href="/grafik/" class="logo">Kunguroff <span>&</span> Partners</a>
+    <span class="header-badge ms-auto">
+      <i class="bi bi-calendar3 me-1"></i>График дел
+    </span>
+  </div>
+</header>
+
+{% block body %}{% endblock %}
+
+<!-- FAB: добавить -->
+{% block fab %}
+<a href="/grafik/add/" class="fab" title="Добавить событие">
+  <i class="bi bi-plus-lg"></i>
+</a>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

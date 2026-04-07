@@ -1,0 +1,213 @@
+{% extends 'schedule/base.html' %}
+
+{% block title %}График дел — {{ month_name }} {{ year }}{% endblock %}
+
+{% block body %}
+
+<!-- Month navigation -->
+<div class="month-nav">
+  <div class="d-flex align-items-center gap-2">
+    <a href="/grafik/?year={{ prev_year }}&month={{ prev_month }}{% if search %}&q={{ search }}{% endif %}"
+       class="nav-arrow" title="Предыдущий месяц">
+      <i class="bi bi-chevron-left"></i>
+    </a>
+    <div class="month-title flex-grow-1 text-center">
+      {{ month_name }} {{ year }}
+    </div>
+    <a href="/grafik/?year={{ next_year }}&month={{ next_month }}{% if search %}&q={{ search }}{% endif %}"
+       class="nav-arrow" title="Следующий месяц">
+      <i class="bi bi-chevron-right"></i>
+    </a>
+  </div>
+  {% if total_entries %}
+  <div class="text-center mt-1">
+    <small class="text-muted">{{ total_entries }} событи{{ total_entries|pluralize:"е,я,й" }} в этом месяце</small>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Search -->
+<div class="search-bar">
+  <form method="get" action="/grafik/">
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+    <div class="input-group">
+      <span class="input-group-text bg-white border-end-0">
+        <i class="bi bi-search text-muted"></i>
+      </span>
+      <input type="text" name="q" value="{{ search }}"
+             class="form-control border-start-0 ps-0"
+             placeholder="Поиск по клиенту, суду, сотруднику…">
+      {% if search %}
+      <a href="/grafik/?year={{ year }}&month={{ month }}" class="btn btn-outline-secondary">
+        <i class="bi bi-x"></i>
+      </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Days -->
+<div style="padding-bottom: 90px;">
+  {% for day in days %}
+    {% if not day.is_weekend or day.entries %}
+    <div class="day-card {% if day.is_weekend %}weekend{% endif %}{% if day.is_today %} today{% endif %}{% if not day.entries %} empty{% endif %}"
+         id="day-{{ day.date }}">
+
+      <!-- Day header — click to collapse/expand -->
+      <div class="day-header" onclick="toggleDay('day-{{ day.date }}')">
+        <div>
+          <div class="day-number">{{ day.date.day }}</div>
+          <div class="day-name">
+            {{ day.date|date:"D" }}
+            {% if day.is_weekend %}<i class="bi bi-moon-stars-fill ms-1" style="color:#dc3545;font-size:0.65rem;"></i>{% endif %}
+          </div>
+        </div>
+        {% if day.is_today %}
+          <span class="today-badge">Сегодня</span>
+        {% endif %}
+        <div class="ms-auto d-flex align-items-center gap-2">
+          {% if day.entries %}
+            <span class="day-count">{{ day.entries|length }}</span>
+          {% endif %}
+          <i class="bi bi-chevron-down text-muted toggle-icon" style="font-size:0.85rem;transition:transform 0.2s;"></i>
+        </div>
+      </div>
+
+      <!-- Events -->
+      <div class="events-collapse" id="events-{{ day.date }}">
+        {% if day.entries %}
+        <div class="events-body">
+          {% for entry in day.entries %}
+          <div class="event-item">
+            <div class="d-flex align-items-start justify-content-between gap-2">
+              <div style="flex:1;min-width:0;">
+                {% if entry.time %}
+                <div class="event-time">
+                  <i class="bi bi-clock"></i> {{ entry.time }}
+                </div>
+                {% endif %}
+
+                <div class="event-client">{{ entry.client_name|default:"—" }}</div>
+
+                <div class="event-meta">
+                  {% if entry.court %}
+                  <span><i class="bi bi-building"></i> {{ entry.court }}</span>
+                  {% endif %}
+                  {% if entry.responsible_staff %}
+                  <span><i class="bi bi-person-badge"></i> {{ entry.responsible_staff }}</span>
+                  {% endif %}
+                  {% if entry.opposing_party %}
+                  <span><i class="bi bi-people"></i> {{ entry.opposing_party }}</span>
+                  {% endif %}
+                </div>
+
+                {% if entry.case_description %}
+                <div class="mt-2">
+                  {% with desc=entry.case_description|upper %}
+                  {% if 'УД' in desc %}
+                    <span class="event-badge badge-ud">{{ entry.case_description }}</span>
+                  {% elif 'ГД' in desc %}
+                    <span class="event-badge badge-gd">{{ entry.case_description }}</span>
+                  {% elif 'АД' in desc %}
+                    <span class="event-badge badge-ad">{{ entry.case_description }}</span>
+                  {% else %}
+                    <span class="event-badge badge-other">{{ entry.case_description }}</span>
+                  {% endif %}
+                  {% endwith %}
+                </div>
+                {% endif %}
+
+                {% if entry.notes %}
+                <div class="event-notes">
+                  <i class="bi bi-chat-left-text me-1"></i>{{ entry.notes }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="event-actions">
+              <a href="/grafik/{{ entry.pk }}/edit/" class="btn-action btn-edit">
+                <i class="bi bi-pencil"></i> Изменить
+              </a>
+              <a href="/grafik/{{ entry.pk }}/delete/" class="btn-action btn-delete">
+                <i class="bi bi-trash"></i> Удалить
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Add to this day -->
+        <a href="/grafik/add/?date={{ day.date|date:'Y-m-d' }}" class="btn-add-day">
+          <i class="bi bi-plus-circle me-1"></i>Добавить на {{ day.date.day }} {{ month_name|lower }}
+        </a>
+      </div>
+
+    </div>
+    {% endif %}
+  {% empty %}
+    <div class="empty-month">
+      <i class="bi bi-calendar-x d-block mb-3"></i>
+      <p class="fw-bold">Нет данных за {{ month_name }} {{ year }}</p>
+      <a href="/grafik/add/" class="btn btn-primary px-4 rounded-pill mt-2">
+        <i class="bi bi-plus me-1"></i> Добавить первое событие
+      </a>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// По умолчанию схлопываем дни без событий и прошедшие дни
+// Разворачиваем сегодняшний день автоматически
+document.addEventListener('DOMContentLoaded', function () {
+  const today = "{{ today|date:'Y-m-d' }}";
+  const currentMonth = {{ month }};
+  const currentYear = {{ year }};
+
+  document.querySelectorAll('.day-card').forEach(card => {
+    const dateStr = card.id.replace('day-', '');
+    const eventsEl = document.getElementById('events-' + dateStr);
+    const icon = card.querySelector('.toggle-icon');
+    const hasEntries = card.querySelectorAll('.event-item').length > 0;
+    const isToday = dateStr === today;
+
+    // Collapse дни без событий (кроме сегодня)
+    if (!hasEntries && !isToday) {
+      eventsEl.style.display = 'none';
+      if (icon) icon.style.transform = 'rotate(-90deg)';
+    }
+  });
+
+  // Скролл к сегодня
+  const todayCard = document.getElementById('day-' + today);
+  if (todayCard) {
+    setTimeout(() => todayCard.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+  }
+
+  // Скролл к якорю из URL
+  const hash = window.location.hash;
+  if (hash) {
+    const el = document.querySelector(hash);
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 400);
+  }
+});
+
+function toggleDay(cardId) {
+  const eventsId = cardId.replace('day-', 'events-');
+  const eventsEl = document.getElementById(eventsId);
+  const card = document.getElementById(cardId);
+  const icon = card.querySelector('.toggle-icon');
+
+  if (!eventsEl) return;
+
+  const isHidden = eventsEl.style.display === 'none';
+  eventsEl.style.display = isHidden ? '' : 'none';
+  if (icon) icon.style.transform = isHidden ? '' : 'rotate(-90deg)';
+}
+</script>
+{% endblock %}

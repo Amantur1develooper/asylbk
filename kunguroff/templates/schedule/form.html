@@ -1,0 +1,146 @@
+{% extends 'schedule/base.html' %}
+
+{% block title %}{{ action }} — График дел{% endblock %}
+
+{% block fab %}{% endblock %}
+
+{% block body %}
+<div style="padding-bottom: 24px;">
+  <div class="form-card">
+
+    <div class="form-card-header">
+      <div class="d-flex align-items-center gap-3">
+        <a href="/grafik/" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:1.1rem;">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+          <h2>{{ action }}</h2>
+          <small style="opacity:0.75;font-size:0.82rem;">График дел — Kunguroff &amp; Partners</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Дата + Время (в ряд на мобиле) -->
+        <div class="row g-3 mb-3">
+          <div class="col-7">
+            <label class="form-label">
+              <i class="bi bi-calendar-event me-1"></i>Дата *
+            </label>
+            {{ form.date }}
+            {% if form.date.errors %}
+              <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="col-5">
+            <label class="form-label">
+              <i class="bi bi-clock me-1"></i>Время
+            </label>
+            {{ form.time }}
+            {% if form.time.errors %}
+              <div class="text-danger small mt-1">{{ form.time.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Клиент -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-person me-1"></i>ФИО клиента / партнёра
+          </label>
+          {{ form.client_name }}
+          {% if form.client_name.errors %}
+            <div class="text-danger small mt-1">{{ form.client_name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Вторая сторона -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-people me-1"></i>ФИО второй стороны
+            <span class="text-muted fw-normal">(необязательно)</span>
+          </label>
+          {{ form.opposing_party }}
+        </div>
+
+        <!-- Суд -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-building me-1"></i>Судебная инстанция / орган / место
+          </label>
+          {{ form.court }}
+          {% if form.court.errors %}
+            <div class="text-danger small mt-1">{{ form.court.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Ответственный + Описание -->
+        <div class="row g-3 mb-3">
+          <div class="col-7">
+            <label class="form-label">
+              <i class="bi bi-person-badge me-1"></i>Ответственный
+            </label>
+            {{ form.responsible_staff }}
+          </div>
+          <div class="col-5">
+            <label class="form-label">
+              <i class="bi bi-tag me-1"></i>Тип дела
+            </label>
+            {{ form.case_description }}
+            <div class="mt-1 d-flex flex-wrap gap-1">
+              <button type="button" class="badge badge-ud border-0" style="cursor:pointer;font-size:0.72rem;padding:3px 8px;"
+                      onclick="setDesc('УД')">УД</button>
+              <button type="button" class="badge badge-gd border-0" style="cursor:pointer;font-size:0.72rem;padding:3px 8px;"
+                      onclick="setDesc('ГД')">ГД</button>
+              <button type="button" class="badge badge-ad border-0" style="cursor:pointer;font-size:0.72rem;padding:3px 8px;"
+                      onclick="setDesc('АД')">АД</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Примечание -->
+        <div class="mb-4">
+          <label class="form-label">
+            <i class="bi bi-chat-left-text me-1"></i>Примечание
+          </label>
+          {{ form.notes }}
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-check-lg me-2"></i>{{ action }}
+        </button>
+        <a href="javascript:history.back()" class="btn-cancel">
+          <i class="bi bi-x me-1"></i>Отмена
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setDesc(val) {
+  const f = document.getElementById('id_case_description');
+  if (f) f.value = val;
+}
+
+// Стиль всех input/select в форме
+document.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(el => {
+  if (!el.classList.contains('form-control') && !el.classList.contains('form-select')) {
+    el.classList.add('form-control');
+  }
+});
+
+// badge inline styles for quick buttons
+const badgeUd = document.querySelectorAll('.badge-ud');
+const badgeGd = document.querySelectorAll('.badge-gd');
+const badgeAd = document.querySelectorAll('.badge-ad');
+badgeUd.forEach(b => b.style.cssText += 'background:#fff3cd;color:#856404;');
+badgeGd.forEach(b => b.style.cssText += 'background:#cff4fc;color:#0c5460;');
+badgeAd.forEach(b => b.style.cssText += 'background:#d1e7dd;color:#0a3622;');
+</script>
+{% endblock %}

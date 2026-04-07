@@ -1,0 +1,60 @@
+{% extends 'schedule/base.html' %}
+
+{% block title %}Удалить событие — График дел{% endblock %}
+
+{% block fab %}{% endblock %}
+
+{% block body %}
+<div style="padding-bottom: 24px;">
+  <div class="delete-card">
+
+    <div class="delete-header">
+      <div class="d-flex align-items-center gap-3">
+        <a href="javascript:history.back()" style="color:#721c24;text-decoration:none;font-size:1.1rem;">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+          <h5 class="mb-0 text-danger fw-bold">
+            <i class="bi bi-trash me-1"></i>Удалить событие?
+          </h5>
+          <small class="text-muted">Это действие нельзя отменить</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="delete-body">
+      <!-- Инфо о событии -->
+      <div class="p-3 rounded-3 mb-4" style="background:#f8f9fa;border:1px solid #dee2e6;">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-calendar-event text-primary"></i>
+          <span class="fw-bold">{{ entry.date|date:"d F Y" }}
+            {% if entry.time %}<span class="text-muted">в {{ entry.time }}</span>{% endif %}
+          </span>
+        </div>
+        {% if entry.client_name %}
+        <div class="mb-1"><i class="bi bi-person text-muted me-1"></i>{{ entry.client_name }}</div>
+        {% endif %}
+        {% if entry.court %}
+        <div class="mb-1"><i class="bi bi-building text-muted me-1"></i>{{ entry.court }}</div>
+        {% endif %}
+        {% if entry.responsible_staff %}
+        <div><i class="bi bi-person-badge text-muted me-1"></i>{{ entry.responsible_staff }}</div>
+        {% endif %}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger w-100 py-3 rounded-3 fw-bold mb-2"
+                style="font-size:1rem;">
+          <i class="bi bi-trash me-2"></i>Да, удалить
+        </button>
+        <a href="javascript:history.back()"
+           class="btn btn-light w-100 py-3 rounded-3 fw-bold"
+           style="font-size:0.95rem;">
+          <i class="bi bi-x me-1"></i>Отмена
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
