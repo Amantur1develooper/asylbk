@@ -47,6 +47,19 @@
       text-decoration: none;
     }
     .site-header .logo span { color: var(--accent); }
+    .back-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      border-radius: 8px;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      text-decoration: none;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.28); color: #fff; }
     .header-badge {
       background: rgba(255,255,255,0.15);
       border: 1px solid rgba(255,255,255,0.3);
@@ -360,6 +373,9 @@
 <!-- Header -->
 <header class="site-header">
   <div class="d-flex align-items-center gap-2">
+    <a href="/dashboard/" class="back-btn" title="На главную">
+      <i class="bi bi-house"></i>
+    </a>
     <a href="/grafik/" class="logo">Kunguroff <span>&</span> Partners</a>
     <span class="header-badge ms-auto">
       <i class="bi bi-calendar3 me-1"></i>График дел
