@@ -117,7 +117,7 @@ class CaseCreateView(LawyerRequiredMixin, CreateView):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
-        if self.request.user.role not in allowed_roles:
+        if not self.request.user.is_superuser and self.request.user.role not in allowed_roles:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
 
@@ -176,6 +176,9 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
         # Проверка прав доступа
         case = self.get_object()
         user = self.request.user
+        if user.is_superuser:
+            return super().dispatch(*args, **kwargs)
+
         allowed_roles = ['manager', 'director', 'deputy_director']
 
         # Юристы могут редактировать только свои дела
@@ -226,9 +229,9 @@ class CaseDeleteView(LoginRequiredMixin, DeleteView):
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        # Директора, зам.директора и менеджеры могут удалять дела
+        # Директора, зам.директора, менеджеры и суперпользователи могут удалять дела
         user = self.request.user
-        if user.role not in ['director', 'deputy_director', 'manager']:
+        if not user.is_superuser and user.role not in ['director', 'deputy_director', 'manager']:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
 

@@ -1,18 +1,24 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import UserPassesTestMixin
 
+
 class RoleRequiredMixin(UserPassesTestMixin):
-    """Миксин для проверки роли пользователя"""
+    """Миксин для проверки роли пользователя. Суперпользователь проходит всегда."""
     allowed_roles = []
-    
+
     def test_func(self):
         user = self.request.user
-        return user.is_authenticated and user.role in self.allowed_roles
-    
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+        return user.role in self.allowed_roles
+
     def handle_no_permission(self):
         if self.request.user.is_authenticated:
             raise PermissionDenied("У вас недостаточно прав для доступа к этой странице")
         return super().handle_no_permission()
+
 
 # Конкретные миксины для различных ролей
 class DirectorRequiredMixin(RoleRequiredMixin):
@@ -42,41 +48,44 @@ class TraineeRequiredMixin(RoleRequiredMixin):
 class ExternalLawyerRequiredMixin(RoleRequiredMixin):
     allowed_roles = ['external_lawyer']
 
+
 class OwnerRequiredMixin(UserPassesTestMixin):
-    """Миксин для проверки, что пользователь является владельцем объекта"""
+    """Суперпользователь имеет доступ ко всему."""
     def test_func(self):
-        obj = self.get_object()
         user = self.request.user
-        
-        # Для дел - проверяем, является ли пользователь ответственным юристом
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+
+        obj = self.get_object()
+
         if hasattr(obj, 'responsible_lawyer'):
             return user == obj.responsible_lawyer
-        
-        # Для клиентов - проверяем, является ли пользователь основным контактом
         if hasattr(obj, 'primary_contact'):
             return user == obj.primary_contact
-        
-        # Для документов - проверяем, является ли пользователь создателем
         if hasattr(obj, 'created_by'):
             return user == obj.created_by
-        
+
         return False
 
+
 class OwnerOrManagerMixin(UserPassesTestMixin):
-    """Миксин для проверки, что пользователь является владельцем или менеджером"""
+    """Суперпользователь имеет доступ ко всему."""
     def test_func(self):
-        obj = self.get_object()
         user = self.request.user
-        
-        # Владелец имеет доступ
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+
+        obj = self.get_object()
+
         if hasattr(obj, 'responsible_lawyer') and user in obj.responsible_lawyer.all():
             return True
-        
         if hasattr(obj, 'primary_contact') and user == obj.primary_contact:
             return True
-        
         if hasattr(obj, 'created_by') and user == obj.created_by:
             return True
-        
-        # Менеджеры и выше имеют доступ
+
         return user.role in ['manager', 'deputy_director', 'director']

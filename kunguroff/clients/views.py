@@ -138,7 +138,7 @@ class ClientCreateView(CreateView):
     def dispatch(self, *args, **kwargs):
         # Только определенные роли могут создавать клиентов
         allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
-        if self.request.user.role not in allowed_roles:
+        if not self.request.user.is_superuser and self.request.user.role not in allowed_roles:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
     
@@ -229,16 +229,19 @@ class ClientUpdateView(UpdateView):
         # Проверка прав доступа
         client = self.get_object()
         user = self.request.user
+        if user.is_superuser:
+            return super().dispatch(*args, **kwargs)
+
         allowed_roles = ['manager', 'director', 'deputy_director']
-        
-        # ИЗМЕНЕНИЕ: Юристы могут редактировать только своих доверителей
+
+        # Юристы могут редактировать только своих доверителей
         if user.role in ['lawyer', 'advocate'] and user not in client.primary_contact.all():
             return redirect('permission_denied')
-        
+
         # Менеджеры и директора могут редактировать всех
         if user.role not in allowed_roles + ['lawyer', 'advocate']:
             return redirect('permission_denied')
-            
+
         return super().dispatch(*args, **kwargs)
     
     def get_form_kwargs(self):
@@ -255,9 +258,9 @@ class ClientDeleteView(DeleteView):
     
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        # Директора, зам.директора и менеджеры могут удалять клиентов
+        # Директора, зам.директора, менеджеры и суперпользователи могут удалять клиентов
         user = self.request.user
-        if user.role not in ['director', 'deputy_director', 'manager']:
+        if not user.is_superuser and user.role not in ['director', 'deputy_director', 'manager']:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
 # class ClientDeleteView(DeleteView):
