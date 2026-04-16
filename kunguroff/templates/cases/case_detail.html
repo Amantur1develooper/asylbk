@@ -496,7 +496,7 @@
                                       </a>
                                     {% endif %}
                                   {% else %}
-                                    {% if case.current_stage_id and stage.id == case.current_stage_id and user.role in allowed_roles_for_stage_edit %}
+                                    {% if user.role in allowed_roles_for_stage_edit %}
                                       <a href="#add-doc-{{ stage.id }}" class="btn btn-outline-primary"
                                          onclick="prefillField({{ stage.id }}, {{ f.id }})">
                                         <i class="bi bi-plus"></i> {% trans "Добавить" %}
@@ -535,8 +535,8 @@
 {% endif %}
 
 
-              {# Форма добавления документа — только на текущем этапе и для ролей #}
-              {% if case.current_stage_id and stage.id == case.current_stage_id and user.role in allowed_roles_for_stage_edit %}
+              {# Форма добавления документа — для любого этапа #}
+              {% if user.role in allowed_roles_for_stage_edit %}
                 <hr>
                 <h6 class="mt-3 mb-3">{% trans "Добавить документ:" %}</h6>
                 <form id="add-doc-{{ stage.id }}" method="post" action="{% url 'cases:case_add_document' case.pk %}" enctype="multipart/form-data">
