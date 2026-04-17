@@ -1,8 +1,4 @@
 from django.shortcuts import render
-# from .telegram import send_telegram_message, format_consultation
-from django.db import transaction
-from .telegram_notify import notify_consultation_request
-
 from django.views.generic import TemplateView, ListView, DetailView
 from django.shortcuts import redirect, render
 from django.contrib import messages
@@ -31,11 +27,7 @@ def consultation_create(request):
 
     form = ConsultationRequestForm(request.POST)
     if form.is_valid():
-        obj = form.save()
-
-        # отправляем в телеграм только после успешного коммита в БД
-        transaction.on_commit(lambda: notify_consultation_request(obj.id))
-
+        form.save()  # уведомление отправляется через сигнал в signals.py (один раз)
         messages.success(request, "Заявка отправлена! Мы свяжемся с вами в ближайшее время.")
     else:
         messages.error(request, "Проверьте поля формы.")
