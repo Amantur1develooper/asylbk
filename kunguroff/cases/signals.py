@@ -60,7 +60,7 @@ def _send_document_to_channel(doc_id: int):
         f'📁 <b>Дело:</b> {case.title}\n'
         f'👤 <b>Клиент:</b> {client_name}\n'
         f'🗂 <b>Этап:</b> {stage.name}\n'
-        f'📄 <b>Документ:</b> {field.label}\n'
+        f'📄 <b>Документ:</b> {field.name}\n'
         f'📅 <b>Дата загрузки:</b> {uploaded_at}\n'
         f'👨‍💼 <b>Загрузил:</b> {uploaded_by.get_full_name() or uploaded_by.username}'
     )
