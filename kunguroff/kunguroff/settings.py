@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.humanize',
     'django.contrib.staticfiles',
-    'cases',
+    'cases.apps.CasesConfig',
     'clients',
     'widget_tweaks',
     'core',
