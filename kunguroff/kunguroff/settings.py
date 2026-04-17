@@ -85,6 +85,9 @@ import os
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7647322168:AAHC-VSVSS7qxrDCfJD2kaMHbeC9z2-l9R4")
 
+# ID Telegram-канала для архива документов (например: -1001234567890 или @channelname)
+TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "-5143225084")
+
 # кому отправлять заявки (по ролям)
 TELEGRAM_NOTIFY_ROLES = [
     'director','deputy_director','manager','admin','advocate','lawyer',
