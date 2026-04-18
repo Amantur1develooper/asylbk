@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  {# --- Основные данные --- #}
+  <div class="card mb-3">
+    <div class="card-header"><h6 class="mb-0"><i class="bi bi-person me-2"></i>Основные данные</h6></div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label fw-semibold">ФИО <span class="text-danger">*</span></label>
+          {{ form.full_name }}
+          {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors }}</div>{% endif %}
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label fw-semibold">Должность</label>
+          {{ form.position }}
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label fw-semibold">Дата приёма</label>
+          {{ form.hire_date }}
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label fw-semibold">Телефон</label>
+          {{ form.phone }}
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label fw-semibold">Email</label>
+          {{ form.email }}
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Примечания</label>
+          {{ form.notes }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# --- Документы --- #}
+  <div class="card mb-3">
+    <div class="card-header">
+      <h6 class="mb-0"><i class="bi bi-folder2-open me-2"></i>Документы <span class="text-muted fw-normal small">(все необязательные)</span></h6>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+
+        {% for field in form %}
+          {% if field.field.widget.input_type == 'file' %}
+            <div class="col-12 col-md-6">
+              <label class="form-label fw-semibold">{{ field.label }}</label>
+              {{ field }}
+              {% if field.value %}
+                <div class="mt-1 d-flex align-items-center gap-2">
+                  <i class="bi bi-file-earmark-check-fill text-success"></i>
+                  <span class="small text-muted">Файл уже загружен</span>
+                </div>
+              {% endif %}
+              {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors }}</div>{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="submit" class="btn btn-primary px-4 py-2">
+      <i class="bi bi-check2 me-1"></i>Сохранить
+    </button>
+    <a href="{% url 'hr:employee_list' %}" class="btn btn-outline-secondary px-4 py-2">Отмена</a>
+  </div>
+</form>
+
+{% endblock %}

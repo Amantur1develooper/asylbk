@@ -21,6 +21,7 @@ urlpatterns += i18n_patterns(
     path("calendar/", include("calendar1.urls")),
     path("ratings/", include("ratings.urls")),
     path("grafik/", include("schedule.urls")),
+    path("hr/", include("hr.urls")),
 
     path("", include("public.urls")),
 

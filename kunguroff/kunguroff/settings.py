@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'finance',
     'public.apps.PublicConfig',
     'schedule',
+    'hr',
 ]
 
 from django.utils.translation import gettext_lazy as _

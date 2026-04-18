@@ -526,6 +526,13 @@
             <i class="bi bi-graph-up-arrow"></i> Рейтинги
         </a>
 
+        {% if user.is_superuser or user.role in 'manager,director,deputy_director' %}
+        <div class="drawer-section-title">Управление</div>
+        <a href="{% url 'hr:employee_list' %}" class="drawer-link {% if 'hr' in request.path %}active{% endif %}">
+            <i class="bi bi-people-fill"></i> Отдел кадров
+        </a>
+        {% endif %}
+
         {% if user.is_staff %}
         <div class="drawer-section-title">Система</div>
         <a href="/admin/" class="drawer-link">
