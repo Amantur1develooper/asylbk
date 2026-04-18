@@ -112,6 +112,7 @@
       </div>
     </div>
    
+{% if request.user.is_superuser or request.user.role in 'manager,accountant,director,deputy_director' %}
 {% if case.finance and case.finance.shares.all %}
   <div class="card mt-3">
     <div class="card-header"><h6 class="mb-0">Доли сотрудников (70%)</h6></div>
@@ -167,6 +168,7 @@
         </div>
       </div>
     {% endif %}
+{% endif %}{# end finance access check #}
 
     <!-- Ответственные лица -->
     <div class="card mb-4 mt-3">
@@ -234,6 +236,7 @@
       </div>
     </div>
   
+    {% if request.user.is_superuser or request.user.role in 'manager,accountant,director,deputy_director' %}
     {% if case.finance %}
     <div class="card mt-3">
       <div class="card-header d-flex justify-content-between align-items-center">
@@ -274,6 +277,7 @@
       </div>
     </div>
     {% endif %}
+    {% endif %}{# end finance access check #}
   </div>
 </div>
 
@@ -395,181 +399,129 @@
 </div>
 
 <!-- Документы по этапам -->
-<div class="card">
-  <div class="card-header">
-    <h5 class="card-title mb-0">{% trans "Документы по этапам" %}</h5>
+<div class="card mb-4">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h5 class="card-title mb-0"><i class="bi bi-folder2-open me-2"></i>{% trans "Документы по этапам" %}</h5>
   </div>
-
-  <div class="card-body">
-    <div class="accordion" id="stagesAccordion">
+  <div class="card-body p-2 p-md-3">
+    <div class="accordion accordion-flush" id="stagesAccordion">
       {% for stage in case.category.stages.all %}
-        <div class="accordion-item">
+        <div class="accordion-item rounded-3 mb-2 border">
           <h2 class="accordion-header" id="heading{{ stage.id }}">
-            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#collapse{{ stage.id }}"
+            <button class="accordion-button rounded-3 {% if not forloop.first %}collapsed{% endif %} fw-semibold"
+                    type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ stage.id }}"
                     aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
-              {% trans "Этап" %} {{ stage.order }}: {{ stage.name }}
+              <span class="badge bg-primary me-2">{{ stage.order }}</span>
+              {{ stage.name }}
               {% if stage == case.current_stage %}
-                <span class="badge bg-primary ms-2">{% trans "Текущий" %}</span>
+                <span class="badge bg-success ms-2 d-none d-sm-inline">{% trans "Текущий" %}</span>
               {% endif %}
             </button>
           </h2>
 
-          <div id="collapse{{ stage.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
-               data-bs-parent="#stagesAccordion">
-            <div class="accordion-body">
-              <p class="text-muted">{{ stage.description|default:_("Описание этапа отсутствует") }}</p>
+          <div id="collapse{{ stage.id }}"
+               class="accordion-collapse collapse {% if forloop.first %}show{% endif %}">
+            <div class="accordion-body px-2 px-md-3 pt-2 pb-3">
 
-              <h6 class="mt-3 mb-3">{% trans "Поля этапа:" %}</h6>
-
+              {# --- Список полей карточками --- #}
               {% with rows=stage_field_rows|get_item:stage.id %}
                 {% if rows and rows|length > 0 %}
-                  <div class="table-responsive">
-                    <table class="table table-sm">
-                      <thead>
-                        <tr>
-                          <th>{% trans "Поле" %}</th>
-                          <th>{% trans "Тип" %}</th>
-                          <th>{% trans "Значение / файл" %}</th>
-                          <th>{% trans "Загружено" %}</th>
-                          <th>{% trans "Действия" %}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for r in rows %}
-                          {% with f=r.field doc=r.document %}
-                            <tr>
-                              <td>
-                                {{ f.name }}
-                                {% if f.is_required %}
-                                  <span class="badge bg-warning text-dark ms-1">{% trans "обязательное" %}</span>
-                                {% endif %}
-                              </td>
-                              <td><span class="badge bg-secondary">{{ f.get_field_type_display }}</span></td>
-                              <td>
-                                {% if doc %}
-                                  {% if f.field_type == 'file' and doc.file_value %}
-                                    <a href="#" onclick="previewDocument('{{ doc.file_value.url }}', '{{ doc.file_value.name }}'); return false;"
-                                       class="text-primary text-decoration-underline" style="cursor:pointer;">
-                                      <i class="bi bi-file-earmark me-1"></i>{{ doc.file_value.name|slice:"20:" }}{% if doc.file_value.name|length > 20 %}...{% endif %}
-                                    </a>
-                                  {% elif f.field_type == 'text' %}
-                                    {{ doc.text_value|default:_("Не заполнено")|truncatewords:5 }}
-                                  {% elif f.field_type == 'date' %}
-                                    {{ doc.date_value|date:"d.m.Y"|default:_("Не заполнено") }}
-                                  {% else %}
-                                    <span class="text-muted">{% trans "Не заполнено" %}</span>
-                                  {% endif %}
-                                {% else %}
-                                  <span class="text-muted">{% trans "Нет документа" %}</span>
-                                {% endif %}
-                              </td>
-                              <td>
-                                {% if doc %}
-                                  {{ doc.created_at|date:"d.m.Y" }}<br>
-                                  <small class="text-muted">
-                                    {{ doc.created_by.get_full_name|default:doc.created_by.username }}
-                                  </small>
-                                {% else %}
-                                  &mdash;
-                                {% endif %}
-                              </td>
-                              <td>
-                                <div class="btn-group btn-group-sm">
-                                  {% if doc and f.field_type == 'file' and doc.file_value %}
-                                    <button type="button" class="btn btn-outline-info"
-                                            title="{% trans 'Просмотр' %}"
-                                            onclick="previewDocument('{{ doc.file_value.url }}', '{{ doc.file_value.name }}')">
-                                      <i class="bi bi-eye"></i>
-                                    </button>
-                                    <a href="{{ doc.file_value.url }}" download
-                                       class="btn btn-outline-primary" title="{% trans 'Скачать' %}">
-                                      <i class="bi bi-download"></i>
-                                    </a>
-                                  {% endif %}
+                  <div class="d-flex flex-column gap-2 mb-3">
+                    {% for r in rows %}
+                      {% with f=r.field doc=r.document %}
+                        <div class="d-flex align-items-center gap-2 p-2 rounded-3 border {% if doc %}bg-light{% endif %}">
 
-                                  {% if doc %}
-                                    {% if user == doc.created_by or user.role == 'director' or user.role == 'deputy_director' or user.role == 'manager' %}
-                                      <a href="{% url 'cases:document_delete' case.pk stage.id f.id %}"
-                                         class="btn btn-outline-danger" title="{% trans 'Удалить' %}">
-                                        <i class="bi bi-trash"></i>
-                                      </a>
-                                    {% endif %}
-                                  {% else %}
-                                    {% if user.role in allowed_roles_for_stage_edit %}
-                                      <a href="#add-doc-{{ stage.id }}" class="btn btn-outline-primary"
-                                         onclick="prefillField({{ stage.id }}, {{ f.id }})">
-                                        <i class="bi bi-plus"></i> {% trans "Добавить" %}
-                                      </a>
-                                    {% endif %}
-                                  {% endif %}
-                                </div>
-                              </td>
-                            </tr>
-                          {% endwith %}
-                        {% endfor %}
-                      </tbody>
-                    </table>
+                          {# Иконка статуса #}
+                          <div class="flex-shrink-0">
+                            {% if doc %}
+                              {% if f.field_type == 'file' %}
+                                <i class="bi bi-file-earmark-check-fill text-success fs-4"></i>
+                              {% else %}
+                                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                              {% endif %}
+                            {% else %}
+                              <i class="bi bi-circle text-muted fs-4"></i>
+                            {% endif %}
+                          </div>
+
+                          {# Содержимое #}
+                          <div class="flex-grow-1 min-w-0">
+                            <div class="fw-semibold text-truncate" style="font-size:.9rem">
+                              {{ f.name }}
+                              {% if f.is_required %}<span class="text-danger ms-1">*</span>{% endif %}
+                            </div>
+                            <div style="font-size:.75rem">
+                              {% if doc %}
+                                {% if f.field_type == 'file' and doc.file_value %}
+                                  <a href="#"
+                                     onclick="previewDocument('{{ doc.file_value.url }}','{{ doc.file_value.name }}');return false;"
+                                     class="text-primary text-decoration-none">
+                                    <i class="bi bi-eye me-1"></i>{{ doc.file_value.name|slice:"25:"|default:doc.file_value.name }}
+                                  </a>
+                                {% elif f.field_type == 'text' %}
+                                  <span class="text-muted">{{ doc.text_value|truncatewords:8 }}</span>
+                                {% elif f.field_type == 'date' %}
+                                  <span class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ doc.date_value|date:"d.m.Y" }}</span>
+                                {% endif %}
+                                <span class="text-muted ms-2">· {{ doc.created_at|date:"d.m.Y" }}</span>
+                              {% else %}
+                                <span class="text-muted">{% trans "Не загружено" %}</span>
+                              {% endif %}
+                            </div>
+                          </div>
+
+                          {# Кнопки #}
+                          <div class="flex-shrink-0 d-flex gap-1">
+                            {% if doc and f.field_type == 'file' and doc.file_value %}
+                              <button type="button" class="btn btn-sm btn-outline-info"
+                                      onclick="previewDocument('{{ doc.file_value.url }}','{{ doc.file_value.name }}')"
+                                      title="{% trans 'Просмотр' %}">
+                                <i class="bi bi-eye"></i>
+                              </button>
+                              <a href="{{ doc.file_value.url }}" download
+                                 class="btn btn-sm btn-outline-primary" title="{% trans 'Скачать' %}">
+                                <i class="bi bi-download"></i>
+                              </a>
+                            {% endif %}
+                            {% if doc %}
+                              {% if user == doc.created_by or user.role in 'director,deputy_director,manager' or user.is_superuser %}
+                                <a href="{% url 'cases:document_delete' case.pk stage.id f.id %}"
+                                   class="btn btn-sm btn-outline-danger" title="{% trans 'Удалить' %}">
+                                  <i class="bi bi-trash"></i>
+                                </a>
+                              {% endif %}
+                            {% else %}
+                              {% if user.role in allowed_roles_for_stage_edit or user.is_superuser %}
+                                <button type="button"
+                                        class="btn btn-sm btn-success"
+                                        onclick="openUploadModal({{ stage.id }}, {{ f.id }}, '{{ f.field_type }}')"
+                                        title="{% trans 'Загрузить' %}">
+                                  <i class="bi bi-upload"></i>
+                                </button>
+                              {% endif %}
+                            {% endif %}
+                          </div>
+
+                        </div>
+                      {% endwith %}
+                    {% endfor %}
                   </div>
                 {% else %}
-                  <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> {% trans "Для этого этапа поля не настроены." %}
+                  <div class="alert alert-info py-2 mb-3">
+                    <i class="bi bi-info-circle me-1"></i> {% trans "Для этого этапа поля не настроены." %}
                   </div>
                 {% endif %}
               {% endwith %}
-{% if case.finance.payment_due_date %}
-  <dt class="col-sm-5">Срок погашения</dt>
-  <dd class="col-sm-7">
-    {{ case.finance.payment_due_date|date:"d.m.Y" }}
-    {% if case.finance.is_overdue %}
-      <span class="badge bg-danger ms-2">Просрочено</span>
-    {% else %}
-      {% if case.finance.days_to_due != None %}
-        <span class="badge bg-secondary ms-2">Осталось: {{ case.finance.days_to_due }} дн.</span>
-      {% endif %}
-    {% endif %}
-  </dd>
-{% else %}
-  <dt class="col-sm-5">Срок погашения</dt>
-  <dd class="col-sm-7">—</dd>
-{% endif %}
 
-
-              {# Форма добавления документа — для любого этапа #}
-              {% if user.role in allowed_roles_for_stage_edit %}
-                <hr>
-                <h6 class="mt-3 mb-3">{% trans "Добавить документ:" %}</h6>
-                <form id="add-doc-{{ stage.id }}" method="post" action="{% url 'cases:case_add_document' case.pk %}" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <input type="hidden" name="stage" value="{{ stage.id }}">
-
-                  <div class="row">
-                    <div class="col-md-4">
-                      <div class="mb-3">
-                        <label for="id_document_field_{{ stage.id }}" class="form-label">{% trans "Поле" %}</label>
-                        <select name="field" class="form-select" id="id_document_field_{{ stage.id }}" onchange="onFieldChange({{ stage.id }})" required>
-                          <option value="">{% trans "Выберите поле" %}</option>
-                          {% for field in stage.fields.all %}
-                            <option value="{{ field.id }}" data-type="{{ field.field_type }}">
-                              {{ field.name }} {% if field.is_required %}({% trans "обязательное" %}){% endif %}
-                            </option>
-                          {% endfor %}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="col-md-8">
-                      <div class="mb-3">
-                        <label class="form-label">{% trans "Значение" %}</label>
-                        <div id="document-value-container-{{ stage.id }}">
-                          <p class="text-muted mb-0">{% trans "Выберите поле для отображения формы ввода" %}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button type="submit" class="btn btn-primary">{% trans "Добавить документ" %}</button>
-                </form>
+              {# --- Большая кнопка загрузить --- #}
+              {% if user.role in allowed_roles_for_stage_edit or user.is_superuser %}
+                <button type="button"
+                        class="btn btn-outline-primary w-100 py-3"
+                        style="border-style:dashed; font-size:1rem;"
+                        onclick="openUploadModal({{ stage.id }}, null, null)">
+                  <i class="bi bi-cloud-upload fs-5 me-2"></i>{% trans "Загрузить документ" %}
+                </button>
               {% endif %}
 
             </div>
@@ -579,7 +531,72 @@
     </div>
   </div>
 </div>
+
+{# Срок погашения — только для финансистов #}
+{% if request.user.is_superuser or request.user.role in 'manager,accountant,director,deputy_director' %}
+  {% if case.finance.payment_due_date %}
+    <div class="alert {% if case.finance.is_overdue %}alert-danger{% else %}alert-warning{% endif %} mb-4">
+      <i class="bi bi-calendar-event me-2"></i>
+      <strong>{% trans "Срок погашения:" %}</strong> {{ case.finance.payment_due_date|date:"d.m.Y" }}
+      {% if case.finance.is_overdue %}
+        <span class="badge bg-danger ms-2">{% trans "Просрочено" %}</span>
+      {% elif case.finance.days_to_due != None %}
+        <span class="badge bg-secondary ms-2">{% trans "Осталось:" %} {{ case.finance.days_to_due }} {% trans "дн." %}</span>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endif %}
 {% endblock %}
+
+{# ===== Модальное окно ЗАГРУЗКИ документа ===== #}
+<div class="modal fade" id="uploadDocModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-cloud-upload me-2 text-primary"></i>{% trans "Загрузить документ" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="uploadDocForm" method="post" action="{% url 'cases:case_add_document' case.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="stage" id="uploadStageId">
+        <div class="modal-body pt-3">
+
+          {# Выбор поля #}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{% trans "Поле документа" %}</label>
+            <select name="field" id="uploadFieldSelect" class="form-select form-select-lg" required onchange="onModalFieldChange()">
+              <option value="">— {% trans "выберите поле" %} —</option>
+            </select>
+          </div>
+
+          {# Зона ввода значения #}
+          <div id="uploadValueArea" class="mb-3"></div>
+
+          {# Drag-and-drop зона для файлов #}
+          <div id="dropZone" class="d-none">
+            <label for="uploadFileInput"
+                   class="d-flex flex-column align-items-center justify-content-center w-100 rounded-3 border border-2 border-dashed py-5 px-3"
+                   style="cursor:pointer; background:#f8f9fa; border-color:#adb5bd !important; min-height:160px;"
+                   id="dropZoneLabel">
+              <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-2"></i>
+              <span class="fw-semibold text-primary" style="font-size:1.1rem">{% trans "Нажмите или перетащите файл" %}</span>
+              <span class="text-muted small mt-1">PDF, Word, Excel, изображения</span>
+              <input type="file" name="file_value" id="uploadFileInput" class="d-none" accept="*/*">
+            </label>
+            <div id="fileChosen" class="mt-2 text-center text-muted small"></div>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% trans "Отмена" %}</button>
+          <button type="submit" class="btn btn-primary px-4 py-2">
+            <i class="bi bi-upload me-2"></i>{% trans "Сохранить" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <!-- Модальное окно для просмотра документов -->
 <div class="modal fade" id="documentPreviewModal" tabindex="-1" aria-labelledby="documentPreviewLabel" aria-hidden="true">
@@ -608,108 +625,148 @@
 
 {% block extra_js %}
 <script>
+/* ===== ПРЕДПРОСМОТР ДОКУМЕНТА ===== */
 function previewDocument(url, filename) {
   const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
   const container = document.getElementById('previewContainer');
   const label = document.getElementById('documentPreviewLabel');
   const downloadBtn = document.getElementById('previewDownloadBtn');
 
-  // Устанавливаем заголовок и кнопку скачать
   const shortName = filename.split('/').pop();
   label.textContent = shortName;
   downloadBtn.href = url;
   downloadBtn.setAttribute('download', shortName);
 
-  // Определяем расширение
   const ext = shortName.split('.').pop().toLowerCase();
-  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-  const pdfExt = 'pdf';
+  const imageExts = ['jpg','jpeg','png','gif','bmp','webp','svg'];
 
-  if (ext === pdfExt) {
+  if (ext === 'pdf') {
     container.innerHTML = `<iframe src="${url}" style="width:100%;height:75vh;border:none;" title="${shortName}"></iframe>`;
   } else if (imageExts.includes(ext)) {
-    container.innerHTML = `
-      <div class="p-3 text-center w-100">
-        <img src="${url}" alt="${shortName}" style="max-width:100%;max-height:75vh;object-fit:contain;" />
-      </div>`;
+    container.innerHTML = `<div class="p-3 text-center w-100"><img src="${url}" alt="${shortName}" style="max-width:100%;max-height:75vh;object-fit:contain;"/></div>`;
   } else {
     container.innerHTML = `
       <div class="text-center p-5">
         <i class="bi bi-file-earmark-text fs-1 text-secondary"></i>
         <p class="mt-3 text-muted">{% trans "Предварительный просмотр недоступен для этого типа файла." %}</p>
         <a href="${url}" download="${shortName}" class="btn btn-primary mt-2">
-          <i class="bi bi-download me-1"></i> {% trans "Скачать файл" %}
+          <i class="bi bi-download me-1"></i>{% trans "Скачать файл" %}
         </a>
       </div>`;
   }
-
   modal.show();
-
-  // Очищаем содержимое при закрытии (освобождаем iframe)
   document.getElementById('documentPreviewModal').addEventListener('hidden.bs.modal', function () {
-    container.innerHTML = `
-      <div class="text-center text-muted p-4">
-        <i class="bi bi-hourglass-split fs-1"></i>
-        <p class="mt-2">{% trans "Загрузка..." %}</p>
-      </div>`;
+    container.innerHTML = `<div class="text-center text-muted p-4"><i class="bi bi-hourglass-split fs-1"></i><p class="mt-2">{% trans "Загрузка..." %}</p></div>`;
   }, { once: true });
 }
 
-function onFieldChange(stageId) {
-  const select = document.getElementById(`id_document_field_${stageId}`);
-  const valueContainer = document.getElementById(`document-value-container-${stageId}`);
-  if (!select || !valueContainer) return;
+/* ===== МОДАЛЬНОЕ ОКНО ЗАГРУЗКИ ===== */
 
-  const selectedOption = select.options[select.selectedIndex];
-  const fieldType = selectedOption.getAttribute('data-type');
+// Данные этапов для JS (из шаблона)
+const stageFields = {
+  {% for stage in case.category.stages.all %}
+  {{ stage.id }}: [
+    {% for field in stage.fields.all %}
+    { id: {{ field.id }}, name: "{{ field.name|escapejs }}", type: "{{ field.field_type }}", required: {{ field.is_required|yesno:"true,false" }} },
+    {% endfor %}
+  ],
+  {% endfor %}
+};
 
-  if (!fieldType) {
-    valueContainer.innerHTML = '<p class="text-muted">{% trans "Выберите поле для отображения формы ввода" %}</p>';
-    return;
+function openUploadModal(stageId, fieldId, fieldType) {
+  const stageInput = document.getElementById('uploadStageId');
+  const fieldSelect = document.getElementById('uploadFieldSelect');
+
+  stageInput.value = stageId;
+
+  // Заполняем выпадающий список полей этого этапа
+  fieldSelect.innerHTML = '<option value="">— {% trans "выберите поле" %} —</option>';
+  const fields = stageFields[stageId] || [];
+  fields.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = f.name + (f.required ? ' *' : '');
+    opt.dataset.type = f.type;
+    fieldSelect.appendChild(opt);
+  });
+
+  // Если конкретное поле уже выбрано — предвыбираем
+  if (fieldId) {
+    fieldSelect.value = String(fieldId);
+    renderValueInput(fieldType);
+  } else {
+    document.getElementById('uploadValueArea').innerHTML = '';
+    document.getElementById('dropZone').classList.add('d-none');
   }
 
-  if (fieldType === 'text') {
-    valueContainer.innerHTML = `
-      <textarea name="text_value" class="form-control" rows="3"
-        placeholder="{% trans "Введите текстовое значение" %}" required></textarea>
-    `;
-  } else if (fieldType === 'file') {
-    valueContainer.innerHTML = `
-      <input type="file" name="file_value" class="form-control" required>
-    `;
-  } else if (fieldType === 'date') {
-    valueContainer.innerHTML = `
-      <input type="date" name="date_value" class="form-control" required>
-    `;
-  } else if (fieldType === 'select') {
-    const fieldId = select.value;
-    fetch(`/cases/ajax/field-options/${fieldId}/`)
-      .then(response => response.json())
-      .then(data => {
-        let optionsHtml = '';
-        data.options.forEach(option => {
-          optionsHtml += `<option value="${option}">${option}</option>`;
-        });
-
-        valueContainer.innerHTML = `
-          <select name="text_value" class="form-select" required>
-            <option value="">{% trans "Выберите значение" %}</option>
-            ${optionsHtml}
-          </select>
-        `;
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        valueContainer.innerHTML = '<p class="text-danger">{% trans "Ошибка загрузки опций" %}</p>';
-      });
-  }
+  new bootstrap.Modal(document.getElementById('uploadDocModal')).show();
 }
 
-function prefillField(stageId, fieldId) {
-  const select = document.getElementById(`id_document_field_${stageId}`);
-  if (!select) return;
-  select.value = String(fieldId);
-  onFieldChange(stageId);
+function onModalFieldChange() {
+  const select = document.getElementById('uploadFieldSelect');
+  const opt = select.options[select.selectedIndex];
+  const type = opt ? opt.dataset.type : null;
+  renderValueInput(type);
+}
+
+function renderValueInput(type) {
+  const area = document.getElementById('uploadValueArea');
+  const dropZone = document.getElementById('dropZone');
+
+  dropZone.classList.add('d-none');
+  area.innerHTML = '';
+
+  if (!type) return;
+
+  if (type === 'file') {
+    dropZone.classList.remove('d-none');
+    document.getElementById('fileChosen').textContent = '';
+    // drag-and-drop
+    const label = document.getElementById('dropZoneLabel');
+    const input = document.getElementById('uploadFileInput');
+    input.onchange = () => {
+      const name = input.files[0] ? input.files[0].name : '';
+      document.getElementById('fileChosen').textContent = name ? '📎 ' + name : '';
+      label.style.borderColor = name ? '#0d6efd' : '';
+    };
+    label.ondragover = (e) => { e.preventDefault(); label.style.background='#e7f1ff'; };
+    label.ondragleave = () => { label.style.background=''; };
+    label.ondrop = (e) => {
+      e.preventDefault();
+      label.style.background = '';
+      if (e.dataTransfer.files.length) {
+        const dt = new DataTransfer();
+        dt.items.add(e.dataTransfer.files[0]);
+        input.files = dt.files;
+        document.getElementById('fileChosen').textContent = '📎 ' + e.dataTransfer.files[0].name;
+        label.style.borderColor = '#0d6efd';
+      }
+    };
+  } else if (type === 'text') {
+    area.innerHTML = `
+      <label class="form-label fw-semibold">{% trans "Текстовое значение" %}</label>
+      <textarea name="text_value" class="form-control form-control-lg" rows="3"
+        placeholder="{% trans "Введите текст..." %}" required></textarea>`;
+  } else if (type === 'date') {
+    area.innerHTML = `
+      <label class="form-label fw-semibold">{% trans "Дата" %}</label>
+      <input type="date" name="date_value" class="form-control form-control-lg" required>`;
+  } else if (type === 'select') {
+    const select = document.getElementById('uploadFieldSelect');
+    const fieldId = select.value;
+    area.innerHTML = '<div class="text-muted">{% trans "Загрузка вариантов..." %}</div>';
+    fetch(`/cases/ajax/field-options/${fieldId}/`)
+      .then(r => r.json())
+      .then(data => {
+        let opts = data.options.map(o => `<option value="${o}">${o}</option>`).join('');
+        area.innerHTML = `
+          <label class="form-label fw-semibold">{% trans "Выберите значение" %}</label>
+          <select name="text_value" class="form-select form-select-lg" required>
+            <option value="">—</option>${opts}
+          </select>`;
+      })
+      .catch(() => { area.innerHTML = '<p class="text-danger">{% trans "Ошибка загрузки" %}</p>'; });
+  }
 }
 </script>
 {% endblock %}
