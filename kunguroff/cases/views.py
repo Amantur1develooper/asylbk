@@ -253,18 +253,16 @@ class CaseDocumentCreateView(View):
             document.case = case
             document.created_by = request.user
             document.save()
-            
-            # Пересчитываем прогресс дела
             case.calculate_progress()
-            
+            messages.success(request, 'Документ успешно загружен.')
             return redirect('cases:case_detail', pk=case.pk)
-        
-        # Если форма невалидна, возвращаемся к деталям дела с ошибками
-        return render(request, 'cases/case_detail.html', {
-            'case': case,
-            'document_form': form,
-            'documents_by_stage': CaseDocument.objects.filter(case=case).group_by_stage()
-        })
+
+        # Если форма невалидна — просто редиректим обратно с ошибкой
+        error_text = '; '.join(
+            f'{field}: {", ".join(errs)}' for field, errs in form.errors.items()
+        )
+        messages.error(request, f'Ошибка загрузки документа: {error_text}')
+        return redirect('cases:case_detail', pk=case.pk)
 
 
 # AJAX-представление для получения этапов категории
