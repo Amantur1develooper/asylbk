@@ -147,7 +147,7 @@
 
                         <td>
                             {% if tr.case %}
-                                {% blocktrans with case_id=tr.case.id title=tr.case.title|truncatewords:3 %}#{{ case_id }}: {{ title }}{% endblocktrans %}
+                                {% if tr.case.internal_number %}№{{ tr.case.internal_number }}{% else %}#{{ tr.case.id }}{% endif %}: {{ tr.case.title|truncatewords:3 }}
                             {% elif tr.client %}
                                 {{ tr.client.full_name }}
                             {% else %}

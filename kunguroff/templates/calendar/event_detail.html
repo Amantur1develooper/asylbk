@@ -129,6 +129,7 @@
         {% if event.case %}
           <div class="mb-3">
             <strong>{% trans "Дело:" %}</strong><br>
+            {% if event.case.internal_number %}<span class="badge bg-secondary me-1">№{{ event.case.internal_number }}</span>{% endif %}
             <a href="{% url 'cases:case_detail' event.case.pk %}">{{ event.case.title }}</a>
           </div>
         {% endif %}

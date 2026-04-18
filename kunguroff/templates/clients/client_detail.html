@@ -182,9 +182,8 @@
             {% for case in cases %}
               <tr>
                 <td>
-                  <a href="{% url 'cases:case_detail' case.pk %}">
-                    {{ case.title }}
-                  </a>
+                  {% if case.internal_number %}<span class="badge bg-secondary me-1">№{{ case.internal_number }}</span>{% endif %}
+                  <a href="{% url 'cases:case_detail' case.pk %}">{{ case.title }}</a>
                 </td>
                 <td>{{ case.category.get_name_display }}</td>
                 <td>

@@ -83,7 +83,7 @@
           <select class="form-select" id="caseFilter">
             <option value="">{% trans "Все дела" %}</option>
             {% for case in user_cases %}
-              <option value="{{ case.id }}">{{ case.title }}</option>
+              <option value="{{ case.id }}">{% if case.internal_number %}№{{ case.internal_number }} — {% endif %}{{ case.title }}</option>
             {% endfor %}
           </select>
         </div>

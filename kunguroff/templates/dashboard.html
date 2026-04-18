@@ -112,6 +112,7 @@
                             {% for case in recent_cases %}
                                 <tr>
                                     <td>
+                                        {% if case.internal_number %}<span class="badge bg-secondary me-1">№{{ case.internal_number }}</span>{% endif %}
                                         <a href="{% url 'cases:case_detail' case.pk %}">{{ case.title }}</a>
                                     </td>
 
@@ -171,7 +172,7 @@
                                     <small class="text-muted">
                                         <i class="bi bi-clock"></i> {{ event.start_time|date:"H:i" }}
                                         {% if event.case %}
-                                            · <a href="{% url 'cases:case_detail' event.case.pk %}">{{ event.case.title|truncatewords:3 }}</a>
+                                            · {% if event.case.internal_number %}№{{ event.case.internal_number }} — {% endif %}<a href="{% url 'cases:case_detail' event.case.pk %}">{{ event.case.title|truncatewords:3 }}</a>
                                         {% endif %}
                                     </small>
                                 </div>

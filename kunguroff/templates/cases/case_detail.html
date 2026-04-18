@@ -3,9 +3,11 @@
 {% load i18n %}
 {% load custom_tags %}
 
-{% block title %}{{ case.title }} - Kunguroff & Partners{% endblock %}
+{% block title %}{% if case.internal_number %}№{{ case.internal_number }} — {% endif %}{{ case.title }} - Kunguroff & Partners{% endblock %}
 
-{% block page_title %}{% trans "Дело:" %} {{ case.title }}{% endblock %}
+{% block page_title %}
+  {% if case.internal_number %}<span class="badge bg-secondary me-2 fs-6">№{{ case.internal_number }}</span>{% endif %}{{ case.title }}
+{% endblock %}
 
 {% block page_actions %}
   <div class="btn-group">
@@ -169,6 +171,33 @@
       </div>
     {% endif %}
 {% endif %}{# end finance access check #}
+
+    {# --- Личная доля юриста/адвоката --- #}
+    {% if not request.user.is_superuser and request.user.role in 'lawyer,advocate' %}
+      {% if case.finance %}
+        {% for s in case.finance.shares.all %}
+          {% if s.employee == request.user %}
+            <div class="card mt-3 border-primary">
+              <div class="card-header bg-primary bg-opacity-10">
+                <h6 class="mb-0 text-primary"><i class="bi bi-wallet2 me-2"></i>{% trans "Моя доля по делу" %}</h6>
+              </div>
+              <div class="card-body">
+                <dl class="row mb-0">
+                  <dt class="col-sm-6">{% trans "Моя доля" %}</dt>
+                  <dd class="col-sm-6">{{ s.percent_of_pool }}%</dd>
+
+                  <dt class="col-sm-6">{% trans "При полной оплате" %}</dt>
+                  <dd class="col-sm-6 fw-semibold">{{ s.amount_full }} {% trans "сом" %}</dd>
+
+                  <dt class="col-sm-6">{% trans "На текущий момент" %}</dt>
+                  <dd class="col-sm-6 fw-semibold text-success">{{ s.amount_current }} {% trans "сом" %}</dd>
+                </dl>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
 
     <!-- Ответственные лица -->
     <div class="card mb-4 mt-3">

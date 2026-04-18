@@ -162,7 +162,14 @@ class Case(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
+        if self.internal_number:
+            return f'№{self.internal_number} — {self.title}'
         return self.title
+
+    @property
+    def display_number(self):
+        """Короткий внутренний номер для отображения в таблицах/заголовках."""
+        return f'№{self.internal_number}' if self.internal_number else f'ID-{self.pk}'
     
     @property
     def main_trustor(self):

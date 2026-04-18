@@ -87,7 +87,7 @@ def _format_message(finance: CaseFinance, days: int) -> str:
     lines = [
         header,
         '',
-        f'📁 <b>Дело:</b> {case.title}',
+        f'📁 <b>Дело:</b> {"№" + case.internal_number + " — " if case.internal_number else ""}{case.title}',
         f'👤 <b>Клиент:</b> {client_name}',
         f'📅 <b>Срок погашения:</b> {due_str}',
         '',

@@ -116,7 +116,7 @@
                       {% if event.case %}
                         <br>
                         <small class="text-muted">
-                          {% trans "Дело:" %} {{ event.case.title }}
+                          {% trans "Дело:" %} {% if event.case.internal_number %}№{{ event.case.internal_number }} — {% endif %}{{ event.case.title }}
                         </small>
                       {% endif %}
                     </td>

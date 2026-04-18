@@ -123,7 +123,7 @@
                 </td>
                 <td>
                   {% if transaction.case %}
-                    {% trans "Дело" %} #{{ transaction.case.id }}: {{ transaction.case.title|truncatewords:3 }}
+                    {% if transaction.case.internal_number %}№{{ transaction.case.internal_number }}{% else %}#{{ transaction.case.id }}{% endif %}: {{ transaction.case.title|truncatewords:3 }}
                   {% elif transaction.client %}
                     {% trans "Клиент" %}: {{ transaction.client.full_name }}
                   {% else %}
