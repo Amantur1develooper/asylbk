@@ -56,6 +56,16 @@
     </div>
 
     <div class="form-card-body">
+
+      {% if duplicate_of %}
+      <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:.88rem;">
+        <i class="bi bi-copy me-1"></i>
+        <strong>Дубликат записи от {{ duplicate_of.date|date:"d.m.Y" }}</strong>
+        {% if duplicate_of.time %} в {{ duplicate_of.time|time:"H:i" }}{% endif %} —
+        укажите новые дату и время
+      </div>
+      {% endif %}
+
       <form method="post" novalidate>
         {% csrf_token %}
 

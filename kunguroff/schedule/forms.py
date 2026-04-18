@@ -4,7 +4,11 @@ from .models import ScheduleEntry
 
 class ScheduleEntryForm(forms.ModelForm):
     date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-lg'}),
+        widget=forms.DateInput(
+            attrs={'type': 'date', 'class': 'form-control form-control-lg'},
+            format='%Y-%m-%d',
+        ),
+        input_formats=['%Y-%m-%d'],
         label="Дата"
     )
 

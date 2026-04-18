@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'public.apps.PublicConfig',
     'schedule',
     'hr',
+    'directory',
 ]
 
 from django.utils.translation import gettext_lazy as _

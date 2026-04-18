@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}База контактов{% endblock %}
+{% block page_title %}📇 База контактов{% endblock %}
+
+{% block page_actions %}
+  {% if can_edit %}
+    <div class="btn-group">
+      <a href="{% url 'directory:add' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Добавить
+      </a>
+      <a href="{% url 'directory:region_add' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-map me-1"></i>Регион
+      </a>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+{# ===== ФИЛЬТРЫ ===== #}
+<form method="get" class="mb-3">
+  <div class="row g-2">
+    <div class="col-12 col-sm-6 col-md-3">
+      <input type="text" name="q" value="{{ q }}" class="form-control"
+             placeholder="🔍 Поиск по названию, ФИО...">
+    </div>
+    <div class="col-6 col-sm-3 col-md-2">
+      <select name="type" class="form-select">
+        <option value="">Все типы</option>
+        {% for code, label in org_types %}
+          <option value="{{ code }}" {% if sel_type == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-sm-3 col-md-2">
+      <select name="region" class="form-select">
+        <option value="">Все регионы</option>
+        {% for r in regions %}
+          <option value="{{ r.pk }}" {% if sel_region == r.pk|stringformat:"s" %}selected{% endif %}>{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-sm-3 col-md-2">
+      <input type="text" name="district" value="{{ sel_dist }}" class="form-control" placeholder="Район / город">
+    </div>
+    <div class="col-6 col-sm-3 col-md-3 d-flex gap-2">
+      <button type="submit" class="btn btn-outline-primary flex-grow-1">Применить</button>
+      <a href="{% url 'directory:list' %}" class="btn btn-outline-secondary">✕</a>
+    </div>
+  </div>
+</form>
+
+{# Быстрые кнопки по типу #}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a href="{% url 'directory:list' %}" class="btn btn-sm {% if not sel_type %}btn-dark{% else %}btn-outline-secondary{% endif %}">Все</a>
+  {% for code, label in org_types %}
+    <a href="?type={{ code }}" class="btn btn-sm {% if sel_type == code %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{# Количество результатов #}
+<p class="text-muted small mb-2">Найдено: {{ paginator.count }} записей</p>
+
+{% if organizations %}
+
+  {# ===== ДЕСКТОП — таблица ===== #}
+  <div class="d-none d-lg-block card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width:35%">Организация</th>
+            <th>Тип</th>
+            <th>Регион</th>
+            <th>Район / Город</th>
+            <th>Телефон</th>
+            <th>Руководитель</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for org in organizations %}
+            <tr>
+              <td>
+                <a href="{% url 'directory:detail' org.pk %}" class="fw-semibold text-decoration-none">
+                  {{ org.get_org_type_icon }} {{ org.name }}
+                </a>
+              </td>
+              <td><span class="badge bg-secondary">{{ org.get_org_type_display }}</span></td>
+              <td>{{ org.region.name|default:"—" }}</td>
+              <td>{{ org.district|default:"—" }}</td>
+              <td>
+                {% if org.phone %}
+                  <a href="tel:{{ org.phone }}">{{ org.phone }}</a>
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                <div style="font-size:.85rem">{{ org.head_name|default:"—" }}</div>
+                {% if org.head_position %}<div class="text-muted" style="font-size:.75rem">{{ org.head_position }}</div>{% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'directory:detail' org.pk %}" class="btn btn-outline-primary"><i class="bi bi-eye"></i></a>
+                  {% if can_edit %}
+                    <a href="{% url 'directory:edit' org.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'directory:delete' org.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# ===== МОБИЛЬ — карточки ===== #}
+  <div class="d-lg-none d-flex flex-column gap-2">
+    {% for org in organizations %}
+      <div class="card">
+        <div class="card-body py-3 px-3">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-bold text-truncate">{{ org.get_org_type_icon }} {{ org.name }}</div>
+              <div class="d-flex flex-wrap gap-1 mt-1">
+                <span class="badge bg-secondary" style="font-size:.7rem">{{ org.get_org_type_display }}</span>
+                {% if org.region %}<span class="badge bg-light text-dark border" style="font-size:.7rem">{{ org.region.name }}</span>{% endif %}
+                {% if org.district %}<span class="badge bg-light text-dark border" style="font-size:.7rem">{{ org.district }}</span>{% endif %}
+              </div>
+              {% if org.phone %}
+                <div class="mt-1 small"><i class="bi bi-telephone me-1"></i><a href="tel:{{ org.phone }}">{{ org.phone }}</a></div>
+              {% endif %}
+              {% if org.head_name %}
+                <div class="small text-muted mt-1"><i class="bi bi-person me-1"></i>{{ org.head_name }}</div>
+              {% endif %}
+            </div>
+            <div class="flex-shrink-0 d-flex flex-column gap-1">
+              <a href="{% url 'directory:detail' org.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i></a>
+              {% if can_edit %}
+                <a href="{% url 'directory:edit' org.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {# Пагинация #}
+  {% if is_paginated %}
+    <nav class="mt-3">
+      <ul class="pagination justify-content-center flex-wrap">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&type={{ sel_type }}&region={{ sel_region }}&district={{ sel_dist }}">‹ Назад</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&type={{ sel_type }}&region={{ sel_region }}&district={{ sel_dist }}">Вперёд ›</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-journal-x fs-1"></i>
+    <p class="mt-3">Записей не найдено</p>
+    {% if can_edit %}
+      <a href="{% url 'directory:add' %}" class="btn btn-primary mt-2">
+        <i class="bi bi-plus-lg me-1"></i>Добавить первую запись
+      </a>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

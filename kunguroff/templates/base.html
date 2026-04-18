@@ -528,10 +528,13 @@
 
         {% if user.is_superuser or user.role in 'manager,director,deputy_director' %}
         <div class="drawer-section-title">Управление</div>
-        <a href="{% url 'hr:employee_list' %}" class="drawer-link {% if 'hr' in request.path %}active{% endif %}">
+        <a href="{% url 'hr:employee_list' %}" class="drawer-link {% if '/hr/' in request.path %}active{% endif %}">
             <i class="bi bi-people-fill"></i> Отдел кадров
         </a>
         {% endif %}
+        <a href="{% url 'directory:list' %}" class="drawer-link {% if 'directory' in request.path %}active{% endif %}">
+            <i class="bi bi-journal-bookmark-fill"></i> База контактов
+        </a>
 
         {% if user.is_staff %}
         <div class="drawer-section-title">Система</div>

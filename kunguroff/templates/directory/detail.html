@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ org.name }}{% endblock %}
+{% block page_title %}{{ org.get_org_type_icon }} {{ org.name }}{% endblock %}
+
+{% block page_actions %}
+  {% if can_edit %}
+    <div class="btn-group">
+      <a href="{% url 'directory:edit' org.pk %}" class="btn btn-outline-primary">
+        <i class="bi bi-pencil"></i> Редактировать
+      </a>
+      <a href="{% url 'directory:delete' org.pk %}" class="btn btn-outline-danger">
+        <i class="bi bi-trash"></i>
+      </a>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row g-3">
+  <div class="col-12 col-md-6">
+    <div class="card h-100">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Основная информация</h6></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-5">Тип</dt>
+          <dd class="col-7"><span class="badge bg-primary">{{ org.get_org_type_display }}</span></dd>
+
+          {% if org.region %}
+            <dt class="col-5">Регион</dt>
+            <dd class="col-7">{{ org.region.name }}</dd>
+          {% endif %}
+
+          {% if org.district %}
+            <dt class="col-5">Район / город</dt>
+            <dd class="col-7">{{ org.district }}</dd>
+          {% endif %}
+
+          {% if org.address %}
+            <dt class="col-5">Адрес</dt>
+            <dd class="col-7">{{ org.address }}</dd>
+          {% endif %}
+
+          {% if org.website %}
+            <dt class="col-5">Сайт</dt>
+            <dd class="col-7"><a href="{{ org.website }}" target="_blank">{{ org.website }}</a></dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="card h-100">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Контакты</h6></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          {% if org.phone %}
+            <dt class="col-5">Телефон</dt>
+            <dd class="col-7">
+              {% for ph in org.phone.split|join:"," %}
+                <a href="tel:{{ org.phone }}">{{ org.phone }}</a>
+              {% endfor %}
+            </dd>
+          {% endif %}
+
+          {% if org.email %}
+            <dt class="col-5">Email</dt>
+            <dd class="col-7"><a href="mailto:{{ org.email }}">{{ org.email }}</a></dd>
+          {% endif %}
+
+          {% if org.head_name %}
+            <dt class="col-5">Руководитель</dt>
+            <dd class="col-7">
+              {{ org.head_name }}
+              {% if org.head_position %}
+                <br><small class="text-muted">{{ org.head_position }}</small>
+              {% endif %}
+            </dd>
+          {% endif %}
+        </dl>
+
+        {% if org.phone %}
+          <div class="mt-3 d-grid gap-2">
+            <a href="tel:{{ org.phone }}" class="btn btn-success">
+              <i class="bi bi-telephone-fill me-2"></i>Позвонить
+            </a>
+            {% if org.email %}
+              <a href="mailto:{{ org.email }}" class="btn btn-outline-primary">
+                <i class="bi bi-envelope me-2"></i>Написать
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if org.notes %}
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><h6 class="mb-0">Примечания</h6></div>
+        <div class="card-body text-muted">{{ org.notes|linebreaks }}</div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="mt-3">
+  <a href="{% url 'directory:list' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>К списку
+  </a>
+</div>
+
+{% endblock %}

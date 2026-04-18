@@ -113,6 +113,41 @@ class ScheduleUpdateView(View):
         return render(request, self.template_name, {'form': form, 'entry': entry, 'action': 'Редактировать событие'})
 
 
+class ScheduleDuplicateView(View):
+    """Дублирование записи — открывает форму с теми же данными, но пустыми датой и временем."""
+    template_name = 'schedule/form.html'
+
+    def get(self, request, pk):
+        entry = get_object_or_404(ScheduleEntry, pk=pk)
+        initial = {
+            'client_name':      entry.client_name,
+            'opposing_party':   entry.opposing_party,
+            'court':            entry.court,
+            'responsible_staff':entry.responsible_staff,
+            'case_description': entry.case_description,
+            'notes':            entry.notes,
+            # дата и время — пустые, чтобы пользователь выбрал новые
+        }
+        form = ScheduleEntryForm(initial=initial)
+        return render(request, self.template_name, {
+            'form': form,
+            'action': 'Дублировать событие',
+            'duplicate_of': entry,
+        })
+
+    def post(self, request, pk):
+        form = ScheduleEntryForm(request.POST)
+        if form.is_valid():
+            new_entry = form.save()
+            return redirect(f'/grafik/?year={new_entry.date.year}&month={new_entry.date.month}#day-{new_entry.date}')
+        entry = get_object_or_404(ScheduleEntry, pk=pk)
+        return render(request, self.template_name, {
+            'form': form,
+            'action': 'Дублировать событие',
+            'duplicate_of': entry,
+        })
+
+
 class ScheduleDeleteView(View):
     template_name = 'schedule/confirm_delete.html'
 
