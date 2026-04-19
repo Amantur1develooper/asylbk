@@ -531,6 +531,9 @@
         <a href="{% url 'hr:employee_list' %}" class="drawer-link {% if '/hr/' in request.path %}active{% endif %}">
             <i class="bi bi-people-fill"></i> Отдел кадров
         </a>
+        <a href="{% url 'public:vacancy_manage_list' %}" class="drawer-link {% if 'manage/vacancies' in request.path %}active{% endif %}">
+            <i class="bi bi-briefcase-fill"></i> Вакансии
+        </a>
         {% endif %}
         <a href="{% url 'directory:list' %}" class="drawer-link {% if 'directory' in request.path %}active{% endif %}">
             <i class="bi bi-journal-bookmark-fill"></i> База контактов

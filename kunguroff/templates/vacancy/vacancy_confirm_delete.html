@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить вакансию{% endblock %}
+{% block page_title %}Удалить вакансию{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Подтвердите удаление</h5>
+      </div>
+      <div class="card-body">
+        <p>Вы уверены, что хотите удалить вакансию <strong>«{{ object.title }}»</strong>?</p>
+        <p class="text-muted small">Это действие нельзя отменить.</p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-trash me-1"></i> Удалить
+            </button>
+            <a href="{% url 'public:vacancy_manage_list' %}" class="btn btn-outline-secondary">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

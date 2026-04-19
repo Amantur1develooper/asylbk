@@ -214,80 +214,135 @@
     </div>
 </div>
 
-<!-- График прогресса дел -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
+<!-- Графики -->
+<div class="row mt-4 g-3">
+
+    <!-- 1. Дела по статусам (пончик) -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="card-title mb-0">{% trans "Прогресс дел по категориям" %}</h5>
+                <h6 class="card-title mb-0">📊 Дела по статусам</h6>
             </div>
-            <div class="card-body">
-                <canvas id="casesProgressChart" height="100"></canvas>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="chartStatus" style="max-height:220px;"></canvas>
             </div>
         </div>
     </div>
+
+    <!-- 2. Дела по категориям (горизонтальный бар) -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="card-title mb-0">📁 Дела по категориям</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="chartCategories" style="max-height:220px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Новые дела по месяцам (линия) -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="card-title mb-0">📈 Новые дела (6 мес.)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="chartMonths" style="max-height:220px;"></canvas>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('casesProgressChart').getContext('2d');
+document.addEventListener('DOMContentLoaded', function () {
 
-    // NOTE: лучше вынести labels/values в контекст из view (переводимые названия)
-    const chartData = {
-        labels: [
-            "{% trans 'Гражданские' %}",
-            "{% trans 'Административные' %}",
-            "{% trans 'Уголовные' %}",
-            "{% trans 'Правонарушения' %}"
-        ],
-        datasets: [{
-            label: "{% trans 'Средний прогресс (%)' %}",
-            data: [75, 60, 45, 85],
-            backgroundColor: [
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(75, 192, 192, 0.2)'
-            ],
-            borderColor: [
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(75, 192, 192, 1)'
-            ],
-            borderWidth: 1
-        }]
-    };
-
-    const config = {
-        type: 'bar',
-        data: chartData,
+    // ── 1. Статусы — Doughnut ──
+    new Chart(document.getElementById('chartStatus'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_status_labels|safe }},
+            datasets: [{
+                data: {{ chart_status_data|safe }},
+                backgroundColor: {{ chart_status_colors|safe }},
+                borderWidth: 2,
+            }]
+        },
         options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        callback: function(value) { return value + '%'; }
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.label}: ${ctx.raw} дел`
                     }
                 }
             },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + context.raw + '%';
-                        }
-                    }
+            cutout: '60%',
+        }
+    });
+
+    // ── 2. Категории — горизонтальный бар ──
+    new Chart(document.getElementById('chartCategories'), {
+        type: 'bar',
+        data: {
+            labels: {{ chart_cat_labels|safe }},
+            datasets: [
+                {
+                    label: 'Кол-во дел',
+                    data: {{ chart_cat_counts|safe }},
+                    backgroundColor: 'rgba(13,110,253,0.7)',
+                    borderRadius: 4,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Средний прогресс %',
+                    data: {{ chart_cat_progress|safe }},
+                    backgroundColor: 'rgba(25,135,84,0.5)',
+                    borderRadius: 4,
+                    yAxisID: 'y2',
                 }
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } },
+            scales: {
+                y:  { ticks: { font: { size: 10 } } },
+                y2: { position: 'right', min: 0, max: 100,
+                      ticks: { callback: v => v + '%', font: { size: 10 } },
+                      grid: { drawOnChartArea: false } }
             }
         }
-    };
+    });
 
-    new Chart(ctx, config);
+    // ── 3. По месяцам — Line ──
+    new Chart(document.getElementById('chartMonths'), {
+        type: 'line',
+        data: {
+            labels: {{ chart_month_labels|safe }},
+            datasets: [{
+                label: 'Новых дел',
+                data: {{ chart_month_data|safe }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#0d6efd',
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+
 });
 </script>
 {% endblock %}

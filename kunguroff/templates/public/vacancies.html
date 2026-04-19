@@ -1,0 +1,70 @@
+{% extends "public/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Вакансии" %} — {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h1 class="fw-bold">{% trans "Вакансии" %}</h1>
+    <p class="text-muted">{% trans "Присоединяйтесь к нашей команде профессионалов" %}</p>
+  </div>
+</div>
+
+{% if vacancies %}
+  <div class="row g-4">
+    {% for v in vacancies %}
+    <div class="col-12">
+      <div class="kp-card p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+          <div>
+            <h4 class="fw-bold mb-1">{{ v.title }}</h4>
+            {% if v.department %}
+              <span class="text-muted small"><i class="fa-solid fa-building me-1"></i>{{ v.department }}</span>
+            {% endif %}
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge rounded-pill" style="background:var(--kp-soft);color:var(--kp-primary-2);font-size:.8rem;padding:6px 14px;">
+              {{ v.get_employment_display }}
+            </span>
+            {% if v.salary %}
+              <span class="badge rounded-pill bg-success text-white" style="font-size:.8rem;padding:6px 14px;">
+                <i class="fa-solid fa-money-bill-wave me-1"></i>{{ v.salary }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <p class="mb-3" style="white-space:pre-line;">{{ v.description }}</p>
+
+        {% if v.requirements %}
+        <div class="mb-3">
+          <h6 class="fw-bold">{% trans "Требования" %}</h6>
+          <p style="white-space:pre-line;">{{ v.requirements }}</p>
+        </div>
+        {% endif %}
+
+        {% if v.conditions %}
+        <div class="mb-3">
+          <h6 class="fw-bold">{% trans "Условия" %}</h6>
+          <p style="white-space:pre-line;">{{ v.conditions }}</p>
+        </div>
+        {% endif %}
+
+        <hr>
+        <a href="{% url 'public:contacts' %}#consult"
+           class="btn kp-btn kp-btn-primary">
+          <i class="fa-solid fa-paper-plane me-2"></i>{% trans "Откликнуться" %}
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="fa-solid fa-briefcase fa-3x mb-3 opacity-25"></i>
+    <p>{% trans "Открытых вакансий пока нет. Следите за обновлениями!" %}</p>
+  </div>
+{% endif %}
+{% endblock %}

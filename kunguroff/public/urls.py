@@ -16,4 +16,13 @@ urlpatterns = [
 
     path("about/", views.AboutView.as_view(), name="about"),
     path("contacts/", views.ContactView.as_view(), name="contacts"),
+
+    # Public vacancies
+    path("vacancies/", views.VacancyListView.as_view(), name="vacancies"),
+
+    # CRM vacancy management
+    path("manage/vacancies/", views.VacancyManageListView.as_view(), name="vacancy_manage_list"),
+    path("manage/vacancies/add/", views.VacancyCreateView.as_view(), name="vacancy_create"),
+    path("manage/vacancies/<int:pk>/edit/", views.VacancyUpdateView.as_view(), name="vacancy_edit"),
+    path("manage/vacancies/<int:pk>/delete/", views.VacancyDeleteView.as_view(), name="vacancy_delete"),
 ]

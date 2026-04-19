@@ -90,6 +90,9 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7647322168:AAHC-VSVSS7qxrD
 # ID Telegram-канала для архива документов (например: -1001234567890 или @channelname)
 TELEGRAM_ARCHIVE_CHANNEL_ID = os.getenv("TELEGRAM_ARCHIVE_CHANNEL_ID", "-5143225084")
 
+# Публичный URL сайта (для ссылок в Telegram-уведомлениях)
+SITE_PUBLIC_URL = os.getenv("SITE_PUBLIC_URL", "https://kunguroff.kg")
+
 # кому отправлять заявки (по ролям)
 TELEGRAM_NOTIFY_ROLES = [
     'director','deputy_director','manager','admin','advocate','lawyer',

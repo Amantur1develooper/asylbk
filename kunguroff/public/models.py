@@ -97,6 +97,35 @@ class NewsPost(models.Model):
         return reverse("public:news_detail", kwargs={"slug": self.slug})
 
 
+class Vacancy(models.Model):
+    EMPLOYMENT_CHOICES = [
+        ('full',     'Полная занятость'),
+        ('part',     'Частичная занятость'),
+        ('intern',   'Стажировка'),
+        ('remote',   'Удалённо'),
+        ('contract', 'Договор / Проект'),
+    ]
+
+    title       = models.CharField("Должность", max_length=200)
+    department  = models.CharField("Отдел / Направление", max_length=120, blank=True)
+    employment  = models.CharField("Тип занятости", max_length=20, choices=EMPLOYMENT_CHOICES, default='full')
+    salary      = models.CharField("Зарплата", max_length=100, blank=True, help_text="Напр: от 30 000 сом или по договорённости")
+    description = models.TextField("Описание вакансии")
+    requirements= models.TextField("Требования", blank=True)
+    conditions  = models.TextField("Условия", blank=True)
+    is_active   = models.BooleanField("Активна", default=True)
+    created_at  = models.DateTimeField("Создано", auto_now_add=True)
+    updated_at  = models.DateTimeField("Обновлено", auto_now=True)
+
+    class Meta:
+        verbose_name = "Вакансия"
+        verbose_name_plural = "Вакансии"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+
 class ConsultationRequest(models.Model):
     STATUS_CHOICES = [
         ("new", "Новая"),

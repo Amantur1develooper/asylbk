@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if object %}Редактировать{% else %}Новая{% endif %} вакансия{% endblock %}
+{% block page_title %}{% if object %}Редактировать вакансию{% else %}Новая вакансия{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          {% if object %}{{ object.title }}{% else %}Создать вакансию{% endif %}
+        </h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Должность *</label>
+            <input type="text" name="title" class="form-control"
+                   value="{{ form.title.value|default:'' }}" required>
+            {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Отдел / Направление</label>
+              <input type="text" name="department" class="form-control"
+                     value="{{ form.department.value|default:'' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Тип занятости</label>
+              <select name="employment" class="form-select">
+                {% for val, label in form.fields.employment.choices %}
+                  <option value="{{ val }}" {% if form.employment.value == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Зарплата</label>
+            <input type="text" name="salary" class="form-control"
+                   placeholder="Напр: от 30 000 сом или по договорённости"
+                   value="{{ form.salary.value|default:'' }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Описание вакансии *</label>
+            <textarea name="description" class="form-control" rows="5" required>{{ form.description.value|default:'' }}</textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Требования</label>
+            <textarea name="requirements" class="form-control" rows="4">{{ form.requirements.value|default:'' }}</textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Условия</label>
+            <textarea name="conditions" class="form-control" rows="4">{{ form.conditions.value|default:'' }}</textarea>
+          </div>
+
+          <div class="form-check mb-4">
+            <input type="checkbox" name="is_active" id="is_active" class="form-check-input"
+                   {% if form.is_active.value %}checked{% endif %}>
+            <label for="is_active" class="form-check-label">Показывать на сайте (активна)</label>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>
+              {% if object %}Сохранить{% else %}Создать{% endif %}
+            </button>
+            <a href="{% url 'public:vacancy_manage_list' %}" class="btn btn-outline-secondary">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
