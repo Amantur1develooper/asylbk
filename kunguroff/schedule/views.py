@@ -92,7 +92,6 @@ class ScheduleCreateView(View):
         form = ScheduleEntryForm(request.POST)
         if form.is_valid():
             entry = form.save()
-            form.save_m2m()
             return redirect(f'/grafik/?year={entry.date.year}&month={entry.date.month}#day-{entry.date}')
         return render(request, self.template_name, {'form': form, 'action': 'Добавить событие'})
 
@@ -110,7 +109,6 @@ class ScheduleUpdateView(View):
         form = ScheduleEntryForm(request.POST, instance=entry)
         if form.is_valid():
             entry = form.save()
-            form.save_m2m()
             return redirect(f'/grafik/?year={entry.date.year}&month={entry.date.month}#day-{entry.date}')
         return render(request, self.template_name, {'form': form, 'entry': entry, 'action': 'Редактировать событие'})
 
@@ -142,7 +140,6 @@ class ScheduleDuplicateView(View):
         form = ScheduleEntryForm(request.POST)
         if form.is_valid():
             new_entry = form.save()
-            form.save_m2m()
             return redirect(f'/grafik/?year={new_entry.date.year}&month={new_entry.date.month}#day-{new_entry.date}')
         entry = get_object_or_404(ScheduleEntry, pk=pk)
         return render(request, self.template_name, {

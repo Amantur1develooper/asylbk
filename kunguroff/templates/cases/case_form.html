@@ -10,6 +10,83 @@
   {% if object %}{% trans "Редактирование дела" %}{% else %}{% trans "Создание нового дела" %}{% endif %}
 {% endblock %}
 
+{% block linkk %}
+<style>
+/* ── Lawyer picker ── */
+.lawyer-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lawyer-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 2px solid #dee2e6;
+  border-radius: 14px;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  min-width: 180px;
+  flex: 1 1 180px;
+  max-width: 240px;
+  position: relative;
+  user-select: none;
+}
+.lawyer-card input[type=checkbox] {
+  position: absolute;
+  opacity: 0;
+  width: 0; height: 0;
+}
+.lawyer-card:hover {
+  border-color: #0d6efd;
+  box-shadow: 0 2px 10px rgba(13,110,253,.12);
+}
+.lawyer-card.selected {
+  border-color: #0d6efd;
+  background: #e8f1ff;
+}
+.lawyer-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a3a5c, #2a5298);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.lawyer-card.selected .lawyer-avatar {
+  background: linear-gradient(135deg, #0d6efd, #0a58ca);
+}
+.lawyer-info {
+  flex-grow: 1;
+  overflow: hidden;
+}
+.lawyer-name {
+  font-weight: 600;
+  font-size: .88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #212529;
+}
+.lawyer-role {
+  font-size: .75rem;
+  color: #6c757d;
+}
+.lawyer-check {
+  color: #0d6efd;
+  font-size: 1.1rem;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.lawyer-card.selected .lawyer-check { opacity: 1; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="card">
   <div class="card-body">
@@ -133,19 +210,36 @@
         </div>
       </div>
 
-      <div class="row">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label for="{{ form.responsible_lawyer.id_for_label }}" class="form-label">{{ form.responsible_lawyer.label }}</label>
-            {{ form.responsible_lawyer }}
-            {% if form.responsible_lawyer.errors %}
-              <div class="invalid-feedback d-block">
-                {{ form.responsible_lawyer.errors.0 }}
+      <!-- Ответственные юристы — card picker -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          {{ form.responsible_lawyer.label }}
+        </label>
+        {% if form.responsible_lawyer.errors %}
+          <div class="text-danger small mb-2">{{ form.responsible_lawyer.errors.0 }}</div>
+        {% endif %}
+        <div class="lawyer-picker">
+          {% for choice in form.responsible_lawyer %}
+            {% with user_id=choice.data.value %}
+            <label class="lawyer-card" for="{{ choice.id_for_label }}">
+              {{ choice.tag }}
+              <div class="lawyer-avatar" data-label="{{ choice.choice_label|slice:':1' }}">
+                {{ choice.choice_label|slice:':1' }}
               </div>
-            {% endif %}
-          </div>
+              <div class="lawyer-info">
+                <div class="lawyer-name">{{ choice.choice_label }}</div>
+              </div>
+              <div class="lawyer-check"><i class="bi bi-check-lg"></i></div>
+            </label>
+            {% endwith %}
+          {% empty %}
+            <p class="text-muted small">Нет юристов/адвокатов в системе.</p>
+          {% endfor %}
         </div>
+        <div class="lawyer-selected-summary mt-2 text-muted small" id="lawyerSummary"></div>
+      </div>
 
+      <div class="row">
         <div class="col-md-6">
           <div class="mb-3">
             <label for="{{ form.manager.id_for_label }}" class="form-label">{{ form.manager.label }}</label>
@@ -177,6 +271,37 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+  // ── Lawyer card picker ──
+  const cards = document.querySelectorAll('.lawyer-card');
+  const summary = document.getElementById('lawyerSummary');
+
+  function updateSummary() {
+    const checked = [...cards].filter(c => c.querySelector('input').checked);
+    if (checked.length === 0) {
+      summary.textContent = '';
+    } else {
+      const names = checked.map(c => c.querySelector('.lawyer-name').textContent.trim());
+      summary.textContent = '✓ Выбрано: ' + names.join(', ');
+    }
+  }
+
+  cards.forEach(card => {
+    const cb = card.querySelector('input[type=checkbox]');
+
+    // Set initial state
+    if (cb.checked) card.classList.add('selected');
+
+    card.addEventListener('click', () => {
+      cb.checked = !cb.checked;
+      card.classList.toggle('selected', cb.checked);
+      updateSummary();
+    });
+  });
+
+  updateSummary();
+
+
   const categorySelect = document.getElementById('{{ form.category.id_for_label }}');
   const stageSelect = document.getElementById('{{ form.current_stage.id_for_label }}');
   const currentStageId = "{{ form.instance.current_stage.id|default:'' }}";

@@ -125,11 +125,7 @@ class CaseForm(forms.ModelForm):
     responsible_lawyer = forms.ModelMultipleChoiceField(
         queryset=User.objects.filter(role__in=['lawyer', 'advocate']).order_by('last_name', 'first_name'),
         required=False,
-        widget=forms.SelectMultiple(attrs={
-            'class': 'form-select select2-multiple',
-            'data-placeholder': 'Выберите ответственных юристов...',
-            'style': 'width: 100%'
-        }),
+        widget=forms.CheckboxSelectMultiple,
         label="Ответственные юристы/адвокаты"
     )
 # cases/forms.py
