@@ -36,6 +36,12 @@
 .desc-ud { background: #fff3cd; color: #856404; border-color: #ffc107; }
 .desc-gd { background: #cff4fc; color: #0c5460; border-color: #0dcaf0; }
 .desc-ad { background: #d1e7dd; color: #0a3622; border-color: #198754; }
+.notify-chip input[type=checkbox] { display:none; }
+.notify-chip:has(input:checked) {
+  background: #e8f4fd !important;
+  border-color: #0088cc !important;
+  color: #0055aa;
+}
 </style>
 {% endblock %}
 
@@ -163,11 +169,41 @@
         </div>
 
         <!-- Примечание -->
-        <div class="mb-4">
+        <div class="mb-3">
           <label class="form-label">
             <i class="bi bi-chat-left-text me-1"></i>Примечание
           </label>
           {{ form.notes }}
+        </div>
+
+        <!-- Уведомить в Telegram -->
+        <div class="mb-4">
+          <label class="form-label">
+            <i class="bi bi-bell me-1"></i>Уведомить в Telegram
+            <span class="text-muted fw-normal" style="font-size:.8rem;">
+              — за 2 ч, 1 ч, 30 мин, 10 мин
+            </span>
+          </label>
+          {% if form.notify_users.field.queryset.exists %}
+            <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:10px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;">
+              {% for choice in form.notify_users %}
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#fff;border:1.5px solid #dee2e6;border-radius:20px;padding:5px 12px;font-size:.88rem;font-weight:600;transition:all .15s;"
+                       class="notify-chip">
+                  {{ choice.tag }}
+                  <span><i class="bi bi-telegram" style="color:#0088cc;"></i> {{ choice.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted small mb-0">
+              <i class="bi bi-info-circle me-1"></i>
+              Нет пользователей с привязанным Telegram-аккаунтом.
+              Попросите их привязать аккаунт в настройках профиля.
+            </p>
+          {% endif %}
+          {% if form.notify_users.errors %}
+            <div class="text-danger small mt-1">{{ form.notify_users.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <button type="submit" class="btn-submit">
