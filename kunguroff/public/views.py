@@ -4,7 +4,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import SiteSettings, Practice, Staff, PublicCase, NewsPost, Vacancy
+from .models import SiteSettings, Practice, Staff, PublicCase, NewsPost, Vacancy, OutsourceCase
 from .forms import ConsultationRequestForm
 
 
@@ -181,4 +181,89 @@ class VacancyDeleteView(VacancyManageMixin, DeleteView):
 
     def form_valid(self, form):
         messages.success(self.request, "Вакансия удалена.")
+        return super().form_valid(form)
+
+
+# ── PUBLIC: Аутсорс дела ──────────────────────────────────────────
+class OutsourceCaseListView(ListView):
+    template_name       = "public/outsource_list.html"
+    model               = OutsourceCase
+    context_object_name = "cases"
+
+    def get_queryset(self):
+        qs  = OutsourceCase.objects.filter(is_active=True)
+        cat = self.request.GET.get('cat', '')
+        if cat:
+            qs = qs.filter(practice_area=cat)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['site']     = get_settings()
+        ctx['cat']      = self.request.GET.get('cat', '')
+        ctx['choices']  = OutsourceCase.PRACTICE_CHOICES
+        return ctx
+
+
+class OutsourceCaseDetailView(DetailView):
+    template_name       = "public/outsource_detail.html"
+    model               = OutsourceCase
+    context_object_name = "case"
+
+    def get_queryset(self):
+        return OutsourceCase.objects.filter(is_active=True)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['site'] = get_settings()
+        return ctx
+
+
+# ── CRM: управление аутсорс делами ───────────────────────────────
+class OutsourceManageMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if not _can_manage(request.user):
+            messages.error(request, "Нет доступа.")
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class OutsourceCaseManageListView(OutsourceManageMixin, ListView):
+    template_name       = "outsource/outsource_list.html"
+    model               = OutsourceCase
+    context_object_name = "cases"
+    queryset            = OutsourceCase.objects.all()
+
+
+class OutsourceCaseCreateView(OutsourceManageMixin, CreateView):
+    template_name = "outsource/outsource_form.html"
+    model         = OutsourceCase
+    fields        = ["title", "practice_area", "description", "requirements",
+                     "price", "is_negotiable", "deadline", "is_active"]
+    success_url   = reverse_lazy("public:outsource_manage_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Дело добавлено.")
+        return super().form_valid(form)
+
+
+class OutsourceCaseUpdateView(OutsourceManageMixin, UpdateView):
+    template_name = "outsource/outsource_form.html"
+    model         = OutsourceCase
+    fields        = ["title", "practice_area", "description", "requirements",
+                     "price", "is_negotiable", "deadline", "is_active"]
+    success_url   = reverse_lazy("public:outsource_manage_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Дело обновлено.")
+        return super().form_valid(form)
+
+
+class OutsourceCaseDeleteView(OutsourceManageMixin, DeleteView):
+    template_name = "outsource/outsource_confirm_delete.html"
+    model         = OutsourceCase
+    success_url   = reverse_lazy("public:outsource_manage_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Дело удалено.")
         return super().form_valid(form)

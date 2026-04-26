@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if post %}Редактировать запись{% else %}Новая запись{% endif %} — База знаний{% endblock %}
+
+{% block page_title %}
+  <i class="bi bi-journal-plus me-2"></i>
+  {% if post %}Редактировать запись{% else %}Новая запись{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+  <a href="{% if post %}{% url 'knowledge:detail' post.pk %}{% else %}{% url 'knowledge:list' %}{% endif %}"
+     class="btn btn-outline-secondary">
+    <i class="bi bi-x"></i> Отмена
+  </a>
+{% endblock %}
+
+{% block content %}
+<style>
+.form-card { background:#fff; border-radius:16px; padding:28px 32px; box-shadow:0 1px 8px rgba(0,0,0,.08); max-width:860px; }
+.file-drop-zone { border:2px dashed #c9a84c; border-radius:12px; padding:30px; text-align:center; cursor:pointer; transition:.2s; background:#fffdf5; }
+.file-drop-zone:hover { background:#fff8e7; border-color:#b8962e; }
+.file-drop-zone i { font-size:2rem; color:#c9a84c; }
+.existing-file { display:flex; align-items:center; gap:10px; padding:8px 12px; background:#f8fafc; border-radius:8px; margin-bottom:6px; }
+.existing-file input[type=checkbox] { accent-color:#dc3545; width:16px; height:16px; }
+</style>
+
+<div class="form-card">
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <!-- Заголовок -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Заголовок <span class="text-danger">*</span></label>
+      {{ form.title }}
+      {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.as_text }}</div>{% endif %}
+    </div>
+
+    <!-- Категория -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Категория</label>
+      {{ form.category }}
+    </div>
+
+    <!-- Текст -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Текст / описание</label>
+      {{ form.body }}
+    </div>
+
+    <!-- Прикреплённые файлы (при редактировании) -->
+    {% if files %}
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Текущие файлы</label>
+      <div class="text-muted small mb-2">Отметьте галочкой файлы которые нужно удалить:</div>
+      {% for f in files %}
+      <div class="existing-file">
+        <input type="checkbox" name="delete_files" value="{{ f.pk }}" id="del_{{ f.pk }}">
+        <label for="del_{{ f.pk }}" class="mb-0 text-danger" style="cursor:pointer;" title="Отметить для удаления">
+          <i class="bi bi-trash"></i>
+        </label>
+        <i class="bi {{ f.icon }}"></i>
+        <a href="{{ f.file.url }}" target="_blank" class="text-decoration-none text-dark small">{{ f.name }}</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Загрузка файлов -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">
+        {% if files %}Добавить ещё файлы{% else %}Файлы (документы, обучение){% endif %}
+      </label>
+      <div class="file-drop-zone" onclick="document.getElementById('upload_files').click()">
+        <i class="bi bi-cloud-arrow-up d-block mb-2"></i>
+        <div class="fw-semibold">Нажмите или перетащите файлы</div>
+        <div class="text-muted small">PDF, Word, Excel, изображения — любые форматы</div>
+        <input type="file" id="upload_files" name="upload_files" multiple
+               class="d-none" onchange="showFiles(this)">
+      </div>
+      <div id="file-names" class="mt-2"></div>
+    </div>
+
+    <!-- Закрепить -->
+    <div class="mb-4 form-check">
+      {{ form.is_pinned }}
+      <label class="form-check-label" for="{{ form.is_pinned.id_for_label }}">
+        <i class="bi bi-pin-angle text-warning"></i> Закрепить запись (будет показана первой)
+      </label>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary px-4">
+        <i class="bi bi-check-lg"></i> {{ action }}
+      </button>
+      <a href="{% if post %}{% url 'knowledge:detail' post.pk %}{% else %}{% url 'knowledge:list' %}{% endif %}"
+         class="btn btn-outline-secondary">Отмена</a>
+    </div>
+  </form>
+</div>
+
+<script>
+function showFiles(input) {
+  const box = document.getElementById('file-names');
+  box.innerHTML = '';
+  Array.from(input.files).forEach(f => {
+    const chip = document.createElement('span');
+    chip.className = 'badge bg-light text-dark border me-1 mb-1 py-2 px-3';
+    chip.innerHTML = `<i class="bi bi-paperclip me-1"></i>${f.name}`;
+    box.appendChild(chip);
+  });
+}
+
+// Drag & drop
+const zone = document.querySelector('.file-drop-zone');
+const inp  = document.getElementById('upload_files');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background='#fff8e7'; });
+zone.addEventListener('dragleave', () => { zone.style.background=''; });
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.style.background = '';
+  const dt = new DataTransfer();
+  Array.from(inp.files).forEach(f => dt.items.add(f));
+  Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+  inp.files = dt.files;
+  showFiles(inp);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить запись — База знаний{% endblock %}
+{% block page_title %}Удалить запись{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:500px;">
+  <div class="card-body p-4 text-center">
+    <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size:3rem;"></i>
+    <h5 class="mt-3 mb-1">Удалить запись?</h5>
+    <p class="text-muted mb-4">«{{ post.title }}»<br>Все прикреплённые файлы тоже будут удалены. Это действие необратимо.</p>
+    <form method="post" class="d-flex gap-2 justify-content-center">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash"></i> Удалить</button>
+      <a href="{% url 'knowledge:detail' post.pk %}" class="btn btn-outline-secondary">Отмена</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -68,36 +68,96 @@ body{
   background: var(--kp-bg);
   color: var(--kp-dark);
 }
-.mobile{
-  display: none;
-}
-@media (max-width: 767px){
-  .mobile{ display: block;}
-}
+.mobile{ display:none; }
+@media (max-width:767px){ .mobile{ display:block; } }
+
+/* ── NAVBAR ── */
 .kp-navbar{
-  background: rgba(255,255,255,.86);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(16,144,240,.12);
+  background: rgba(10,24,52,.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  padding: 0;
 }
+.kp-navbar .container{ min-height: 66px; }
 
 .kp-brand{
-  display:flex; gap:12px; align-items:center;
-  font-weight:800; letter-spacing:.2px;
+  display:flex; gap:11px; align-items:center;
+  font-weight:800; letter-spacing:.3px;
+  color:#fff !important;
+  text-decoration:none;
 }
+.kp-brand img{ height:38px; border-radius:9px; }
+.kp-brand-name{ line-height:1.15; }
+.kp-brand-name span{ display:block; font-size:.68rem; font-weight:500; color:rgba(255,255,255,.45); letter-spacing:.8px; text-transform:uppercase; }
 
-.kp-btn{
-  border-radius: 999px;
-  padding: 12px 18px;
-  font-weight: 700;
+/* nav links */
+.kp-navbar .nav-link{
+  color: rgba(255,255,255,.72) !important;
+  font-size: .88rem;
+  font-weight: 500;
+  padding: 8px 12px !important;
+  border-radius: 8px;
+  transition: color .18s, background .18s;
+  position: relative;
 }
+.kp-navbar .nav-link:hover{
+  color: #fff !important;
+  background: rgba(255,255,255,.08);
+}
+.kp-navbar .nav-link.active-link{
+  color: #fff !important;
+  background: rgba(16,144,240,.18);
+}
+/* Аутсорс — акцентная ссылка */
+.kp-nav-accent{
+  color: #4db8ff !important;
+  font-weight: 700 !important;
+}
+.kp-nav-accent:hover{ color:#fff !important; background:rgba(16,144,240,.25) !important; }
 
+/* язык */
+.kp-lang-btn{
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.8);
+  border-radius: 8px;
+  padding: 5px 13px;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .5px;
+  transition: .18s;
+}
+.kp-lang-btn:hover{ background:rgba(255,255,255,.16); color:#fff; }
+.kp-lang-btn.dropdown-toggle::after{ border-top-color: rgba(255,255,255,.6); }
+.dropdown-menu-dark-kp{
+  background: #0d1e3a;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  min-width:120px;
+}
+.dropdown-menu-dark-kp .dropdown-item{
+  color:rgba(255,255,255,.7); font-size:.85rem; border-radius:6px;
+}
+.dropdown-menu-dark-kp .dropdown-item:hover{ background:rgba(16,144,240,.2); color:#fff; }
+.dropdown-menu-dark-kp .dropdown-item.active{ background:rgba(16,144,240,.35); color:#fff; }
+
+/* кнопка консультация */
+.kp-btn{ border-radius:10px; padding:9px 20px; font-weight:700; font-size:.88rem; white-space:nowrap; }
 .kp-btn-primary{
-  background: linear-gradient(135deg, var(--kp-primary), var(--kp-primary-2));
-  color:#fff;
-  border:0;
-  box-shadow: 0 18px 40px rgba(16,144,240,.25);
+  background: linear-gradient(135deg,#1090F0,#0B5ED7);
+  color:#fff; border:0;
+  box-shadow: 0 6px 20px rgba(16,144,240,.35);
+  transition:.2s;
 }
-.kp-btn-primary:hover{ filter: brightness(0.98); transform: translateY(-1px); }
+.kp-btn-primary:hover{ transform:translateY(-1px); box-shadow:0 10px 28px rgba(16,144,240,.45); color:#fff; }
+
+/* toggler для мобилки */
+.kp-navbar .navbar-toggler{ border-color:rgba(255,255,255,.2); padding:6px 10px; }
+.kp-navbar .navbar-toggler-icon{ filter:invert(1); }
+
+/* divider между группами */
+.nav-divider{ width:1px; height:20px; background:rgba(255,255,255,.12); align-self:center; margin:0 4px; }
 
 .kp-hero{
   border-radius: var(--kp-radius);
@@ -124,72 +184,98 @@ body{
 }
 </style>
 <nav class="navbar navbar-expand-lg kp-navbar sticky-top">
-  <div class="container py-2">
+  <div class="container">
+
+    <!-- Бренд -->
     <a class="navbar-brand kp-brand" href="{% url 'public:home' %}">
-      <img src="{% static '/img/logo.png' %}" alt="logo" style="height:42px;border-radius:12px;">
-      <span>Kunguroff &amp; Partners</span>
+      <img src="{% static '/img/logo.png' %}" alt="logo">
+      <div class="kp-brand-name">
+        Kunguroff <span style="color:rgba(255,255,255,.9);">&amp; Partners</span>
+        <span>Юридическая компания</span>
+      </div>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+    <!-- Burger (mobile) -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#kpNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="nav">
-      <ul class="navbar-nav ms-auto gap-lg-2">
-        <li>
-        
-
-<form action="{% url 'set_language' %}" method="post" class="d-none d-md-block" data-lang-form>
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-
-
-    <div class="dropdown">
-        <button class="btn btn-sm btn-outline-secondary rounded-pill dropdown-toggle"
-                type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {% if CURRENT_LANG == "ru" %}RU{% elif CURRENT_LANG == "ky" %}KY{% else %}EN{% endif %}
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-            {% for lang in languages %}
-                <li>
-                    <button class="dropdown-item {% if lang.code == CURRENT_LANG %}active{% endif %}"
-                            type="submit" name="language" value="{{ lang.code }}">
-                        {{ lang.name_local }}
-                    </button>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-</form>
-
-</li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:staff' %}">{% trans "Сотрудники" %}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:casess' %}">{% trans "Дела" %}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:news' %}">{% trans "Новости" %}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:about' %}">{% trans "О нас" %}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:vacancies' %}">{% trans "Вакансии" %}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'public:contacts' %}">{% trans "Контакты" %}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">{% trans "Войти" %}</a></li>
-        <li class="mobile">  <div class="text-muted" style="font-size:12px; text-transform:uppercase; letter-spacing:.12em;">
-        {% trans "Язык" %}
-    </div>
-
-    <form action="{% url 'set_language' %}" method="post" class="d-flex gap-2 mt-2" data-lang-form>
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-
-        <button class="btn btn-sm btn-outline-secondary rounded-pill" type="submit" name="language" value="ru">RU</button>
-        <button class="btn btn-sm btn-outline-secondary rounded-pill" type="submit" name="language" value="ky">KY</button>
-        <button class="btn btn-sm btn-outline-secondary rounded-pill" type="submit" name="language" value="en">EN</button>
-    </form></li>
+    <div class="collapse navbar-collapse" id="kpNav">
+      <!-- Основные ссылки -->
+      <ul class="navbar-nav mx-auto gap-lg-1 align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link {% if 'staff' in request.path %}active-link{% endif %}"
+             href="{% url 'public:staff' %}">{% trans "Сотрудники" %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'news' in request.path %}active-link{% endif %}"
+             href="{% url 'public:news' %}">{% trans "Новости" %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'about' in request.path %}active-link{% endif %}"
+             href="{% url 'public:about' %}">{% trans "О нас" %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'vacancies' in request.path %}active-link{% endif %}"
+             href="{% url 'public:vacancies' %}">{% trans "Вакансии" %}</a>
+        </li>
+        <li class="d-none d-lg-block nav-divider"></li>
+        <li class="nav-item">
+          <a class="nav-link kp-nav-accent {% if 'outsource' in request.path %}active-link{% endif %}"
+             href="{% url 'public:outsource_list' %}">{% trans "Аутсорс" %}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if 'contacts' in request.path %}active-link{% endif %}"
+             href="{% url 'public:contacts' %}">{% trans "Контакты" %}</a>
+        </li>
       </ul>
-      <div class="mt-2">
-  
-</div>
 
-      <a class="btn kp-btn kp-btn-primary ms-lg-3" href="{% url 'public:contacts' %}#consult">
-        {% trans "Консультация" %}
-      </a>
+      <!-- Правая часть: язык + войти + кнопка -->
+      <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+
+        <!-- Переключатель языка (десктоп) -->
+        <form action="{% url 'set_language' %}" method="post" class="d-none d-lg-block" data-lang-form>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <div class="dropdown">
+            <button class="kp-lang-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              {% if CURRENT_LANG == "ru" %}RU{% elif CURRENT_LANG == "ky" %}KY{% else %}EN{% endif %}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-kp">
+              {% for lang in languages %}
+              <li>
+                <button class="dropdown-item {% if lang.code == CURRENT_LANG %}active{% endif %}"
+                        type="submit" name="language" value="{{ lang.code }}">{{ lang.name_local }}</button>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </form>
+
+        <!-- Войти -->
+        <a class="nav-link d-none d-lg-block" href="{% url 'login' %}"
+           style="color:rgba(255,255,255,.6);font-size:.85rem;padding:7px 12px;">
+          {% trans "Войти" %}
+        </a>
+
+        <!-- Консультация -->
+        <a class="btn kp-btn kp-btn-primary" href="{% url 'public:contacts' %}#consult">
+          {% trans "Консультация" %}
+        </a>
+      </div>
+
+      <!-- Мобильное меню доп -->
+      <div class="mobile mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,.1);">
+        <a class="nav-link" href="{% url 'login' %}" style="color:rgba(255,255,255,.7);">{% trans "Войти" %}</a>
+        <div class="text-muted mt-3 mb-2" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;">{% trans "Язык" %}</div>
+        <form action="{% url 'set_language' %}" method="post" class="d-flex gap-2" data-lang-form>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="kp-lang-btn" type="submit" name="language" value="ru">RU</button>
+          <button class="kp-lang-btn" type="submit" name="language" value="ky">KY</button>
+          <button class="kp-lang-btn" type="submit" name="language" value="en">EN</button>
+        </form>
+      </div>
     </div>
   </div>
 </nav>

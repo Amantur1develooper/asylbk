@@ -25,4 +25,14 @@ urlpatterns = [
     path("manage/vacancies/add/", views.VacancyCreateView.as_view(), name="vacancy_create"),
     path("manage/vacancies/<int:pk>/edit/", views.VacancyUpdateView.as_view(), name="vacancy_edit"),
     path("manage/vacancies/<int:pk>/delete/", views.VacancyDeleteView.as_view(), name="vacancy_delete"),
+
+    # Public outsource
+    path("outsource/", views.OutsourceCaseListView.as_view(), name="outsource_list"),
+    path("outsource/<int:pk>/", views.OutsourceCaseDetailView.as_view(), name="outsource_detail"),
+
+    # CRM outsource management
+    path("manage/outsource/", views.OutsourceCaseManageListView.as_view(), name="outsource_manage_list"),
+    path("manage/outsource/add/", views.OutsourceCaseCreateView.as_view(), name="outsource_create"),
+    path("manage/outsource/<int:pk>/edit/", views.OutsourceCaseUpdateView.as_view(), name="outsource_edit"),
+    path("manage/outsource/<int:pk>/delete/", views.OutsourceCaseDeleteView.as_view(), name="outsource_delete"),
 ]

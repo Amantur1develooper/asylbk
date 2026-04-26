@@ -23,6 +23,7 @@ urlpatterns += i18n_patterns(
     path("grafik/", include("schedule.urls")),
     path("hr/", include("hr.urls")),
     path("directory/", include("directory.urls")),
+    path("knowledge/", include("knowledge.urls")),
 
     path("", include("public.urls")),
 

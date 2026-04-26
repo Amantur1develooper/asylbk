@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
-from .models import SiteSettings, Practice, Staff, PublicCase, NewsPost, ConsultationRequest
+from .models import SiteSettings, Practice, Staff, PublicCase, NewsPost, ConsultationRequest, OutsourceCase
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
@@ -38,3 +38,10 @@ class ConsultationRequestAdmin(admin.ModelAdmin):
     list_display = ("name", "phone", "status", "created_at")
     list_filter = ("status",)
     search_fields = ("name", "phone", "topic")
+
+@admin.register(OutsourceCase)
+class OutsourceCaseAdmin(admin.ModelAdmin):
+    list_display  = ("title", "practice_area", "price_display", "deadline", "is_active", "created_at")
+    list_filter   = ("practice_area", "is_active", "is_negotiable")
+    list_editable = ("is_active",)
+    search_fields = ("title", "description")

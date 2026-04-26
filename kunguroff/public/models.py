@@ -126,6 +126,44 @@ class Vacancy(models.Model):
         return self.title
 
 
+class OutsourceCase(models.Model):
+    PRACTICE_CHOICES = [
+        ('civil',          'Гражданское право'),
+        ('criminal',       'Уголовное право'),
+        ('family',         'Семейное право'),
+        ('labor',          'Трудовое право'),
+        ('administrative', 'Административное'),
+        ('tax',            'Налоговое право'),
+        ('corporate',      'Корпоративное'),
+        ('other',          'Другое'),
+    ]
+
+    title          = models.CharField("Название дела", max_length=255)
+    practice_area  = models.CharField("Отрасль", max_length=30, choices=PRACTICE_CHOICES, default='civil')
+    description    = models.TextField("Описание дела")
+    requirements   = models.TextField("Требования к исполнителю", blank=True)
+    price          = models.CharField("Цена", max_length=120, blank=True,
+                                      help_text="Напр: 15 000 сом, или оставьте пустым для «Договорная»")
+    is_negotiable  = models.BooleanField("Цена договорная", default=False)
+    deadline       = models.DateField("Срок подачи заявок", null=True, blank=True)
+    is_active      = models.BooleanField("Активно", default=True)
+    created_at     = models.DateTimeField("Создано", auto_now_add=True)
+    updated_at     = models.DateTimeField("Обновлено", auto_now=True)
+
+    class Meta:
+        verbose_name        = "Аутсорс дело"
+        verbose_name_plural = "Аутсорс дела"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    def price_display(self):
+        if self.is_negotiable or not self.price:
+            return "Договорная"
+        return self.price
+
+
 class ConsultationRequest(models.Model):
     STATUS_CHOICES = [
         ("new", "Новая"),

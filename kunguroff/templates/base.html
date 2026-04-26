@@ -534,9 +534,15 @@
         <a href="{% url 'public:vacancy_manage_list' %}" class="drawer-link {% if 'manage/vacancies' in request.path %}active{% endif %}">
             <i class="bi bi-briefcase-fill"></i> Вакансии
         </a>
+        <a href="{% url 'public:outsource_manage_list' %}" class="drawer-link {% if 'manage/outsource' in request.path %}active{% endif %}">
+            <i class="bi bi-send-fill"></i> Аутсорс дела
+        </a>
         {% endif %}
         <a href="{% url 'directory:list' %}" class="drawer-link {% if 'directory' in request.path %}active{% endif %}">
             <i class="bi bi-journal-bookmark-fill"></i> База контактов
+        </a>
+        <a href="{% url 'knowledge:list' %}" class="drawer-link {% if 'knowledge' in request.path %}active{% endif %}">
+            <i class="bi bi-journal-richtext"></i> База знаний
         </a>
 
         {% if user.is_staff %}

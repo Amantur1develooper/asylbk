@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} — База знаний{% endblock %}
+
+{% block page_title %}
+  {% if post.is_pinned %}<i class="bi bi-pin-angle-fill text-warning me-1"></i>{% endif %}
+  {{ post.title }}
+{% endblock %}
+
+{% block page_actions %}
+  {% if can_edit %}
+  <div class="btn-group">
+    <a href="{% url 'knowledge:edit' post.pk %}" class="btn btn-outline-primary">
+      <i class="bi bi-pencil"></i> Редактировать
+    </a>
+    <a href="{% url 'knowledge:delete' post.pk %}" class="btn btn-outline-danger">
+      <i class="bi bi-trash"></i> Удалить
+    </a>
+  </div>
+  {% endif %}
+  <a href="{% url 'knowledge:list' %}" class="btn btn-outline-secondary ms-1">
+    <i class="bi bi-arrow-left"></i> Назад
+  </a>
+{% endblock %}
+
+{% block content %}
+<style>
+.kb-detail-card { background:#fff; border-radius:16px; padding:28px 32px; box-shadow:0 1px 8px rgba(0,0,0,.08); }
+.kb-meta { font-size:.83rem; color:#6c757d; display:flex; flex-wrap:wrap; gap:14px; margin-bottom:22px; padding-bottom:16px; border-bottom:1px solid #eee; }
+.kb-body { font-size:.97rem; line-height:1.75; color:#333; white-space:pre-wrap; }
+.file-list { margin-top:28px; }
+.file-item { display:flex; align-items:center; gap:12px; padding:12px 16px; background:#f8fafc; border-radius:10px; margin-bottom:8px; text-decoration:none; color:#1a3a5c; transition:.15s; }
+.file-item:hover { background:#e8f0fa; }
+.file-item i { font-size:1.4rem; flex-shrink:0; }
+.file-name { font-weight:600; font-size:.9rem; }
+.file-ext { font-size:.75rem; color:#6c757d; text-transform:uppercase; }
+</style>
+
+<div class="kb-detail-card">
+  <div class="kb-meta">
+    {% if post.category %}
+    <span class="badge bg-{{ post.category.color }} bg-opacity-75 fs-6">{{ post.category.name }}</span>
+    {% endif %}
+    <span><i class="bi bi-person"></i> {{ post.author.get_full_name|default:post.author.username }}</span>
+    <span><i class="bi bi-calendar3"></i> {{ post.created_at|date:"d.m.Y H:i" }}</span>
+    {% if post.updated_at != post.created_at %}
+    <span class="text-muted"><i class="bi bi-pencil-square"></i> изменено {{ post.updated_at|date:"d.m.Y H:i" }}</span>
+    {% endif %}
+  </div>
+
+  {% if post.body %}
+  <div class="kb-body">{{ post.body }}</div>
+  {% else %}
+  <p class="text-muted fst-italic">Текст отсутствует.</p>
+  {% endif %}
+
+  {% if post.files.count %}
+  <div class="file-list">
+    <h6 class="fw-bold mb-3"><i class="bi bi-paperclip"></i> Прикреплённые файлы ({{ post.files.count }})</h6>
+    {% for f in post.files.all %}
+    <a href="{{ f.file.url }}" class="file-item" target="_blank" rel="noopener">
+      <i class="bi {{ f.icon }} fs-2"></i>
+      <div>
+        <div class="file-name">{{ f.name|truncatechars:60 }}</div>
+        <div class="file-ext">{{ f.ext }}</div>
+      </div>
+      <i class="bi bi-download ms-auto text-muted"></i>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

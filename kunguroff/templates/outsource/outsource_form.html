@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{% if object %}Редактировать дело{% else %}Новое аутсорс дело{% endif %}{% endblock %}
+{% block page_title %}{% if object %}Редактировать дело{% else %}Новое аутсорс дело{% endif %}{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'public:outsource_manage_list' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-x"></i> Отмена
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:760px;">
+  <div class="card-body p-4">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Название дела <span class="text-danger">*</span></label>
+        {% render_field form.title class="form-control" placeholder="Краткое название дела" %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Отрасль права</label>
+        {% render_field form.practice_area class="form-select" %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Описание дела <span class="text-danger">*</span></label>
+        {% render_field form.description class="form-control" rows="6" placeholder="Подробное описание: суть дела, стадия, задачи исполнителя..." %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Требования к исполнителю</label>
+        {% render_field form.requirements class="form-control" rows="4" placeholder="Опыт, специализация, наличие адвокатского удостоверения и т.д." %}
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Вознаграждение</label>
+          {% render_field form.price class="form-control" placeholder="Напр: 25 000 сом" %}
+          <div class="form-text">Оставьте пустым если цена договорная</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Срок подачи заявок</label>
+          {% render_field form.deadline class="form-control" type="date" %}
+        </div>
+      </div>
+
+      <div class="mb-3 d-flex gap-4">
+        <div class="form-check">
+          {% render_field form.is_negotiable class="form-check-input" %}
+          <label class="form-check-label" for="{{ form.is_negotiable.id_for_label }}">
+            Цена договорная
+          </label>
+        </div>
+        <div class="form-check">
+          {% render_field form.is_active class="form-check-input" %}
+          <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+            Активно (показывать на сайте)
+          </label>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 pt-2">
+        <button type="submit" class="btn btn-primary px-4">
+          <i class="bi bi-check-lg"></i> Сохранить
+        </button>
+        <a href="{% url 'public:outsource_manage_list' %}" class="btn btn-outline-secondary">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
