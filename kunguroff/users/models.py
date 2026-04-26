@@ -2,18 +2,26 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 
+# Роли, которые имеют права адвоката (назначаются на дела, видят своих доверителей и т.д.)
+ADVOCATE_ROLES = ['lawyer', 'advocate', 'managing_partner_advocate']
+
+# Роли управления (менеджер и выше)
+MANAGER_ROLES = ['manager', 'director', 'deputy_director', 'managing_partner_advocate']
+
+
 class User(AbstractUser):
     ROLE_CHOICES = [
-        ('director', 'Управляющий партнёр'),
-        ('deputy_director', 'Зам.директора'),
-        ('manager', 'Менеджер'),
-        ('lawyer', 'Юрист'),
-        ('advocate', 'Адвокат'),
-        ('accountant', 'Бухгалтер'),
-        ('hr', 'HR-менеджер'),
-        ('admin', 'Админ'),
-        ('trainee', 'Стажер'),
-        ('external_lawyer', 'Внешний юрист'),
+        ('director',                  'Управляющий партнёр'),
+        ('managing_partner_advocate', 'Управляющий партнёр-Адвокат'),
+        ('deputy_director',           'Зам.директора'),
+        ('manager',                   'Менеджер'),
+        ('lawyer',                    'Юрист'),
+        ('advocate',                  'Адвокат'),
+        ('accountant',                'Бухгалтер'),
+        ('hr',                        'HR-менеджер'),
+        ('admin',                     'Админ'),
+        ('trainee',                   'Стажер'),
+        ('external_lawyer',           'Внешний юрист'),
     ]
     
     POSITION_CHOICES = [
@@ -30,7 +38,7 @@ class User(AbstractUser):
         ('managing_partner_advocate', 'Управ.партнер-Адвокат'),
     ]
     
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='lawyer')
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES, default='lawyer')
     position = models.CharField(max_length=30, choices=POSITION_CHOICES, blank=True)
     
     phone_regex = RegexValidator(
@@ -85,7 +93,7 @@ class TraineeProfile(models.Model):
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
-        limit_choices_to={'role__in': ['lawyer', 'advocate']},
+        limit_choices_to={'role__in': ADVOCATE_ROLES},
         related_name='trainees',
         verbose_name="Куратор"
     )

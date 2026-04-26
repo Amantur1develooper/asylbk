@@ -29,7 +29,7 @@ class ClientListView(ListView):
     def get_queryset(self):
         # Фильтрация по роли пользователя
         user = self.request.user
-        if user.role in ['lawyer', 'advocate']:
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             # ИЗМЕНЕНИЕ: Юристы видят доверителей, где они входят в ответственные
             return Trustor.objects.filter(primary_contact=user)
         else:
@@ -49,7 +49,7 @@ class ClientListView(ListView):
 #     def get_queryset(self):
 #         # Фильтрация по роли пользователя
 #         user = self.request.user
-#         if user.role in ['lawyer', 'advocate']:
+#         if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
 #             # Юристы видят только своих клиентов
 #             return Trustor.objects.filter(primary_contact=user)
 #         else:
@@ -69,7 +69,7 @@ class ClientDetailView(DetailView):
     def get_queryset(self):
         # Ограничиваем доступ юристам/адвокатам только к своим доверителям
         user = self.request.user
-        if user.role in ['lawyer', 'advocate']:
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             # ИЗМЕНЕНИЕ: Фильтруем по связи ManyToMany
             return Trustor.objects.filter(primary_contact=user)
         return Trustor.objects.all()
@@ -96,7 +96,7 @@ class ClientDetailView(DetailView):
 #     def get_queryset(self):
 #         # Ограничиваем доступ юристам/адвокатам только к своим доверителям
 #         user = self.request.user
-#         if user.role in ['lawyer', 'advocate']:
+#         if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
 #             return Trustor.objects.filter(primary_contact=user)
 #         return Trustor.objects.all()
 
@@ -122,7 +122,7 @@ class ClientDetailView(DetailView):
 #     def get_queryset(self):
 #         # Проверка прав доступа
 #         user = self.request.user
-#         if user.role in ['lawyer', 'advocate']:
+#         if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
 #             return Trustor.objects.filter(primary_contact=user)
 #         return Trustor.objects.all()
 
@@ -137,7 +137,7 @@ class ClientCreateView(CreateView):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         # Только определенные роли могут создавать клиентов
-        allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
+        allowed_roles = ['manager', 'lawyer', 'advocate', 'managing_partner_advocate', 'director', 'deputy_director']
         if not self.request.user.is_superuser and self.request.user.role not in allowed_roles:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
@@ -153,7 +153,7 @@ class ClientCreateView(CreateView):
         
         # ИСПРАВЛЕНИЕ: Если пользователь - юрист/адвокат и он не выбран в форме,
         # автоматически добавляем его в ответственные
-        if self.request.user.role in ['lawyer', 'advocate']:
+        if self.request.user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             if self.request.user not in self.object.primary_contact.all():
                 self.object.primary_contact.add(self.request.user)
         
@@ -175,7 +175,7 @@ class ClientCreateView(CreateView):
 #     @method_decorator(login_required)
 #     def dispatch(self, *args, **kwargs):
 #         # Только определенные роли могут создавать клиентов
-#         allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
+#         allowed_roles = ['manager', 'lawyer', 'advocate', 'managing_partner_advocate', 'director', 'deputy_director']
 #         if self.request.user.role not in allowed_roles:
 #             return redirect('permission_denied')
 #         return super().dispatch(*args, **kwargs)
@@ -190,7 +190,7 @@ class ClientCreateView(CreateView):
 #         response = super().form_valid(form)
         
 #         # Если пользователь - юрист/адвокат, автоматически добавляем его в ответственные
-#         if self.request.user.role in ['lawyer', 'advocate']:
+#         if self.request.user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
 #             self.object.primary_contact.add(self.request.user)
         
 #         return response
@@ -205,7 +205,7 @@ class ClientCreateView(CreateView):
 #     @method_decorator(login_required)
 #     def dispatch(self, *args, **kwargs):
 #         # Только определенные роли могут создавать клиентов
-#         allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
+#         allowed_roles = ['manager', 'lawyer', 'advocate', 'managing_partner_advocate', 'director', 'deputy_director']
 #         if self.request.user.role not in allowed_roles:
 #             return redirect('permission_denied')
 #         return super().dispatch(*args, **kwargs)
@@ -213,7 +213,7 @@ class ClientCreateView(CreateView):
 #     def form_valid(self, form):
 #         # Автоматически устанавливаем текущего пользователя как основного контакта
 #         # если он юрист/адвокат
-#         if self.request.user.role in ['lawyer', 'advocate']:
+#         if self.request.user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
 #             form.instance.primary_contact = self.request.user
 #         return super().form_valid(form)
 
@@ -232,14 +232,14 @@ class ClientUpdateView(UpdateView):
         if user.is_superuser:
             return super().dispatch(*args, **kwargs)
 
-        allowed_roles = ['manager', 'director', 'deputy_director']
+        allowed_roles = ['manager', 'director', 'deputy_director', 'managing_partner_advocate']
 
         # Юристы могут редактировать только своих доверителей
-        if user.role in ['lawyer', 'advocate'] and user not in client.primary_contact.all():
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate'] and user not in client.primary_contact.all():
             return redirect('permission_denied')
 
         # Менеджеры и директора могут редактировать всех
-        if user.role not in allowed_roles + ['lawyer', 'advocate']:
+        if user.role not in allowed_roles + ['lawyer', 'advocate', 'managing_partner_advocate']:
             return redirect('permission_denied')
 
         return super().dispatch(*args, **kwargs)
@@ -260,7 +260,7 @@ class ClientDeleteView(DeleteView):
     def dispatch(self, *args, **kwargs):
         # Директора, зам.директора, менеджеры и суперпользователи могут удалять клиентов
         user = self.request.user
-        if not user.is_superuser and user.role not in ['director', 'deputy_director', 'manager']:
+        if not user.is_superuser and user.role not in ['director', 'deputy_director', 'manager', 'managing_partner_advocate']:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
 # class ClientDeleteView(DeleteView):

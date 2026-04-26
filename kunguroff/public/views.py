@@ -9,7 +9,7 @@ from .forms import ConsultationRequestForm
 
 
 def _can_manage(user):
-    return user.is_superuser or user.role in ('manager', 'director', 'deputy_director')
+    return user.is_superuser or user.role in ('manager', 'director', 'deputy_director', 'managing_partner_advocate')
 
 def get_settings():
     return SiteSettings.objects.first()

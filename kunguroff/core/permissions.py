@@ -28,13 +28,13 @@ class DeputyDirectorRequiredMixin(RoleRequiredMixin):
     allowed_roles = ['deputy_director', 'director']
 
 class ManagerRequiredMixin(RoleRequiredMixin):
-    allowed_roles = ['manager', 'deputy_director', 'director']
+    allowed_roles = ['manager', 'deputy_director', 'director', 'managing_partner_advocate']
 
 class LawyerRequiredMixin(RoleRequiredMixin):
-    allowed_roles = ['lawyer', 'advocate', 'manager', 'deputy_director', 'director']
+    allowed_roles = ['lawyer', 'advocate', 'manager', 'deputy_director', 'director', 'managing_partner_advocate']
 
 class AccountantRequiredMixin(RoleRequiredMixin):
-    allowed_roles = ['accountant', 'manager', 'deputy_director', 'director']
+    allowed_roles = ['accountant', 'manager', 'deputy_director', 'director', 'managing_partner_advocate']
 
 class HRRequiredMixin(RoleRequiredMixin):
     allowed_roles = ['hr', 'deputy_director', 'director']
@@ -43,7 +43,7 @@ class AdminRequiredMixin(RoleRequiredMixin):
     allowed_roles = ['admin', 'deputy_director', 'director']
 
 class TraineeRequiredMixin(RoleRequiredMixin):
-    allowed_roles = ['trainee', 'lawyer', 'advocate', 'manager', 'deputy_director', 'director']
+    allowed_roles = ['trainee', 'lawyer', 'advocate', 'manager', 'deputy_director', 'director', 'managing_partner_advocate']
 
 class ExternalLawyerRequiredMixin(RoleRequiredMixin):
     allowed_roles = ['external_lawyer']
@@ -88,4 +88,4 @@ class OwnerOrManagerMixin(UserPassesTestMixin):
         if hasattr(obj, 'created_by') and user == obj.created_by:
             return True
 
-        return user.role in ['manager', 'deputy_director', 'director']
+        return user.role in ['manager', 'deputy_director', 'director', 'managing_partner_advocate']

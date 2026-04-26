@@ -9,7 +9,7 @@ from .forms import EmployeeForm
 
 
 def hr_access(user):
-    return user.is_superuser or user.role in ('manager', 'director', 'deputy_director')
+    return user.is_superuser or user.role in ('manager', 'director', 'deputy_director', 'managing_partner_advocate')
 
 
 class HRAccessMixin(LoginRequiredMixin):

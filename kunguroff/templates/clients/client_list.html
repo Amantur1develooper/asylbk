@@ -19,12 +19,12 @@
         <table class="table table-hover">
           <thead>
             <tr>
-              <th>{% trans "ФИО" %}</th>
-              <th>{% trans "Телефон" %}</th>
-              <th>{% trans "Email" %}</th>
-              <th>{% trans "Ответственный" %}</th>
-              <th>{% trans "Дата создания" %}</th>
-              <th>{% trans "Действия" %}</th>
+              <th>Доверитель</th>
+              <th>Телефон</th>
+              <th>Email</th>
+              <th>Ответственный</th>
+              <th>Дата</th>
+              <th>Действия</th>
             </tr>
           </thead>
 
@@ -33,7 +33,14 @@
               <tr>
                 <td>
                   <a href="{% url 'clients:trustor_detail' client.pk %}">
-                    {{ client.last_name }} {{ client.first_name }} {{ client.middle_name|default:'' }}
+                    {% if client.entity_type == 'legal' %}
+                      <i class="bi bi-building text-primary me-1" title="Юр. лицо"></i>
+                      {% if client.legal_form %}<span class="text-muted small">{{ client.legal_form }}</span> {% endif %}
+                      {{ client.company_name }}
+                    {% else %}
+                      <i class="bi bi-person text-secondary me-1" title="Физ. лицо"></i>
+                      {{ client.last_name }} {{ client.first_name }} {{ client.middle_name|default:'' }}
+                    {% endif %}
                   </a>
                 </td>
 

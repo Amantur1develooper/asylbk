@@ -16,7 +16,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user = self.request.user
 
         # Дела по роли
-        if user.role in ['lawyer', 'advocate']:
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             cases = Case.objects.filter(responsible_lawyer=user)
         else:
             cases = Case.objects.all()

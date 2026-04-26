@@ -1,197 +1,297 @@
 {% extends 'base.html' %}
-{% load widget_tweaks %}
 {% load i18n %}
 
-{% block title %}
-  {% if object %}{% trans "Редактирование клиента" %}{% else %}{% trans "Добавление клиента" %}{% endif %} - Kunguroff & Partners
-{% endblock %}
+{% block title %}{% if object %}Редактирование{% else %}Добавление{% endif %} доверителя — Kunguroff & Partners{% endblock %}
+{% block page_title %}{% if object %}Редактировать доверителя{% else %}Новый доверитель{% endif %}{% endblock %}
 
-{% block page_title %}
-  {% if object %}{% trans "Редактирование клиента" %}{% else %}{% trans "Добавление клиента" %}{% endif %}
+{% block linkk %}
+<style>
+/* ── Entity type toggle ── */
+.entity-toggle {
+  display: flex;
+  gap: 0;
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  overflow: hidden;
+  width: fit-content;
+  margin-bottom: 24px;
+}
+.entity-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: .95rem;
+  background: #f8f9fa;
+  color: #6c757d;
+  transition: all .2s;
+  user-select: none;
+}
+.entity-toggle label:first-child { border-right: 2px solid #dee2e6; }
+.entity-toggle input[type=radio] { display: none; }
+.entity-toggle label.active {
+  background: #0d6efd;
+  color: #fff;
+}
+.entity-toggle label i { font-size: 1.1rem; }
+
+/* ── Section cards ── */
+.form-section {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 14px;
+  padding: 20px 20px 8px;
+  margin-bottom: 20px;
+}
+.form-section-title {
+  font-weight: 700;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #6c757d;
+  margin-bottom: 16px;
+}
+
+/* ── Lawyer picker (same style as case form) ── */
+.lawyer-picker {
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.lawyer-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px;
+  border: 2px solid #dee2e6; border-radius: 12px;
+  cursor: pointer; background: #fff;
+  transition: border-color .15s, background .15s;
+  min-width: 160px; flex: 1 1 160px; max-width: 220px;
+  position: relative; user-select: none;
+}
+.lawyer-card input[type=checkbox] { position: absolute; opacity: 0; width: 0; height: 0; }
+.lawyer-card:hover { border-color: #0d6efd; }
+.lawyer-card.selected { border-color: #0d6efd; background: #e8f1ff; }
+.lawyer-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg,#1a3a5c,#2a5298);
+  color:#fff; font-size:1rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.lawyer-card.selected .lawyer-avatar { background: linear-gradient(135deg,#0d6efd,#0a58ca); }
+.lawyer-name { font-weight:600; font-size:.85rem; color:#212529; }
+.lawyer-check { color:#0d6efd; margin-left:auto; opacity:0; transition:opacity .15s; }
+.lawyer-card.selected .lawyer-check { opacity:1; }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="card">
   <div class="card-body">
-    <form method="post" novalidate>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {% for e in form.non_field_errors %}{{ e }}{% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate id="trustorForm">
       {% csrf_token %}
 
-      {% if form.non_field_errors %}
-        <div class="alert alert-danger">
-          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-        </div>
-      {% endif %}
-
-      <div class="row">
-        <div class="col-md-6">
-          <h5 class="mb-3">{% trans "Основная информация" %}</h5>
-
-          <div class="mb-3">
-            <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
-            {% render_field form.last_name class="form-control" %}
-            {% if form.last_name.errors %}<div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
-            {% render_field form.first_name class="form-control" %}
-            {% if form.first_name.errors %}<div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.middle_name.id_for_label }}" class="form-label">{{ form.middle_name.label }}</label>
-            {% render_field form.middle_name class="form-control" %}
-            {% if form.middle_name.errors %}<div class="invalid-feedback d-block">{{ form.middle_name.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.phone.id_for_label }}" class="form-label">{{ form.phone.label }}</label>
-            {% render_field form.phone class="form-control" %}
-            {% if form.phone.errors %}<div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
-            {% render_field form.email class="form-control" %}
-            {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>{% endif %}
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <h5 class="mb-3">{% trans "Паспортные данные" %}</h5>
-
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="{{ form.passport_series.id_for_label }}" class="form-label">{{ form.passport_series.label }}</label>
-              {% render_field form.passport_series class="form-control" %}
-              {% if form.passport_series.errors %}<div class="invalid-feedback d-block">{{ form.passport_series.errors.0 }}</div>{% endif %}
-            </div>
-            <div class="col-md-6">
-              <label for="{{ form.passport_number.id_for_label }}" class="form-label">{{ form.passport_number.label }}</label>
-              {% render_field form.passport_number class="form-control" %}
-              {% if form.passport_number.errors %}<div class="invalid-feedback d-block">{{ form.passport_number.errors.0 }}</div>{% endif %}
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.passport_issued_by.id_for_label }}" class="form-label">{{ form.passport_issued_by.label }}</label>
-            {% render_field form.passport_issued_by class="form-control" rows="2" %}
-            {% if form.passport_issued_by.errors %}<div class="invalid-feedback d-block">{{ form.passport_issued_by.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.passport_issue_date.id_for_label }}" class="form-label">{{ form.passport_issue_date.label }}</label>
-            {% render_field form.passport_issue_date class="form-control" %}
-            {% if form.passport_issue_date.errors %}<div class="invalid-feedback d-block">{{ form.passport_issue_date.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.registration_address.id_for_label }}" class="form-label">{{ form.registration_address.label }}</label>
-            {% render_field form.registration_address class="form-control" rows="2" %}
-            {% if form.registration_address.errors %}<div class="invalid-feedback d-block">{{ form.registration_address.errors.0 }}</div>{% endif %}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.residence_address.id_for_label }}" class="form-label">{{ form.residence_address.label }}</label>
-            {% render_field form.residence_address class="form-control" rows="2" %}
-            {% if form.residence_address.errors %}<div class="invalid-feedback d-block">{{ form.residence_address.errors.0 }}</div>{% endif %}
-          </div>
-        </div>
+      <!-- ── Тип доверителя ── -->
+      <div class="entity-toggle" id="entityToggle">
+        <label id="lbl-individual" class="active">
+          <input type="radio" name="entity_type" value="individual"
+                 {% if form.entity_type.value != 'legal' %}checked{% endif %}>
+          <i class="bi bi-person"></i> Физическое лицо
+        </label>
+        <label id="lbl-legal">
+          <input type="radio" name="entity_type" value="legal"
+                 {% if form.entity_type.value == 'legal' %}checked{% endif %}>
+          <i class="bi bi-building"></i> Юридическое лицо
+        </label>
       </div>
-<hr>
-<h5 class="mb-3">{% trans "Местонахождение" %}</h5>
 
-<div class="mb-3">
-  <label for="{{ form.location_status.id_for_label }}" class="form-label">
-    {{ form.location_status.label }}
-  </label>
-  {% render_field form.location_status class="form-select" %}
-  {% if form.location_status.errors %}
-    <div class="invalid-feedback d-block">{{ form.location_status.errors.0 }}</div>
-  {% endif %}
-</div>
+      <!-- ════════════════ ФИЗИЧЕСКОЕ ЛИЦО ════════════════ -->
+      <div id="section-individual">
 
-<div class="mb-3" id="location-details-wrap">
-  <label for="{{ form.location_details.id_for_label }}" class="form-label">
-    {{ form.location_details.label }}
-  </label>
-  {% render_field form.location_details class="form-control" %}
-  {% if form.location_details.errors %}
-    <div class="invalid-feedback d-block">{{ form.location_details.errors.0 }}</div>
-  {% endif %}
-  {% if form.location_details.help_text %}
-    <div class="form-text">{{ form.location_details.help_text }}</div>
-  {% endif %}
-</div>
-<hr>
-<h5 class="mb-3">{% trans "Мера пресечения" %}</h5>
-
-<div class="mb-3">
-  <label for="{{ form.preventive_measure.id_for_label }}" class="form-label">
-    {{ form.preventive_measure.label }}
-  </label>
-  {% render_field form.preventive_measure class="form-select" %}
-  {% if form.preventive_measure.errors %}
-    <div class="invalid-feedback d-block">{{ form.preventive_measure.errors.0 }}</div>
-  {% endif %}
-</div>
-
-<div class="mb-3" id="pm-date-wrap">
-  <label for="{{ form.preventive_measure_date.id_for_label }}" class="form-label">
-    {{ form.preventive_measure_date.label }}
-  </label>
-  {% render_field form.preventive_measure_date class="form-control" %}
-  {% if form.preventive_measure_date.errors %}
-    <div class="invalid-feedback d-block">{{ form.preventive_measure_date.errors.0 }}</div>
-  {% endif %}
-</div>
-
-<div class="mb-3" id="pm-details-wrap">
-  <label for="{{ form.preventive_measure_details.id_for_label }}" class="form-label">
-    {{ form.preventive_measure_details.label }}
-  </label>
-  {% render_field form.preventive_measure_details class="form-control" %}
-  {% if form.preventive_measure_details.errors %}
-    <div class="invalid-feedback d-block">{{ form.preventive_measure_details.errors.0 }}</div>
-  {% endif %}
-  {% if form.preventive_measure_details.help_text %}
-    <div class="form-text">{{ form.preventive_measure_details.help_text }}</div>
-  {% endif %}
-</div>
-      <hr>
-
-      <div class="row">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label for="{{ form.inn.id_for_label }}" class="form-label">{{ form.inn.label }}</label>
-            {% render_field form.inn class="form-control" %}
-            {% if form.inn.errors %}<div class="invalid-feedback d-block">{{ form.inn.errors.0 }}</div>{% endif %}
+        <div class="form-section">
+          <div class="form-section-title"><i class="bi bi-person me-1"></i>ФИО</div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Фамилия *</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Имя *</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Отчество</label>
+              {{ form.middle_name }}
+            </div>
           </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label for="{{ form.primary_contact.id_for_label }}" class="form-label">{{ form.primary_contact.label }}</label>
-            {# Если primary_contact ManyToMany — лучше multiple и улучшить UX (select2), иначе оставляй как есть #}
-            {% render_field form.primary_contact class="form-select" %}
-            {% if form.primary_contact.errors %}<div class="invalid-feedback d-block">{{ form.primary_contact.errors.0 }}</div>{% endif %}
+        <div class="form-section">
+          <div class="form-section-title"><i class="bi bi-card-text me-1"></i>Паспортные данные</div>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Серия</label>
+              {{ form.passport_series }}
+              {% if form.passport_series.errors %}<div class="text-danger small">{{ form.passport_series.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Номер</label>
+              {{ form.passport_number }}
+              {% if form.passport_number.errors %}<div class="text-danger small">{{ form.passport_number.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Дата выдачи</label>
+              {{ form.passport_issue_date }}
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Кем выдан</label>
+              {{ form.passport_issued_by }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title"><i class="bi bi-geo-alt me-1"></i>Местонахождение</div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Статус</label>
+              {{ form.location_status }}
+            </div>
+            <div class="col-md-8" id="loc-details-wrap">
+              <label class="form-label">Уточнение</label>
+              {{ form.location_details }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title"><i class="bi bi-shield-exclamation me-1"></i>Мера пресечения</div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Мера</label>
+              {{ form.preventive_measure }}
+            </div>
+            <div class="col-md-4" id="pm-date-wrap">
+              <label class="form-label">Дата избрания</label>
+              {{ form.preventive_measure_date }}
+            </div>
+            <div class="col-md-12" id="pm-details-wrap">
+              <label class="form-label">Детали</label>
+              {{ form.preventive_measure_details }}
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /section-individual -->
+
+      <!-- ════════════════ ЮРИДИЧЕСКОЕ ЛИЦО ════════════════ -->
+      <div id="section-legal" style="display:none;">
+
+        <div class="form-section">
+          <div class="form-section-title"><i class="bi bi-building me-1"></i>Реквизиты организации</div>
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Наименование *</label>
+              {{ form.company_name }}
+              {% if form.company_name.errors %}<div class="text-danger small">{{ form.company_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Форма</label>
+              {{ form.legal_form }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Рег. номер свидетельства</label>
+              {{ form.reg_number }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Руководитель (ФИО)</label>
+              {{ form.director_name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Контактное лицо</label>
+              {{ form.contact_person }}
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /section-legal -->
+
+      <!-- ════════════════ ОБЩИЕ ПОЛЯ ════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-telephone me-1"></i>Контакты</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Телефон</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="text-danger small">{{ form.phone.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Адрес регистрации / юридический адрес</label>
+            {{ form.registration_address }}
+          </div>
+          <div class="col-md-12" id="residence-wrap">
+            <label class="form-label">Фактический адрес <span class="text-muted fw-normal">(если отличается)</span></label>
+            {{ form.residence_address }}
           </div>
         </div>
       </div>
 
-      <div class="mb-3">
-        <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
-        {% render_field form.notes class="form-control" rows="3" %}
-        {% if form.notes.errors %}<div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>{% endif %}
+      <!-- ИНН — общее для всех -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-hash me-1"></i>ИНН / ПИН</div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">ИНН / ПИН</label>
+            {{ form.inn }}
+            {% if form.inn.errors %}<div class="text-danger small">{{ form.inn.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Ответственные юристы -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-person-badge me-1"></i>Ответственные юристы / адвокаты</div>
+        {% if form.primary_contact.field.queryset.exists %}
+          <div class="lawyer-picker">
+            {% for choice in form.primary_contact %}
+              <label class="lawyer-card {% if choice.data.selected %}selected{% endif %}" for="{{ choice.id_for_label }}">
+                {{ choice.tag }}
+                <div class="lawyer-avatar">{{ choice.choice_label|slice:":1" }}</div>
+                <div class="lawyer-info">
+                  <div class="lawyer-name">{{ choice.choice_label }}</div>
+                </div>
+                <div class="lawyer-check"><i class="bi bi-check-lg"></i></div>
+              </label>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">Нет юристов/адвокатов с активными аккаунтами.</p>
+        {% endif %}
+        {% if form.primary_contact.errors %}<div class="text-danger small mt-2">{{ form.primary_contact.errors.0 }}</div>{% endif %}
+      </div>
+
+      <!-- Заметки -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Заметки</label>
+        {{ form.notes }}
       </div>
 
       <div class="d-flex justify-content-between">
-         <a href="{% if object %}{% url 'clients:trustor_detail' object.pk %}{% else %}{% url 'clients:client_list' %}{% endif %}"
-           class="btn btn-secondary">
-          {% trans "Отмена" %}
-        </a> 
-        <button  type="submit" class="btn btn-primary">
-          {% if object %}{% trans "Сохранить изменения" %}{% else %}{% trans "Сохранить" %}{% endif %}
+        <a href="{% if object %}{% url 'clients:trustor_detail' object.pk %}{% else %}{% url 'clients:client_list' %}{% endif %}"
+           class="btn btn-secondary">Отмена</a>
+        <button type="submit" class="btn btn-primary px-4">
+          {% if object %}Сохранить изменения{% else %}Создать доверителя{% endif %}
         </button>
       </div>
     </form>
@@ -202,46 +302,71 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const pm = document.getElementById('{{ form.preventive_measure.id_for_label }}');
-  const wrapDate = document.getElementById('pm-date-wrap');
-  const wrapDetails = document.getElementById('pm-details-wrap');
 
+  // ── Entity type toggle ──
+  const radios   = document.querySelectorAll('input[name="entity_type"]');
+  const secInd   = document.getElementById('section-individual');
+  const secLegal = document.getElementById('section-legal');
+  const lblInd   = document.getElementById('lbl-individual');
+  const lblLegal = document.getElementById('lbl-legal');
+  const innIndWrap = document.getElementById('inn-individual-wrap');
+
+  function applyEntityType(val) {
+    const isLegal = val === 'legal';
+    secInd.style.display   = isLegal ? 'none' : '';
+    secLegal.style.display = isLegal ? '' : 'none';
+    innIndWrap.style.display = isLegal ? 'none' : '';
+    lblInd.classList.toggle('active', !isLegal);
+    lblLegal.classList.toggle('active', isLegal);
+  }
+
+  // Labels act as buttons
+  document.getElementById('lbl-individual').addEventListener('click', () => {
+    document.querySelector('input[name="entity_type"][value="individual"]').checked = true;
+    applyEntityType('individual');
+  });
+  document.getElementById('lbl-legal').addEventListener('click', () => {
+    document.querySelector('input[name="entity_type"][value="legal"]').checked = true;
+    applyEntityType('legal');
+  });
+
+  // Initial state
+  const currentType = document.querySelector('input[name="entity_type"]:checked')?.value || 'individual';
+  applyEntityType(currentType);
+
+  // ── Location details toggle ──
+  const locStatus = document.getElementById('{{ form.location_status.id_for_label }}');
+  const locWrap   = document.getElementById('loc-details-wrap');
+  function toggleLoc() {
+    if (!locStatus || !locWrap) return;
+    locWrap.style.display = locStatus.value === 'free' ? 'none' : '';
+  }
+  if (locStatus) locStatus.addEventListener('change', toggleLoc);
+  toggleLoc();
+
+  // ── Preventive measure toggle ──
+  const pm       = document.getElementById('{{ form.preventive_measure.id_for_label }}');
+  const pmDate   = document.getElementById('pm-date-wrap');
+  const pmDetail = document.getElementById('pm-details-wrap');
   function togglePM() {
     if (!pm) return;
     const show = pm.value !== 'none';
-    if (wrapDate) wrapDate.style.display = show ? '' : 'none';
-    if (wrapDetails) wrapDetails.style.display = show ? '' : 'none';
+    if (pmDate)   pmDate.style.display   = show ? '' : 'none';
+    if (pmDetail) pmDetail.style.display = show ? '' : 'none';
   }
-
   if (pm) pm.addEventListener('change', togglePM);
   togglePM();
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', function(event) {
-      if (!form.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      form.classList.add('was-validated');
+
+  // ── Lawyer card picker ──
+  document.querySelectorAll('.lawyer-card').forEach(card => {
+    const cb = card.querySelector('input[type=checkbox]');
+    if (cb && cb.checked) card.classList.add('selected');
+    card.addEventListener('click', () => {
+      cb.checked = !cb.checked;
+      card.classList.toggle('selected', cb.checked);
     });
   });
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const statusEl = document.getElementById('{{ form.location_status.id_for_label }}');
-  const detailsWrap = document.getElementById('location-details-wrap');
 
-  function toggleDetails() {
-    if (!statusEl || !detailsWrap) return;
-    detailsWrap.style.display = (statusEl.value === 'free') ? 'none' : '';
-  }
-
-  if (statusEl) statusEl.addEventListener('change', toggleDetails);
-  toggleDetails();
 });
 </script>
 {% endblock %}

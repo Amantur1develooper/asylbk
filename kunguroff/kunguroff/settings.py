@@ -95,7 +95,7 @@ SITE_PUBLIC_URL = os.getenv("SITE_PUBLIC_URL", "https://kunguroff.kg")
 
 # кому отправлять заявки (по ролям)
 TELEGRAM_NOTIFY_ROLES = [
-    'director','deputy_director','manager','admin','advocate','lawyer',
+    'director','managing_partner_advocate','deputy_director','manager','admin','advocate','lawyer',
     'accountant','hr','external_lawyer','trainee',
 ]
 

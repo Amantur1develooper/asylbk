@@ -173,7 +173,7 @@
 {% endif %}{# end finance access check #}
 
     {# --- Личная доля юриста/адвоката --- #}
-    {% if not request.user.is_superuser and request.user.role in 'lawyer,advocate' %}
+    {% if not request.user.is_superuser and request.user.role in 'lawyer,advocate,managing_partner_advocate' %}
       {% if case.finance %}
         {% for s in case.finance.shares.all %}
           {% if s.employee == request.user %}

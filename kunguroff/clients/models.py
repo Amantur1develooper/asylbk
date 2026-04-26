@@ -8,27 +8,60 @@ from django.core.validators import RegexValidator
 User = get_user_model()
 
 class Trustor(models.Model):
-    """Модель доверителя (бывший клиент)"""
+    """Модель доверителя — физическое или юридическое лицо"""
+
+    ENTITY_TYPE_CHOICES = [
+        ('individual', 'Физическое лицо'),
+        ('legal',      'Юридическое лицо'),
+    ]
+    LEGAL_FORM_CHOICES = [
+        ('ОсОО',             'ОсОО'),
+        ('ОАО',              'ОАО'),
+        ('ЗАО',              'ЗАО'),
+        ('АО',               'АО'),
+        ('ГП',               'ГП (Государственное предприятие)'),
+        ('МП',               'МП (Муниципальное предприятие)'),
+        ('ИП',               'ИП (Индивидуальный предприниматель)'),
+        ('НКО',              'НКО'),
+        ('Филиал',           'Филиал'),
+        ('Представительство','Представительство'),
+        ('Другое',           'Другое'),
+    ]
     LOCATION_CHOICES = [
         ('free', 'На свободе'),
         ('ukzh', 'УКЖ'),
-        ('ivs', 'ИВС'),
-        ('ik', 'ИК'),
+        ('ivs',  'ИВС'),
+        ('ik',   'ИК'),
         ('sizo', 'СИЗО'),
-       
     ]
     PREVENTIVE_MEASURE_CHOICES = [
-        ('none', 'Нет'),
-        ('detention', 'Заключение под стражу'),
+        ('none',         'Нет'),
+        ('detention',    'Заключение под стражу'),
         ('house_arrest', 'Домашний арест'),
-        ('arrest', 'Арест'),
-        ('other', 'Другое'),
+        ('arrest',       'Арест'),
+        ('other',        'Другое'),
     ]
-    # Основная информация
-    first_name = models.CharField(max_length=100, verbose_name="Имя")
-    last_name = models.CharField(max_length=100, verbose_name="Фамилия")
+
+    # Тип лица
+    entity_type = models.CharField(
+        max_length=10,
+        choices=ENTITY_TYPE_CHOICES,
+        default='individual',
+        verbose_name="Тип лица"
+    )
+
+    # ── Физическое лицо ──
+    first_name  = models.CharField(max_length=100, blank=True, verbose_name="Имя")
+    last_name   = models.CharField(max_length=100, blank=True, verbose_name="Фамилия")
     middle_name = models.CharField(max_length=100, blank=True, verbose_name="Отчество")
     
+    # ── Юридическое лицо ──
+    company_name   = models.CharField(max_length=255, blank=True, verbose_name="Наименование организации")
+    legal_form     = models.CharField(max_length=20,  blank=True, choices=LEGAL_FORM_CHOICES, verbose_name="Организационно-правовая форма")
+    reg_number     = models.CharField(max_length=100, blank=True, verbose_name="Регистрационный номер")
+    director_name  = models.CharField(max_length=200, blank=True, verbose_name="ФИО руководителя")
+    contact_person = models.CharField(max_length=200, blank=True, verbose_name="Контактное лицо")
+
     # Контактная информация
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$', 
@@ -108,9 +141,13 @@ class Trustor(models.Model):
         ordering = ['last_name', 'first_name']
 
     def __str__(self):
-        return f"{self.last_name} {self.first_name} {self.middle_name or ''}".strip()
-    
+        if self.entity_type == 'legal':
+            return f"{self.legal_form} «{self.company_name}»" if self.company_name else "Юр. лицо (без названия)"
+        return f"{self.last_name} {self.first_name} {self.middle_name or ''}".strip() or "—"
+
     def get_full_name(self):
+        if self.entity_type == 'legal':
+            return self.company_name or "Юр. лицо"
         return f"{self.last_name} {self.first_name} {self.middle_name or ''}".strip()
     
     def get_primary_contact_names(self):

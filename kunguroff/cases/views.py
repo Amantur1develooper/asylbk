@@ -28,7 +28,7 @@ class CaseListView(LawyerRequiredMixin, ListView):
     def get_queryset(self):
         # Фильтрация по роли пользователя
         user = self.request.user
-        if user.role in ['lawyer', 'advocate']:
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             # ИЗМЕНЕНИЕ: Юристы видят дела, где они входят в ответственные
             return Case.objects.filter(responsible_lawyer=user)
         elif user.role == 'manager':
@@ -68,7 +68,7 @@ class CaseDetailView(DetailView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role in ['lawyer', 'advocate']:
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             return Case.objects.filter(responsible_lawyer=user)
         return Case.objects.all()
 
@@ -116,7 +116,7 @@ class CaseCreateView(LawyerRequiredMixin, CreateView):
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        allowed_roles = ['manager', 'lawyer', 'advocate', 'director', 'deputy_director']
+        allowed_roles = ['manager', 'lawyer', 'advocate', 'managing_partner_advocate', 'director', 'deputy_director']
         if not self.request.user.is_superuser and self.request.user.role not in allowed_roles:
             return redirect('permission_denied')
         return super().dispatch(*args, **kwargs)
@@ -138,7 +138,7 @@ class CaseCreateView(LawyerRequiredMixin, CreateView):
                 self.object.current_stage = first_stage
                 self.object.save(update_fields=['current_stage', 'updated_at'])
 
-        if self.request.user.role in ['lawyer', 'advocate']:
+        if self.request.user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             if self.request.user not in self.object.responsible_lawyer.all():
                 self.object.responsible_lawyer.add(self.request.user)
 
@@ -182,11 +182,11 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
         allowed_roles = ['manager', 'director', 'deputy_director']
 
         # Юристы могут редактировать только свои дела
-        if user.role in ['lawyer', 'advocate'] and user not in case.responsible_lawyer.all():
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate'] and user not in case.responsible_lawyer.all():
             return redirect('permission_denied')
 
         # Менеджеры и директора могут редактировать все дела
-        if user.role not in allowed_roles + ['lawyer', 'advocate']:
+        if user.role not in allowed_roles + ['lawyer', 'advocate', 'managing_partner_advocate']:
             return redirect('permission_denied')
 
         return super().dispatch(*args, **kwargs)
@@ -244,7 +244,7 @@ class CaseDocumentCreateView(View):
         # Проверка прав доступа
         user = request.user
         # ИЗМЕНЕНИЕ: Проверяем через ManyToMany связь
-        if user.role in ['lawyer', 'advocate'] and user not in case.responsible_lawyer.all():
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate'] and user not in case.responsible_lawyer.all():
             return redirect('permission_denied')
         
         form = CaseDocumentForm(request.POST, request.FILES)

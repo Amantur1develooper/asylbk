@@ -123,7 +123,7 @@ class CaseForm(forms.ModelForm):
     )
 
     responsible_lawyer = forms.ModelMultipleChoiceField(
-        queryset=User.objects.filter(role__in=['lawyer', 'advocate']).order_by('last_name', 'first_name'),
+        queryset=User.objects.filter(role__in=['lawyer', 'advocate', 'managing_partner_advocate']).order_by('last_name', 'first_name'),
         required=False,
         widget=forms.CheckboxSelectMultiple,
         label="Ответственные юристы/адвокаты"
@@ -193,7 +193,7 @@ class CaseForm(forms.ModelForm):
         self.fields['category'].required = True
         self.fields['status'].required = True
 
-        if user and user.role in ['lawyer', 'advocate']:
+        if user and user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             self.fields['responsible_lawyer'].initial = [user]
 
         # менеджеры

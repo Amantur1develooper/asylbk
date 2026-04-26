@@ -20,7 +20,7 @@ class RatingsDashboardView(ManagerRequiredMixin, TemplateView):
         start_date = end_date - timedelta(days=90)
         
         # Получаем всех юристов и адвокатов
-        lawyers = User.objects.filter(role__in=['lawyer', 'advocate'])
+        lawyers = User.objects.filter(role__in=['lawyer', 'advocate', 'managing_partner_advocate'])
         
         # Собираем статистику по каждому юристу
         lawyer_stats = []

@@ -165,7 +165,7 @@ class EventCreateView(LawyerRequiredMixin, CreateView):
 
         # Ограничиваем выбор дел только делами пользователя
         user = self.request.user
-        if user.role in ['lawyer', 'advocate']:
+        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             form.fields['case'].queryset = form.fields['case'].queryset.filter(
                 responsible_lawyer=user
             )
@@ -202,7 +202,7 @@ class EventCreateView(LawyerRequiredMixin, CreateView):
         
 #         # Ограничиваем выбор дел только делами пользователя
 #         user = self.request.user
-#         if user.role in ['lawyer', 'advocate']:
+#         if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
 #             form.fields['case'].queryset = form.fields['case'].queryset.filter(
 #                 responsible_lawyer=user
 #             )
