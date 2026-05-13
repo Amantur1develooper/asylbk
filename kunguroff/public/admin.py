@@ -25,6 +25,22 @@ class PublicCaseAdmin(admin.ModelAdmin):
     list_filter = ("is_published", "category")
     search_fields = ("title", "excerpt")
     prepopulated_fields = {"slug": ("title",)}
+    fieldsets = (
+        ("Основное", {
+            "fields": ("slug", "category", "cover", "is_published", "published_at"),
+        }),
+        ("🇷🇺 Русский", {
+            "fields": ("title", "excerpt", "content"),
+        }),
+        ("🇰🇬 Кыргызча", {
+            "classes": ("collapse",),
+            "fields": ("title_ky", "excerpt_ky", "content_ky"),
+        }),
+        ("🇬🇧 English", {
+            "classes": ("collapse",),
+            "fields": ("title_en", "excerpt_en", "content_en"),
+        }),
+    )
 
 @admin.register(NewsPost)
 class NewsPostAdmin(admin.ModelAdmin):
@@ -32,6 +48,22 @@ class NewsPostAdmin(admin.ModelAdmin):
     list_filter = ("is_published",)
     search_fields = ("title", "excerpt")
     prepopulated_fields = {"slug": ("title",)}
+    fieldsets = (
+        ("Основное", {
+            "fields": ("slug", "cover", "is_published", "published_at"),
+        }),
+        ("🇷🇺 Русский", {
+            "fields": ("title", "excerpt", "content"),
+        }),
+        ("🇰🇬 Кыргызча", {
+            "classes": ("collapse",),
+            "fields": ("title_ky", "excerpt_ky", "content_ky"),
+        }),
+        ("🇬🇧 English", {
+            "classes": ("collapse",),
+            "fields": ("title_en", "excerpt_en", "content_en"),
+        }),
+    )
 
 @admin.register(ConsultationRequest)
 class ConsultationRequestAdmin(admin.ModelAdmin):

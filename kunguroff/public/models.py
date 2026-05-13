@@ -55,11 +55,22 @@ class Staff(models.Model):
 
 
 class PublicCase(models.Model):
-    title = models.CharField("Название кейса", max_length=200)
+    title = models.CharField("Название кейса (RU)", max_length=200)
     slug = models.SlugField("Slug", unique=True)
     category = models.CharField("Категория", max_length=120, blank=True)
-    excerpt = models.TextField("Коротко (для карточки)", blank=True)
-    content = models.TextField("Описание кейса", blank=True)
+    excerpt = models.TextField("Коротко (RU)", blank=True)
+    content = models.TextField("Описание (RU)", blank=True)
+
+    # Кыргызча
+    title_ky   = models.CharField("Название (KY)", max_length=200, blank=True)
+    excerpt_ky = models.TextField("Коротко (KY)", blank=True)
+    content_ky = models.TextField("Описание (KY)", blank=True)
+
+    # English
+    title_en   = models.CharField("Title (EN)", max_length=200, blank=True)
+    excerpt_en = models.TextField("Excerpt (EN)", blank=True)
+    content_en = models.TextField("Content (EN)", blank=True)
+
     cover = models.ImageField("Обложка", upload_to="public/cases/", blank=True, null=True)
     is_published = models.BooleanField("Опубликован", default=True)
     published_at = models.DateTimeField("Дата публикации", default=timezone.now)
@@ -72,15 +83,55 @@ class PublicCase(models.Model):
     def __str__(self):
         return self.title
 
+    def _lang(self):
+        from django.utils.translation import get_language
+        lang = get_language() or "ru"
+        return lang[:2]
+
+    def get_title(self):
+        lang = self._lang()
+        if lang == "ky" and self.title_ky:
+            return self.title_ky
+        if lang == "en" and self.title_en:
+            return self.title_en
+        return self.title
+
+    def get_excerpt(self):
+        lang = self._lang()
+        if lang == "ky" and self.excerpt_ky:
+            return self.excerpt_ky
+        if lang == "en" and self.excerpt_en:
+            return self.excerpt_en
+        return self.excerpt
+
+    def get_content(self):
+        lang = self._lang()
+        if lang == "ky" and self.content_ky:
+            return self.content_ky
+        if lang == "en" and self.content_en:
+            return self.content_en
+        return self.content
+
     def get_absolute_url(self):
         return reverse("public:case_detail", kwargs={"slug": self.slug})
 
 
 class NewsPost(models.Model):
-    title = models.CharField("Заголовок", max_length=200)
+    title = models.CharField("Заголовок (RU)", max_length=200)
     slug = models.SlugField("Slug", unique=True)
-    excerpt = models.TextField("Коротко (для карточки)", blank=True)
-    content = models.TextField("Текст", blank=True)
+    excerpt = models.TextField("Коротко (RU)", blank=True)
+    content = models.TextField("Текст (RU)", blank=True)
+
+    # Кыргызча
+    title_ky   = models.CharField("Заголовок (KY)", max_length=200, blank=True)
+    excerpt_ky = models.TextField("Коротко (KY)", blank=True)
+    content_ky = models.TextField("Текст (KY)", blank=True)
+
+    # English
+    title_en   = models.CharField("Title (EN)", max_length=200, blank=True)
+    excerpt_en = models.TextField("Excerpt (EN)", blank=True)
+    content_en = models.TextField("Content (EN)", blank=True)
+
     cover = models.ImageField("Обложка", upload_to="public/news/", blank=True, null=True)
     is_published = models.BooleanField("Опубликовано", default=True)
     published_at = models.DateTimeField("Дата публикации", default=timezone.now)
@@ -92,6 +143,35 @@ class NewsPost(models.Model):
 
     def __str__(self):
         return self.title
+
+    def _lang(self):
+        from django.utils.translation import get_language
+        lang = get_language() or "ru"
+        return lang[:2]
+
+    def get_title(self):
+        lang = self._lang()
+        if lang == "ky" and self.title_ky:
+            return self.title_ky
+        if lang == "en" and self.title_en:
+            return self.title_en
+        return self.title
+
+    def get_excerpt(self):
+        lang = self._lang()
+        if lang == "ky" and self.excerpt_ky:
+            return self.excerpt_ky
+        if lang == "en" and self.excerpt_en:
+            return self.excerpt_en
+        return self.excerpt
+
+    def get_content(self):
+        lang = self._lang()
+        if lang == "ky" and self.content_ky:
+            return self.content_ky
+        if lang == "en" and self.content_en:
+            return self.content_en
+        return self.content
 
     def get_absolute_url(self):
         return reverse("public:news_detail", kwargs={"slug": self.slug})

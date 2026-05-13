@@ -12,7 +12,7 @@ class CaseCategory(models.Model):
     CATEGORY_TYPES = [
         ('civil_economic', 'Гражданские - Экономические дела'),
         ('administrative', 'Административные дела'),
-        ('civil_administrative', 'Гражданский – Административный'),
+        ('civil_administrative', 'ГД'),
         ('criminal', 'Уголовные дела'),
         ('offenses', 'Правонарушения'),
         # ('', 'Административный'),

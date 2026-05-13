@@ -62,7 +62,7 @@
 
           <div class="p-4">
             <div class="d-flex align-items-start justify-content-between gap-2">
-              <div class="fw-bold fs-5">{{ post.title }}</div>
+              <div class="fw-bold fs-5">{{ post.get_title }}</div>
               <i class="fa-solid fa-arrow-right mt-1" style="color:var(--kp-primary)"></i>
             </div>
 
@@ -80,7 +80,7 @@
             </div>
 
             <div class="text-muted mt-3">
-              {{ post.excerpt|default:post.content|truncatechars:170 }}
+              {{ post.get_excerpt|default:post.get_content|truncatechars:170 }}
             </div>
 
             <div class="mt-3">

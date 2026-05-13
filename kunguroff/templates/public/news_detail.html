@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{{ object.title }} — {{ site.company_name }}{% endblock %}
+{% block title %}{{ object.get_title }} — {{ site.company_name }}{% endblock %}
 
 {% block content %}
 <div class="mb-3">
@@ -38,11 +38,11 @@
     </div>
 
     <h1 class="kp-section-title mb-2" style="font-size:clamp(24px, 3vw, 40px);">
-      {{ object.title }}
+      {{ object.get_title }}
     </h1>
 
-    {% if object.excerpt %}
-      <div class="text-muted fs-5">{{ object.excerpt }}</div>
+    {% if object.get_excerpt %}
+      <div class="text-muted fs-5">{{ object.get_excerpt }}</div>
     {% endif %}
   </div>
 </section>
@@ -51,7 +51,7 @@
   <div class="col-lg-8">
     <article class="kp-card p-4 p-lg-5">
       <div class="text-muted" style="line-height:1.85;font-size:1.05rem;">
-        {{ object.content|linebreaks }}
+        {{ object.get_content|linebreaks }}
       </div>
     </article>
 

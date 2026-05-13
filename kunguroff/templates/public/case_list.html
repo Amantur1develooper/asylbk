@@ -40,7 +40,7 @@
 
           <div class="p-4">
             <div class="d-flex align-items-center justify-content-between gap-2">
-              <div class="fw-bold fs-5">{{ c.title }}</div>
+              <div class="fw-bold fs-5">{{ c.get_title }}</div>
               <i class="fa-solid fa-arrow-right" style="color:var(--kp-primary)"></i>
             </div>
 
@@ -57,7 +57,7 @@
             </div>
 
             <div class="text-muted mt-3">
-              {{ c.excerpt|default:c.content|truncatechars:170 }}
+              {{ c.get_excerpt|default:c.get_content|truncatechars:170 }}
             </div>
 
             <div class="mt-3">

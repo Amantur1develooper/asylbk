@@ -4,7 +4,7 @@
 {% load i18n %}
 
 
-{% block title %}{{ case.title }} — {{ site.company_name|default:"Kunguroff & Partners" }}{% endblock %}
+{% block title %}{{ case.get_title }} — {{ site.company_name|default:"Kunguroff & Partners" }}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -18,7 +18,7 @@
       <li class="breadcrumb-item">
         <a href="{% url 'public:casess' %}" class="text-decoration-none">{% trans "Дела" %}</a>
       </li>
-      <li class="breadcrumb-item active" aria-current="page">{{ case.title }}</li>
+      <li class="breadcrumb-item active" aria-current="page">{{ case.get_title }}</li>
     </ol>
   </nav>
 
@@ -29,7 +29,7 @@
         <div class="flex-shrink-0" style="width:100%;max-width:420px;">
           <img
             src="{{ case.cover.url }}"
-            alt="{{ case.title }}"
+            alt="{{ case.get_title }}"
             class="w-100"
             style="border-radius:18px; object-fit:cover; aspect-ratio: 16 / 10; border:1px solid rgba(16,144,240,.12);"
           >
@@ -51,12 +51,12 @@
         </div>
 
         <h1 class="kp-section-title mb-2" style="font-size:clamp(1.5rem, 3.2vw, 2.2rem); line-height:1.15;">
-          {{ case.title }}
+          {{ case.get_title }}
         </h1>
 
-        {% if case.excerpt %}
+        {% if case.get_excerpt %}
           <p class="text-muted mb-0" style="font-size:1.05rem; line-height:1.6;">
-            {{ case.excerpt }}
+            {{ case.get_excerpt }}
           </p>
         {% endif %}
 
@@ -76,13 +76,9 @@
   <div class="kp-card p-3 p-md-4 mb-4">
     <h2 class="kp-section-title mb-3" style="font-size:1.25rem;">{% trans "Описание" %}</h2>
 
-    {% if case.content %}
+    {% if case.get_content %}
       <div class="content prose" style="line-height:1.75; font-size:1.02rem;">
-        {# если в content обычный текст #}
-        {{ case.content|linebreaks }}
-
-        {# если ты хранишь HTML в content — замени строку выше на: #}
-        {# {{ case.content|safe }} #}
+        {{ case.get_content|linebreaks }}
       </div>
     {% else %}
       <div class="text-muted">{% trans "Описание отсутствует" %}</div>
