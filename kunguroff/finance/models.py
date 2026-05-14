@@ -169,13 +169,19 @@ class CaseFinance(models.Model):
 
     def recalc_shares(self):
         """
-        Пересчитать суммы по CaseFinanceShare (когда меняется сумма, оплачено или проценты).
+        Пересчитать суммы по CaseFinanceShare.
+        amount_full    — доля юриста при полной оплате (от суммы договора)
+        amount_current — доля юриста от фактически оплаченного (paid_amount)
         """
-        pool = self.lawyers_pool_amount
-        ratio = self.paid_ratio
+        full_pool    = self.lawyers_pool_amount          # 70% от договора
+        current_pool = self.lawyers_pool_amount_current  # 70% от оплаченного
 
         for share in self.shares.all():
-            share.recalc_amounts(pool_amount=pool, paid_ratio=ratio, save=True)
+            share.recalc_amounts(
+                pool_amount=full_pool,
+                paid_pool=current_pool,
+                save=True,
+            )
 
 class CaseFinanceShare(models.Model):
     """
@@ -229,19 +235,25 @@ class CaseFinanceShare(models.Model):
     def __str__(self):
         return f'{self.employee} — {self.percent_of_pool}% от 70% по делу #{self.case_finance.case_id}'
 
-    def recalc_amounts(self, pool_amount=None, paid_ratio=None, save=True):
+    def recalc_amounts(self, pool_amount=None, paid_pool=None, paid_ratio=None, save=True):
         """
         Пересчитать amount_full и amount_current.
-        pool_amount — общий котёл 70% (Decimal)
-        paid_ratio — доля оплаченности договора (0..1)
+        pool_amount — 70% от суммы договора (при полной оплате)
+        paid_pool   — 70% от фактически оплаченного (приоритетный способ)
+        paid_ratio  — устаревший параметр, игнорируется если передан paid_pool
         """
+        cf = self.case_finance
         if pool_amount is None:
-            pool_amount = self.case_finance.lawyers_pool_amount
-        if paid_ratio is None:
-            paid_ratio = self.case_finance.paid_ratio
+            pool_amount = cf.lawyers_pool_amount
+        if paid_pool is None:
+            # обратная совместимость: если передан старый paid_ratio
+            if paid_ratio is not None:
+                paid_pool = (pool_amount * paid_ratio).quantize(Decimal('0.01'))
+            else:
+                paid_pool = cf.lawyers_pool_amount_current
 
-        self.amount_full = (pool_amount * self.percent_of_pool / Decimal('100')).quantize(Decimal('0.01'))
-        self.amount_current = (self.amount_full * paid_ratio).quantize(Decimal('0.01'))
+        self.amount_full    = (pool_amount * self.percent_of_pool / Decimal('100')).quantize(Decimal('0.01'))
+        self.amount_current = (paid_pool   * self.percent_of_pool / Decimal('100')).quantize(Decimal('0.01'))
 
         if save:
             self.save()

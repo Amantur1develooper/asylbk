@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Абонентское обслуживание{% endblock %}
+{% block page_title %}Абонентское обслуживание{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'retainer:subscriber_create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> Новый абонент
+  </a>
+{% endblock %}
+
+{% block content %}
+<!-- Фильтр -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm"
+               placeholder="Поиск по имени / организации...">
+      </div>
+      <div class="col-md-3">
+        <select name="type" class="form-select form-select-sm">
+          <option value="">Все типы</option>
+          <option value="individual" {% if type == 'individual' %}selected{% endif %}>Физические лица</option>
+          <option value="legal"      {% if type == 'legal' %}selected{% endif %}>Юридические лица</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-sm btn-primary w-100">Найти</button>
+        <a href="{% url 'retainer:list' %}" class="btn btn-sm btn-outline-secondary w-100">Сброс</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Таблица -->
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Абонент</th>
+          <th>Тип</th>
+          <th>Телефон</th>
+          <th>Договоров</th>
+          <th>Статус</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in subscribers %}
+          {% with active=s.active_subscription %}
+          <tr>
+            <td>
+              <a href="{% url 'retainer:detail' s.pk %}" class="fw-semibold text-decoration-none">
+                {{ s.full_name }}
+              </a>
+              {% if s.contact_person %}
+                <div class="text-muted small">{{ s.contact_person }}</div>
+              {% endif %}
+            </td>
+            <td>
+              {% if s.client_type == 'legal' %}
+                <span class="badge bg-primary">Юр. лицо</span>
+              {% else %}
+                <span class="badge bg-secondary">Физ. лицо</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ s.phone|default:"—" }}</td>
+            <td>{{ s.subscriptions.count }}</td>
+            <td>
+              {% if active %}
+                <span class="badge bg-success">Активна</span>
+                <span class="text-muted small ms-1">{{ active.monthly_fee|floatformat:0 }} сом/мес</span>
+                {% if active.is_overdue %}
+                  <span class="badge bg-danger ms-1">Долг</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted small">нет активных</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'retainer:detail' s.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'retainer:subscriber_edit' s.pk %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </td>
+          </tr>
+          {% endwith %}
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">Абонентов пока нет</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

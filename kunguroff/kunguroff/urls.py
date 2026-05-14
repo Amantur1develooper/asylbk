@@ -24,6 +24,7 @@ urlpatterns += i18n_patterns(
     path("hr/", include("hr.urls")),
     path("directory/", include("directory.urls")),
     path("knowledge/", include("knowledge.urls")),
+    path("retainer/", include("retainer.urls")),
 
     path("", include("public.urls")),
 

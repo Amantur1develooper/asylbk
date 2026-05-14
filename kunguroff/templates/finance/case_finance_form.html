@@ -10,7 +10,6 @@
     <div class="app-card">
       <div class="app-card-header d-flex justify-content-between align-items-center">
         <h2>{% blocktrans with case_id=case.id %}Финансы по делу #{{ case_id }}{% endblocktrans %}</h2>
-
         <a href="{% url 'cases:case_detail' case.id %}" class="btn btn-outline-secondary btn-sm">
           {% trans "Назад к делу" %}
         </a>
@@ -19,9 +18,7 @@
       <div class="app-card-body">
         {% if messages %}
           {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} mb-3">
-              {{ message }}
-            </div>
+            <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
           {% endfor %}
         {% endif %}
 
@@ -29,33 +26,30 @@
           {% csrf_token %}
           {{ form.non_field_errors }}
 
+          <!-- Соглашение и доверитель -->
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label fw-bold">{% trans "Доверитель (основной)" %}</label>
-              <input type="text"
-                     class="form-control"
-                     value="{{ case.main_trustor.full_name|default:'-' }}"
-                     disabled>
-            </div>
-             
-              <div class="col-md-4">
-              <label class="form-label">{{ form.payment_due_date.label }}</label>
-              {{ form.payment_due_date }}
-              {{ form.payment_due_date.errors }}
+              <input type="text" class="form-control" value="{{ case.main_trustor.full_name|default:'-' }}" disabled>
             </div>
             <div class="col-md-4">
               <label class="form-label">{{ form.agreement_number.label }}</label>
               {{ form.agreement_number }}
               {{ form.agreement_number.errors }}
             </div>
-
-            <div class="col-md-4">
+            <div class="col-md-2">
               <label class="form-label">{{ form.agreement_date.label }}</label>
               {{ form.agreement_date }}
               {{ form.agreement_date.errors }}
             </div>
+            <div class="col-md-2">
+              <label class="form-label">{{ form.payment_due_date.label }}</label>
+              {{ form.payment_due_date }}
+              {{ form.payment_due_date.errors }}
+            </div>
           </div>
 
+          <!-- Суммы договора и оплата -->
           <div class="row mb-3">
             <div class="col-md-3">
               <label class="form-label">{{ form.contract_amount.label }}</label>
@@ -65,19 +59,18 @@
               </div>
               {{ form.contract_amount.errors }}
             </div>
-
             <div class="col-md-3">
-              <label class="form-label">{{ form.paid_amount.label }}</label>
+              <label class="form-label fw-bold text-success">{{ form.paid_amount.label }}</label>
               <div class="input-group">
                 {{ form.paid_amount }}
                 <span class="input-group-text">{% trans "сом" %}</span>
               </div>
               {{ form.paid_amount.errors }}
               <small class="text-muted d-block mt-1">
-                {% trans "Оплачено:" %} {{ finance.paid_ratio|floatformat:0 }} %
+                {% trans "Оплачено:" %} {{ finance.paid_ratio|floatformat:0 }}%
+                от суммы договора
               </small>
             </div>
-
             <div class="col-md-3">
               <label class="form-label">{% trans "Фирма, %" %}</label>
               <div class="input-group">
@@ -86,10 +79,9 @@
               </div>
               {{ form.company_share_percent.errors }}
               <small class="text-muted d-block mt-1">
-                = {{ finance.company_share_amount|intcomma }} {% trans "сом" %}
+                {% trans "При полной оплате:" %} {{ finance.company_share_amount|intcomma }} {% trans "сом" %}
               </small>
             </div>
-
             <div class="col-md-3">
               <label class="form-label">{% trans "Юристы, %" %}</label>
               <div class="input-group">
@@ -98,33 +90,65 @@
               </div>
               {{ form.lawyers_share_percent.errors }}
               <small class="text-muted d-block mt-1">
-                = {{ finance.lawyers_pool_amount|intcomma }} {% trans "сом" %}
+                {% trans "При полной оплате:" %} {{ finance.lawyers_pool_amount|intcomma }} {% trans "сом" %}
               </small>
+            </div>
+          </div>
+
+          <!-- ══ Сводка распределения от ОПЛАЧЕННОЙ суммы ══ -->
+          <div class="alert alert-info p-3 mb-4">
+            <div class="fw-bold mb-2">
+              <i class="bi bi-calculator me-1"></i>
+              {% trans "Распределение от фактически оплаченного" %}:
+              <span class="text-success">{{ finance.paid_amount|intcomma }} {% trans "сом" %}</span>
+            </div>
+            <div class="row g-2 text-center">
+              <div class="col-md-4">
+                <div class="border rounded p-2 bg-white">
+                  <div class="text-muted small">{% trans "Оплачено (100%)" %}</div>
+                  <div class="fs-5 fw-bold">{{ finance.paid_amount|intcomma }} <span class="text-muted fs-6">{% trans "сом" %}</span></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-2 bg-white border-danger">
+                  <div class="text-muted small">{% trans "Фирма" %} ({{ finance.company_share_percent|floatformat:0 }}%)</div>
+                  <div class="fs-5 fw-bold text-danger">{{ finance.company_share_amount_current|intcomma }} <span class="text-muted fs-6">{% trans "сом" %}</span></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="border rounded p-2 bg-white border-success">
+                  <div class="text-muted small">{% trans "Юристам" %} ({{ finance.lawyers_share_percent|floatformat:0 }}%)</div>
+                  <div class="fs-5 fw-bold text-success">{{ finance.lawyers_pool_amount_current|intcomma }} <span class="text-muted fs-6">{% trans "сом" %}</span></div>
+                </div>
+              </div>
             </div>
           </div>
 
           <hr class="my-4">
 
-          <h5 class="mb-3">
+          <h5 class="mb-1">
             {% blocktrans with p=finance.lawyers_share_percent %}Распределение {{ p }}% между сотрудниками{% endblocktrans %}
           </h5>
+          <p class="text-muted small mb-3">
+            {% trans "Суммы рассчитываются от фактически оплаченной суммы." %}
+            {% trans "«При полной оплате» — ориентир, если клиент оплатит 100% по договору." %}
+          </p>
 
           {{ formset.non_form_errors }}
           {{ formset.management_form }}
 
           <div class="table-responsive mb-3">
             <table class="table table-sm align-middle">
-              <thead>
+              <thead class="table-light">
                 <tr>
                   <th>{% trans "Сотрудник" %}</th>
-                  <th>{% trans "Доля 70%, %" %}</th>
-                  <th>{% trans "При полной оплате" %}</th>
-                  <th>{% trans "С учётом оплаты" %}</th>
+                  <th>{% trans "Доля от 70%, %" %}</th>
+                  <th class="text-success">{% trans "Фактически (от оплач.)" %}</th>
+                  <th class="text-muted">{% trans "При полной оплате" %}</th>
                   <th>{% trans "Ручная" %}</th>
                   <th></th>
                 </tr>
               </thead>
-
               <tbody>
                 {% for share_form in formset %}
                   <tr>
@@ -133,34 +157,27 @@
                       {{ share_form.employee }}
                       {{ share_form.employee.errors }}
                     </td>
-
-                    <td style="max-width: 140px;">
+                    <td style="max-width:140px;">
                       {{ share_form.percent_of_pool }}
                       {{ share_form.percent_of_pool.errors }}
                     </td>
-
-                    <td>
-                      {% if share_form.instance.pk %}
-                        {{ share_form.instance.amount_full|intcomma }} {% trans "сом" %}
-                      {% else %}
-                        -
-                      {% endif %}
-                    </td>
-
-                    <td>
+                    <td class="fw-bold text-success">
                       {% if share_form.instance.pk %}
                         {{ share_form.instance.amount_current|intcomma }} {% trans "сом" %}
                       {% else %}
-                        -
+                        —
                       {% endif %}
                     </td>
-
-                    <td class="text-center">
-                      <div class="form-check">
-                        {{ share_form.is_manual }}
-                      </div>
+                    <td class="text-muted">
+                      {% if share_form.instance.pk %}
+                        {{ share_form.instance.amount_full|intcomma }} {% trans "сом" %}
+                      {% else %}
+                        —
+                      {% endif %}
                     </td>
-
+                    <td class="text-center">
+                      <div class="form-check">{{ share_form.is_manual }}</div>
+                    </td>
                     <td>
                       {% if share_form.instance.pk %}
                         <div class="form-check">
@@ -170,7 +187,6 @@
                       {% endif %}
                     </td>
                   </tr>
-
                 {% empty %}
                   <tr>
                     <td colspan="6" class="text-center text-muted">
@@ -182,22 +198,21 @@
             </table>
           </div>
 
-          <div class="d-flex justify-content-between">
+          <div class="d-flex justify-content-between align-items-end">
             <div class="small text-muted">
-              {% trans "Сумма к распределению:" %}
-              <strong>{{ finance.lawyers_pool_amount|intcomma }} {% trans "сом" %}</strong><br>
-
-              {% trans "Оплачено по договору:" %}
-              <strong>
-                {{ finance.paid_amount|intcomma }} / {{ finance.contract_amount|intcomma }} {% trans "сом" %}
-              </strong>
+              <strong>{% trans "Котёл юристов (фактически):" %}</strong>
+              {{ finance.lawyers_pool_amount_current|intcomma }} {% trans "сом" %}<br>
+              <span class="text-muted">{% trans "Котёл юристов (полный договор):" %}
+              {{ finance.lawyers_pool_amount|intcomma }} {% trans "сом" %}</span><br>
+              {% trans "Оплачено:" %}
+              {{ finance.paid_amount|intcomma }} / {{ finance.contract_amount|intcomma }} {% trans "сом" %}
             </div>
-
             <button type="submit" class="btn btn-primary">
               <i class="bi bi-save me-1"></i> {% trans "Сохранить" %}
             </button>
           </div>
         </form>
+
       </div>
     </div>
   </div>

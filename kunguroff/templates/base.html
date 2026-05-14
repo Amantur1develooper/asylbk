@@ -544,6 +544,9 @@
         <a href="{% url 'knowledge:list' %}" class="drawer-link {% if 'knowledge' in request.path %}active{% endif %}">
             <i class="bi bi-journal-richtext"></i> База знаний
         </a>
+        <a href="{% url 'retainer:list' %}" class="drawer-link {% if 'retainer' in request.path %}active{% endif %}">
+            <i class="bi bi-shield-check"></i> Абон. обслуживание
+        </a>
 
         {% if user.is_staff %}
         <div class="drawer-section-title">Система</div>

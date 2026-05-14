@@ -184,8 +184,8 @@ class FinancialTransactionForm(forms.ModelForm):
             'case': forms.Select(attrs={'class': 'form-select js-s2-case'}),
             'client': forms.Select(attrs={'class': 'form-select js-s2-client'}),
             'employee': forms.Select(attrs={'class': 'form-select js-s2-employee'}),
-            'category': forms.Select(attrs={'class': 'form-select js-s2-income-cat'}),
-            'expense_category': forms.Select(attrs={'class': 'form-select js-s2-expense-cat'}),
+            'category': forms.Select(attrs={'class': 'form-select js-s2-category'}),
+            'expense_category': forms.Select(attrs={'class': 'form-select js-s2-expense-category'}),
             'stage': forms.Select(attrs={'class': 'form-select'}),
         }
     def clean(self):
@@ -210,8 +210,9 @@ class FinancialTransactionForm(forms.ModelForm):
         self._limit_queryset('case', Case)
         self._limit_queryset('client', Trustor)
         self._limit_queryset('employee', User)
-        self._limit_queryset('category', IncomeCategory)
-        self._limit_queryset('expense_category', ExpenseCategory)
+        # Категорий мало — показываем все сразу (без AJAX)
+        self.fields['category'].queryset = IncomeCategory.objects.all().order_by('name')
+        self.fields['expense_category'].queryset = ExpenseCategory.objects.all().order_by('name')
 
         # stage как у тебя: зависит от case
         self.fields['stage'].required = False

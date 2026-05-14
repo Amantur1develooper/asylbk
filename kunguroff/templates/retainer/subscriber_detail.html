@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}{{ subscriber.full_name }}{% endblock %}
+{% block page_title %}{{ subscriber.full_name }}{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'retainer:subscriber_edit' subscriber.pk %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-pencil"></i> Редактировать
+  </a>
+  <a href="{% url 'retainer:subscription_create' subscriber.pk %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> Новый договор
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Карточка абонента -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-2">
+        {% if subscriber.client_type == 'legal' %}
+          <span class="badge bg-primary fs-6">Юр. лицо</span>
+        {% else %}
+          <span class="badge bg-secondary fs-6">Физ. лицо</span>
+        {% endif %}
+      </div>
+      <div class="col-md-3">
+        {% if subscriber.contact_person %}
+          <div class="text-muted small">Контактное лицо</div>
+          <div>{{ subscriber.contact_person }}</div>
+        {% endif %}
+        {% if subscriber.inn %}
+          <div class="text-muted small mt-1">ИНН: {{ subscriber.inn }}</div>
+        {% endif %}
+      </div>
+      <div class="col-md-3">
+        {% if subscriber.phone %}<div><i class="bi bi-telephone me-1 text-muted"></i>{{ subscriber.phone }}</div>{% endif %}
+        {% if subscriber.email %}<div><i class="bi bi-envelope me-1 text-muted"></i>{{ subscriber.email }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        {% if subscriber.address %}<div class="text-muted small">{{ subscriber.address }}</div>{% endif %}
+        {% if subscriber.notes %}<div class="text-muted small mt-1">{{ subscriber.notes }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Договоры -->
+{% for sub in subscriptions %}
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center py-2">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-file-earmark-text"></i>
+      <strong>Договор {{ sub.contract_number|default:"б/н" }}</strong>
+      <span class="text-muted small">с {{ sub.start_date|date:"d.m.Y" }}{% if sub.end_date %} по {{ sub.end_date|date:"d.m.Y" }}{% endif %}</span>
+      {% if sub.status == 'active' %}
+        <span class="badge bg-success">Активна</span>
+        {% if sub.is_overdue %}<span class="badge bg-danger">Не оплачен текущий месяц</span>{% endif %}
+      {% elif sub.status == 'paused' %}
+        <span class="badge bg-warning text-dark">На паузе</span>
+      {% else %}
+        <span class="badge bg-secondary">Завершена</span>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'retainer:subscription_edit' sub.pk %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-pencil"></i>
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Сводка договора -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <div class="text-muted small">Ежемесячно</div>
+        <div class="fw-bold fs-5">{{ sub.monthly_fee|intcomma }} сом</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">Всего оплачено</div>
+        <div class="fw-bold fs-5 text-success">{{ sub.total_paid|intcomma }} сом</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">Услуг оказано</div>
+        <div class="fw-bold fs-5">{{ sub.services.count }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">Документов</div>
+        <div class="fw-bold fs-5">{{ sub.documents.count }}</div>
+      </div>
+    </div>
+    {% if sub.responsible %}
+      <div class="text-muted small mb-3">Ответственный: {{ sub.responsible.get_full_name }}</div>
+    {% endif %}
+    {% if sub.notes %}
+      <div class="text-muted small mb-3">{{ sub.notes }}</div>
+    {% endif %}
+
+    <!-- ── Платежи ── -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0"><i class="bi bi-cash-coin me-1"></i>Платежи</h6>
+      <a href="{% url 'retainer:payment_create' sub.pk %}" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-plus"></i> Записать платёж
+      </a>
+    </div>
+    {% if sub.payments.all %}
+      <div class="table-responsive mb-3">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Дата</th>
+              <th>Период</th>
+              <th>Сумма</th>
+              <th>Примечание</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in sub.payments.all %}
+              <tr>
+                <td>{{ p.date|date:"d.m.Y" }}</td>
+                <td>{{ p.period }}</td>
+                <td class="fw-semibold text-success">{{ p.amount|intcomma }} сом</td>
+                <td class="text-muted small">{{ p.note|default:"—" }}</td>
+                <td>
+                  <form method="post" action="{% url 'retainer:payment_delete' p.pk %}" class="d-inline"
+                        onsubmit="return confirm('Удалить платёж?')">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted small mb-3">Платежей пока нет.</p>
+    {% endif %}
+
+    <!-- ── Услуги ── -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0"><i class="bi bi-check2-circle me-1"></i>Оказанные услуги</h6>
+      <a href="{% url 'retainer:service_create' sub.pk %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-plus"></i> Добавить услугу
+      </a>
+    </div>
+    {% if sub.services.all %}
+      <div class="table-responsive mb-3">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Дата</th>
+              <th>Вид</th>
+              <th>Описание</th>
+              <th>Исполнитель</th>
+              <th>Часы</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for svc in sub.services.all %}
+              <tr>
+                <td class="text-nowrap">{{ svc.date|date:"d.m.Y" }}</td>
+                <td><span class="badge bg-light text-dark border">{{ svc.get_service_type_display }}</span></td>
+                <td>{{ svc.description|truncatechars:80 }}</td>
+                <td class="text-muted small">{{ svc.lawyer.get_full_name|default:"—" }}</td>
+                <td class="text-muted small">{{ svc.hours|default:"—" }}</td>
+                <td>
+                  <form method="post" action="{% url 'retainer:service_delete' svc.pk %}" class="d-inline"
+                        onsubmit="return confirm('Удалить запись об услуге?')">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted small mb-3">Услуг пока нет.</p>
+    {% endif %}
+
+    <!-- ── Документы ── -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0"><i class="bi bi-paperclip me-1"></i>Документы</h6>
+      <a href="{% url 'retainer:document_upload' sub.pk %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-upload"></i> Загрузить документ
+      </a>
+    </div>
+    {% if sub.documents.all %}
+      <div class="d-flex flex-wrap gap-2 mb-2">
+        {% for doc in sub.documents.all %}
+          <div class="border rounded p-2 d-flex align-items-center gap-2" style="min-width:200px;max-width:320px;">
+            <i class="bi {{ doc.icon }} fs-5"></i>
+            <div class="flex-grow-1 overflow-hidden">
+              <a href="{{ doc.file.url }}" target="_blank" class="text-decoration-none fw-semibold small d-block text-truncate">
+                {{ doc.name }}
+              </a>
+              <div class="text-muted" style="font-size:.72rem;">{{ doc.uploaded_at|date:"d.m.Y" }}</div>
+            </div>
+            <form method="post" action="{% url 'retainer:document_delete' doc.pk %}"
+                  onsubmit="return confirm('Удалить документ?')">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger p-1" style="line-height:1;">
+                <i class="bi bi-x"></i>
+              </button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted small">Документов пока нет.</p>
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+  <div class="card">
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-file-earmark-text fs-1 d-block mb-2"></i>
+      Договоров нет.
+      <a href="{% url 'retainer:subscription_create' subscriber.pk %}">Добавить договор</a>
+    </div>
+  </div>
+{% endfor %}
+
+{% endblock %}

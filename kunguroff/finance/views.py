@@ -640,6 +640,18 @@ class TransactionCreateView(AccountantRequiredMixin, CreateView):
     template_name = 'finance/transaction_form.html'
     success_url = reverse_lazy('finance:transaction_list')
 
+    def get_initial(self):
+        initial = super().get_initial()
+        t = self.request.GET.get('t')
+        if t in ('income', 'expense'):
+            initial['transaction_type'] = t
+        return initial
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['preset_type'] = self.request.GET.get('t', '')
+        return ctx
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         return super().form_valid(form)

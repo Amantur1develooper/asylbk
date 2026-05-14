@@ -1,0 +1,142 @@
+{% load humanize %}
+
+<div style="max-width:640px;">
+
+  <!-- Заголовок с цветом -->
+  <div class="rounded-3 p-3 mb-4 text-white d-flex align-items-center gap-3"
+       style="background:{{ header_bg }};">
+    <i class="bi {{ header_icon }} fs-3"></i>
+    <div>
+      <div class="fw-bold fs-5">{{ header_label }}</div>
+      {% if preset_type == 'income' %}
+        <div style="opacity:.8;font-size:.82rem;">Поступление денег в компанию</div>
+      {% elif preset_type == 'expense' %}
+        <div style="opacity:.8;font-size:.82rem;">Расход средств компании</div>
+      {% endif %}
+    </div>
+    <a href="{% url 'finance:transaction_list' %}" class="btn btn-sm ms-auto"
+       style="background:rgba(255,255,255,.2);color:#fff;border:0;">
+      <i class="bi bi-x-lg"></i>
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-body p-4">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <!-- Скрытый тип если preset -->
+        {% if preset_type %}
+          <input type="hidden" name="transaction_type" value="{{ preset_type }}">
+        {% else %}
+          <!-- Явный выбор при редактировании -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Тип операции</label>
+            {{ form.transaction_type }}
+          </div>
+        {% endif %}
+
+        <!-- Сумма + Дата -->
+        <div class="row g-3 mb-3">
+          <div class="col-7">
+            <label class="form-label fw-semibold">
+              Сумма <span class="text-danger">*</span>
+            </label>
+            <div class="input-group input-group-lg">
+              {{ form.amount }}
+              <span class="input-group-text">сом</span>
+            </div>
+            {% for e in form.amount.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-5">
+            <label class="form-label fw-semibold">Дата <span class="text-danger">*</span></label>
+            {{ form.date }}
+            {% for e in form.date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <!-- Категория (зависит от типа) -->
+        {% if preset_type == 'income' %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Категория дохода</label>
+            {{ form.category }}
+          </div>
+        {% elif preset_type == 'expense' %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Категория расхода</label>
+            {{ form.expense_category }}
+          </div>
+        {% else %}
+          <!-- При редактировании — показываем оба, JS переключает -->
+          <div class="mb-3" id="income-cat-group">
+            <label class="form-label fw-semibold">Категория дохода</label>
+            {{ form.category }}
+          </div>
+          <div class="mb-3" id="expense-cat-group" style="display:none;">
+            <label class="form-label fw-semibold">Категория расхода</label>
+            {{ form.expense_category }}
+          </div>
+        {% endif %}
+
+        <!-- Описание -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Описание <span class="text-danger">*</span></label>
+          {{ form.description }}
+          {% for e in form.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <!-- № соглашения (только для прихода) -->
+        {% if preset_type == 'income' %}
+          <div class="mb-3" id="agreement-group">
+            <label class="form-label fw-semibold">№ соглашения</label>
+            {{ form.agreement_number }}
+            {% for e in form.agreement_number.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        {% elif not preset_type %}
+          <div class="mb-3" id="agreement-group">
+            <label class="form-label fw-semibold">№ соглашения</label>
+            {{ form.agreement_number }}
+          </div>
+        {% endif %}
+
+        <!-- Дополнительно (сворачиваемый блок) -->
+        <div class="mb-3">
+          <a class="text-muted small text-decoration-none" data-bs-toggle="collapse" href="#extra-fields">
+            <i class="bi bi-chevron-down me-1"></i>Дополнительно (дело, клиент, этап, сотрудник)
+          </a>
+          <div class="collapse mt-3" id="extra-fields">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Дело</label>
+                {{ form.case }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Этап дела</label>
+                {{ form.stage }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Клиент</label>
+                {{ form.client }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Сотрудник</label>
+                {{ form.employee }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 pt-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-check-lg me-1"></i>Сохранить
+          </button>
+          <a href="{% url 'finance:transaction_list' %}" class="btn btn-outline-secondary">Отмена</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
