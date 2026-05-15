@@ -101,7 +101,7 @@ class CaseDetailView(DetailView):
             stage_field_rows[stage.id] = rows
 
         context['stage_field_rows'] = stage_field_rows
-        context['allowed_roles_for_stage_edit'] = ['lawyer', 'advocate', 'director', 'deputy_director', 'manager']
+        context['allowed_roles_for_stage_edit'] = ['lawyer', 'advocate', 'managing_partner_advocate', 'director', 'deputy_director', 'manager', 'accountant']
         return context
 
 
@@ -240,19 +240,23 @@ class CaseDocumentCreateView(View):
     @method_decorator(login_required)
     def post(self, request, *args, **kwargs):
         case = get_object_or_404(Case, pk=kwargs['pk'])
-        
-        # Проверка прав доступа
-        user = request.user
-        # ИЗМЕНЕНИЕ: Проверяем через ManyToMany связь
-        if user.role in ['lawyer', 'advocate', 'managing_partner_advocate'] and user not in case.responsible_lawyer.all():
-            return redirect('permission_denied')
-        
         form = CaseDocumentForm(request.POST, request.FILES)
         if form.is_valid():
             document = form.save(commit=False)
             document.case = case
             document.created_by = request.user
-            document.save()
+            # Если документ для этого дела/этапа/поля уже существует — обновляем файл
+            existing = CaseDocument.objects.filter(
+                case=case,
+                stage=document.stage,
+                field=document.field,
+            ).first()
+            if existing:
+                existing.file_value = document.file_value
+                existing.created_by = request.user
+                existing.save()
+            else:
+                document.save()
             case.calculate_progress()
             messages.success(request, 'Документ успешно загружен.')
             return redirect('cases:case_detail', pk=case.pk)
