@@ -2,8 +2,13 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
-from .models import CaseCategory, CaseStage, StageField, Case, CaseDocument
+from .models import CaseCategory, CaseStage, StageField, Case, CaseDocument, CaseFolder
 from .models import CaseParticipant, CaseParticipantRole
+
+@admin.register(CaseFolder)
+class CaseFolderAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created_by', 'created_at')
+    search_fields = ('name',)
 
 class CaseParticipantInline(admin.TabularInline):
     model = CaseParticipant

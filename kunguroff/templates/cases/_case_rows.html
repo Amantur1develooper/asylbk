@@ -1,0 +1,66 @@
+{% load i18n %}
+<thead class="table-light">
+  <tr>
+    <th>{% trans "Название дела" %}</th>
+    <th>{% trans "Категория" %}</th>
+    <th>{% trans "Клиент" %}</th>
+    <th>{% trans "Статус" %}</th>
+    <th>{% trans "Прогресс" %}</th>
+    <th>{% trans "Ответственный" %}</th>
+    <th>{% trans "Дата" %}</th>
+    <th></th>
+  </tr>
+</thead>
+<tbody>
+  {% for case in case_list %}
+    <tr>
+      <td>
+        {% if case.internal_number %}<span class="badge bg-secondary me-1">№{{ case.internal_number }}</span>{% endif %}
+        <a href="{% url 'cases:case_detail' case.pk %}" class="fw-bold">{{ case.title }}</a>
+        {% if case.description %}<br><small class="text-muted">{{ case.description|truncatewords:5 }}</small>{% endif %}
+      </td>
+      <td><span class="badge bg-light text-dark">{{ case.category.get_name_display }}</span></td>
+      <td><small>{{ case.trustor|default:"—" }}</small></td>
+      <td>
+        <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
+          {{ case.get_status_display }}
+        </span>
+      </td>
+      <td style="min-width:100px;">
+        <div class="d-flex align-items-center gap-1">
+          <div class="progress flex-grow-1" style="height:8px;">
+            <div class="progress-bar {% if case.progress == 100 %}bg-success{% elif case.progress > 50 %}bg-primary{% elif case.progress > 25 %}bg-warning{% else %}bg-danger{% endif %}"
+                 style="width:{{ case.progress }}%;"></div>
+          </div>
+          <small class="text-nowrap">{{ case.progress }}%</small>
+        </div>
+      </td>
+      <td>
+        {% if case.responsible_lawyer.all %}
+          <div class="d-flex flex-wrap gap-1">
+            {% for lawyer in case.responsible_lawyer.all %}
+              <span class="badge bg-light text-dark">{{ lawyer.get_full_name|default:lawyer.username }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <span class="text-muted small">—</span>
+        {% endif %}
+      </td>
+      <td class="text-muted small text-nowrap">{{ case.created_at|date:"d.m.Y" }}</td>
+      <td class="text-end text-nowrap">
+        <div class="btn-group btn-group-sm">
+          <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-outline-primary" title="Просмотр"><i class="bi bi-eye"></i></a>
+          <a href="{% url 'cases:case_update' case.pk %}" class="btn btn-outline-secondary" title="Редактировать"><i class="bi bi-pencil"></i></a>
+          <button type="button" class="btn btn-outline-secondary"
+                  onclick="openMoveFolder({{ case.pk }}, '{{ case.folder_id|default:'' }}')"
+                  title="В папку"><i class="bi bi-folder-symlink"></i></button>
+          {% if user.role in 'director deputy_director' or user.is_superuser %}
+            <a href="{% url 'cases:case_delete' case.pk %}" class="btn btn-outline-danger" title="Удалить"><i class="bi bi-trash"></i></a>
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="text-center text-muted py-3"><i class="bi bi-inbox me-2"></i>Нет дел</td></tr>
+  {% endfor %}
+</tbody>

@@ -9,7 +9,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-from .models import Case, CaseCategory, CaseStage, CaseDocument
+from .models import Case, CaseCategory, CaseStage, CaseDocument, CaseFolder
 from .forms import CaseForm, CaseDocumentForm
 from django.shortcuts import render, get_object_or_404, redirect
 from finance.models import CaseFinance, CaseFinanceShare
@@ -41,8 +41,12 @@ class CaseListView(LawyerRequiredMixin, ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Добавляем категории для фильтрации
         context['categories'] = CaseCategory.objects.all()
+        all_folders = CaseFolder.objects.prefetch_related('cases').all()
+        context['folders'] = all_folders
+        # Дела без папки — из уже отфильтрованного queryset
+        base_qs = self.get_queryset()
+        context['unfiled_cases'] = base_qs.filter(folder__isnull=True)
         return context
     
     
@@ -550,5 +554,56 @@ class CaseDocumentDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
             case.calculate_progress()
 
         messages.success(request, "Документ успешно удалён.")
-        # Замените 'cases:detail' на ваш реальный name урла карточки дела
         return redirect(reverse("cases:case_detail", args=[case.pk]))
+
+
+# ─── Папки ────────────────────────────────────────────────────────────────────
+
+from django.views.decorators.http import require_POST
+from .models import CaseFolder
+
+
+@login_required
+@require_POST
+def folder_create(request):
+    name = request.POST.get('name', '').strip()
+    if not name:
+        return JsonResponse({'error': 'Название не может быть пустым'}, status=400)
+    folder = CaseFolder.objects.create(name=name, created_by=request.user)
+    return JsonResponse({'id': folder.pk, 'name': folder.name})
+
+
+@login_required
+@require_POST
+def folder_rename(request, pk):
+    folder = get_object_or_404(CaseFolder, pk=pk)
+    name = request.POST.get('name', '').strip()
+    if not name:
+        return JsonResponse({'error': 'Название не может быть пустым'}, status=400)
+    folder.name = name
+    folder.save(update_fields=['name'])
+    return JsonResponse({'id': folder.pk, 'name': folder.name})
+
+
+@login_required
+@require_POST
+def folder_delete(request, pk):
+    folder = get_object_or_404(CaseFolder, pk=pk)
+    # Убираем папку у всех дел, не удаляя сами дела
+    folder.cases.update(folder=None)
+    folder.delete()
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def case_move_folder(request, pk):
+    case = get_object_or_404(Case, pk=pk)
+    folder_id = request.POST.get('folder_id') or None
+    if folder_id:
+        folder = get_object_or_404(CaseFolder, pk=folder_id)
+        case.folder = folder
+    else:
+        case.folder = None
+    case.save(update_fields=['folder'])
+    return JsonResponse({'ok': True, 'folder_id': folder_id})

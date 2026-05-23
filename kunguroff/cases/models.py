@@ -81,6 +81,24 @@ class StageField(models.Model):
     def __str__(self):
         return f"{self.stage} - {self.name}"
 
+class CaseFolder(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название папки")
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='case_folders', verbose_name="Создал"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Папка"
+        verbose_name_plural = "Папки"
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
 class Case(models.Model):
     STATUS_CHOICES = [
         ('open', 'Открыто'),
@@ -153,9 +171,17 @@ class Case(models.Model):
     case_number = models.CharField(max_length=100, blank=True, verbose_name="Номер дела в суде")
     judge_name = models.CharField(max_length=200, blank=True, verbose_name="ФИО судьи")
     
+    folder = models.ForeignKey(
+        'CaseFolder',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cases',
+        verbose_name="Папка"
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
-    
+
     class Meta:
         verbose_name = "Дело"
         verbose_name_plural = "Дела"

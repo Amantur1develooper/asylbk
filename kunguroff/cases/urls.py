@@ -30,9 +30,10 @@ urlpatterns = [
     path('participants/<int:pk>/update/', views.CaseParticipantUpdateView.as_view(), name='case_update_participant'),
     path('participants/<int:pk>/delete/', views.CaseParticipantDeleteView.as_view(), name='case_delete_participant'),
     path('ajax/load-participant-roles/', views.ajax_load_participant_roles, name='ajax_load_participant_roles'),
-   
- 
- 
-  
-      
+
+    # Папки
+    path('folders/create/',          views.folder_create,     name='folder_create'),
+    path('folders/<int:pk>/rename/', views.folder_rename,     name='folder_rename'),
+    path('folders/<int:pk>/delete/', views.folder_delete,     name='folder_delete'),
+    path('<int:pk>/move-folder/',    views.case_move_folder,  name='case_move_folder'),
 ]

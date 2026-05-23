@@ -10,6 +10,9 @@
     <a href="{% url 'cases:case_create' %}" class="btn btn-primary">
       <i class="bi bi-plus-circle"></i> {% trans "Добавить дело" %}
     </a>
+    <button type="button" class="btn btn-outline-secondary" onclick="openCreateFolder()">
+      <i class="bi bi-folder-plus"></i> Папка
+    </button>
     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
       <i class="bi bi-funnel"></i> {% trans "Фильтры" %}
     </button>
@@ -35,21 +38,17 @@
             </select>
           </div>
         </div>
-
         <div class="col-md-3">
           <div class="mb-3">
             <label for="filterStatus" class="form-label">{% trans "Статус" %}</label>
             <select name="status" id="filterStatus" class="form-select">
               <option value="">{% trans "Все статусы" %}</option>
               {% for status_key, status_value in status_choices %}
-                <option value="{{ status_key }}" {% if request.GET.status == status_key %}selected{% endif %}>
-                  {{ status_value }}
-                </option>
+                <option value="{{ status_key }}" {% if request.GET.status == status_key %}selected{% endif %}>{{ status_value }}</option>
               {% endfor %}
             </select>
           </div>
         </div>
-
         <div class="col-md-3">
           <div class="mb-3">
             <label for="filterLawyer" class="form-label">{% trans "Ответственный" %}</label>
@@ -63,7 +62,6 @@
             </select>
           </div>
         </div>
-
         <div class="col-md-3">
           <div class="mb-3">
             <label for="filterClient" class="form-label">{% trans "Клиент" %}</label>
@@ -72,40 +70,9 @@
           </div>
         </div>
       </div>
-
-      <div class="row">
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label for="filterProgressMin" class="form-label">{% trans "Прогресс от" %}</label>
-            <div class="input-group">
-              <input type="range" name="progress_min" id="filterProgressMin" class="form-range"
-                     min="0" max="100" value="{{ request.GET.progress_min|default:0 }}"
-                     oninput="progressMinValue.value = this.value">
-              <span class="input-group-text" id="progressMinValue">{{ request.GET.progress_min|default:0 }}%</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label for="filterProgressMax" class="form-label">{% trans "Прогресс до" %}</label>
-            <div class="input-group">
-              <input type="range" name="progress_max" id="filterProgressMax" class="form-range"
-                     min="0" max="100" value="{{ request.GET.progress_max|default:100 }}"
-                     oninput="progressMaxValue.value = this.value">
-              <span class="input-group-text" id="progressMaxValue">{{ request.GET.progress_max|default:100 }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary">
-          <i class="bi bi-filter"></i> {% trans "Применить фильтры" %}
-        </button>
-        <a href="{% url 'cases:case_list' %}" class="btn btn-outline-secondary">
-          <i class="bi bi-x-circle"></i> {% trans "Сбросить" %}
-        </a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-filter"></i> {% trans "Применить фильтры" %}</button>
+        <a href="{% url 'cases:case_list' %}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> {% trans "Сбросить" %}</a>
       </div>
     </form>
   </div>
@@ -115,252 +82,96 @@
 <div class="row mb-4">
   <div class="col-md-3">
     <div class="card bg-primary text-white">
-      <div class="card-body">
-        <h5 class="card-title">{{ cases_count }}</h5>
-        <p class="card-text">{% trans "Всего дел" %}</p>
-      </div>
+      <div class="card-body"><h5 class="card-title">{{ cases_count }}</h5><p class="card-text">{% trans "Всего дел" %}</p></div>
     </div>
   </div>
-
   <div class="col-md-3">
     <div class="card bg-success text-white">
-      <div class="card-body">
-        <h5 class="card-title">{{ completed_cases }}</h5>
-        <p class="card-text">{% trans "Завершено" %}</p>
-      </div>
+      <div class="card-body"><h5 class="card-title">{{ completed_cases }}</h5><p class="card-text">{% trans "Завершено" %}</p></div>
     </div>
   </div>
-
   <div class="col-md-3">
     <div class="card bg-warning text-dark">
-      <div class="card-body">
-        <h5 class="card-title">{{ in_progress_cases }}</h5>
-        <p class="card-text">{% trans "В работе" %}</p>
-      </div>
+      <div class="card-body"><h5 class="card-title">{{ in_progress_cases }}</h5><p class="card-text">{% trans "В работе" %}</p></div>
     </div>
   </div>
-
   <div class="col-md-3">
     <div class="card bg-danger text-white">
-      <div class="card-body">
-        <h5 class="card-title">{{ overdue_cases }}</h5>
-        <p class="card-text">{% trans "Просрочено" %}</p>
-      </div>
+      <div class="card-body"><h5 class="card-title">{{ overdue_cases }}</h5><p class="card-text">{% trans "Просрочено" %}</p></div>
     </div>
   </div>
 </div>
 
-<!-- Таблица дел -->
-<div class="card">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div class="btn-group">
-        <button type="button" class="btn btn-outline-secondary" id="exportBtn">
-          <i class="bi bi-download"></i> {% trans "Экспорт" %}
-        </button>
-
-        <div class="btn-group">
-          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-            <i class="bi bi-list-columns"></i> {% trans "Колонки" %}
+<!-- ===== ПАПКИ ===== -->
+{% if folders %}
+  {% for folder in folders %}
+    <div class="card mb-2" id="folder-card-{{ folder.pk }}">
+      <div class="card-header d-flex align-items-center gap-2 py-2" style="cursor:pointer;"
+           data-bs-toggle="collapse" data-bs-target="#folder-cases-{{ folder.pk }}">
+        <i class="bi bi-folder-fill text-warning fs-5"></i>
+        <span class="fw-semibold folder-name-display" data-id="{{ folder.pk }}">{{ folder.name }}</span>
+        <span class="badge bg-secondary ms-1">{{ folder.cases.count }}</span>
+        <div class="ms-auto d-flex gap-1" onclick="event.stopPropagation();">
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                  onclick="openRenameFolder({{ folder.pk }}, '{{ folder.name|escapejs }}')"
+                  title="Переименовать">
+            <i class="bi bi-pencil"></i>
           </button>
-          <div class="dropdown-menu" id="columnToggle">
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="0" checked>
-              <label class="form-check-label">{% trans "Название" %}</label>
-            </div>
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="1" checked>
-              <label class="form-check-label">{% trans "Категория" %}</label>
-            </div>
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="2" checked>
-              <label class="form-check-label">{% trans "Клиент" %}</label>
-            </div>
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="3" checked>
-              <label class="form-check-label">{% trans "Статус" %}</label>
-            </div>
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="4" checked>
-              <label class="form-check-label">{% trans "Прогресс" %}</label>
-            </div>
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="5" checked>
-              <label class="form-check-label">{% trans "Ответственный" %}</label>
-            </div>
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="6" checked>
-              <label class="form-check-label">{% trans "Дата создания" %}</label>
-            </div>
-            <div class="form-check dropdown-item">
-              <input class="form-check-input column-toggle" type="checkbox" data-column="7" checked>
-              <label class="form-check-label">{% trans "Действия" %}</label>
-            </div>
-          </div>
+          <button class="btn btn-sm btn-outline-danger py-0 px-2"
+                  onclick="confirmDeleteFolder({{ folder.pk }}, '{{ folder.name|escapejs }}')"
+                  title="Удалить папку">
+            <i class="bi bi-trash"></i>
+          </button>
         </div>
       </div>
-
-      <div class="d-flex">
-        <div class="input-group me-2" style="width: 250px;">
-          <input type="text" class="form-control" placeholder="{% trans 'Поиск...' %}" id="searchInput">
-          <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-            <i class="bi bi-search"></i>
-          </button>
-        </div>
-
-        <div class="btn-group">
-          <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-            <i class="bi bi-sort-down"></i> {% trans "Сортировка" %}
-          </button>
-          <div class="dropdown-menu">
-            <a class="dropdown-item sort-option" href="#" data-sort="created_at">{% trans "По дате создания (новые)" %}</a>
-            <a class="dropdown-item sort-option" href="#" data-sort="-created_at">{% trans "По дате создания (старые)" %}</a>
-            <a class="dropdown-item sort-option" href="#" data-sort="title">{% trans "По названию (А-Я)" %}</a>
-            <a class="dropdown-item sort-option" href="#" data-sort="-title">{% trans "По названию (Я-А)" %}</a>
-            <a class="dropdown-item sort-option" href="#" data-sort="progress">{% trans "По прогрессу (возр.)" %}</a>
-            <a class="dropdown-item sort-option" href="#" data-sort="-progress">{% trans "По прогрессу (убыв.)" %}</a>
+      <div class="collapse show" id="folder-cases-{{ folder.pk }}">
+        {% if folder.cases.all %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              {% include "cases/_case_rows.html" with case_list=folder.cases.all %}
+            </table>
           </div>
-        </div>
+        {% else %}
+          <div class="card-body text-muted small py-2 ps-3">Папка пуста</div>
+        {% endif %}
       </div>
     </div>
+  {% endfor %}
+{% endif %}
 
+<!-- ===== БЕЗ ПАПКИ ===== -->
+<div class="card">
+  <div class="card-header d-flex align-items-center gap-2 py-2" style="cursor:pointer;"
+       data-bs-toggle="collapse" data-bs-target="#unfiled-cases">
+    <i class="bi bi-folder2-open text-secondary fs-5"></i>
+    <span class="fw-semibold">Без папки</span>
+    <span class="badge bg-secondary ms-1" id="unfiled-count">{{ unfiled_cases|length }}</span>
+    <div class="ms-auto d-flex gap-2 align-items-center" onclick="event.stopPropagation();">
+      <div class="input-group input-group-sm" style="width:220px;">
+        <input type="text" class="form-control" placeholder="Поиск..." id="searchInput">
+        <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="collapse show" id="unfiled-cases">
     <div class="table-responsive">
-      <table class="table table-hover" id="casesTable">
-        <thead>
-          <tr>
-            <th>{% trans "Название дела" %}</th>
-            <th>{% trans "Категория" %}</th>
-            <th>{% trans "Клиент" %}</th>
-            <th>{% trans "Статус" %}</th>
-            <th>{% trans "Прогресс" %}</th>
-            <th>{% trans "Ответственный" %}</th>
-            <th>{% trans "Дата создания" %}</th>
-            <th>{% trans "Действия" %}</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for case in cases %}
-            <tr>
-              <td>
-                {% if case.internal_number %}<span class="badge bg-secondary me-1">№{{ case.internal_number }}</span>{% endif %}
-                <a href="{% url 'cases:case_detail' case.pk %}" class="fw-bold">{{ case.title }}</a>
-                {% if case.description %}
-                  <br><small class="text-muted">{{ case.description|truncatewords:5 }}</small>
-                {% endif %}
-              </td>
-
-              <td>
-                <span class="badge bg-light text-dark">{{ case.category.get_name_display }}</span>
-              </td>
-
-              <td>
-                <a href="">{{ case.trustor }}</a>
-              </td>
-
-              <td>
-                <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
-                  {{ case.get_status_display }}
-                </span>
-              </td>
-
-              <td>
-                <div class="d-flex align-items-center">
-                  <div class="progress flex-grow-1 me-2" style="height: 10px;">
-                    <div class="progress-bar
-                      {% if case.progress == 100 %}bg-success
-                      {% elif case.progress > 75 %}bg-primary
-                      {% elif case.progress > 50 %}bg-info
-                      {% elif case.progress > 25 %}bg-warning
-                      {% else %}bg-danger{% endif %}"
-                      role="progressbar"
-                      style="width: {{ case.progress }}%;"
-                      aria-valuenow="{{ case.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-                  <small>{{ case.progress }}%</small>
-                </div>
-              </td>
-
-              <td>
-                {% if case.responsible_lawyer.all %}
-                  <div class="d-flex flex-wrap gap-1">
-                    {% for lawyer in case.responsible_lawyer.all %}
-                      <span class="badge bg-light text-dark">
-                        {{ lawyer.get_full_name|default:lawyer.username }}
-                      </span>
-                    {% endfor %}
-                  </div>
-                {% else %}
-                  <span class="text-muted small">{% trans "Ответственные не назначены" %}</span>
-                {% endif %}
-              </td>
-
-              <td>{{ case.created_at|date:"d.m.Y" }}</td>
-
-              <td>
-                <div class="btn-group btn-group-sm">
-                  <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-outline-primary" title="{% trans 'Просмотр' %}">
-                    <i class="bi bi-eye"></i>
-                  </a>
-                  <a href="{% url 'cases:case_update' case.pk %}" class="btn btn-outline-secondary" title="{% trans 'Редактировать' %}">
-                    <i class="bi bi-pencil"></i>
-                  </a>
-                  {% if user.role in 'director deputy_director' %}
-                    <a href="{% url 'cases:case_delete' case.pk %}" class="btn btn-outline-danger" title="{% trans 'Удалить' %}">
-                      <i class="bi bi-trash"></i>
-                    </a>
-                  {% endif %}
-                </div>
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="8" class="text-center py-4">
-                <i class="bi bi-inbox display-4 text-muted"></i>
-                <p class="mt-3 mb-2">{% trans "Дела не найдены" %}</p>
-                <a href="{% url 'cases:case_create' %}" class="btn btn-primary mt-2">{% trans "Добавить первое дело" %}</a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
+      <table class="table table-hover mb-0" id="casesTable">
+        {% include "cases/_case_rows.html" with case_list=unfiled_cases %}
       </table>
     </div>
 
-    <!-- Пагинация -->
     {% if is_paginated %}
-      <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
+      <nav class="p-3">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
           {% if page_obj.has_previous %}
             <li class="page-item">
-              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                <i class="bi bi-chevron-left"></i>
-              </a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">‹</a>
             </li>
           {% endif %}
-
-          {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
-              </li>
-            {% endif %}
-          {% endfor %}
-
+          <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
           {% if page_obj.has_next %}
             <li class="page-item">
-              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                <i class="bi bi-chevron-right"></i>
-              </a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">›</a>
             </li>
           {% endif %}
         </ul>
@@ -368,79 +179,166 @@
     {% endif %}
   </div>
 </div>
+
+<!-- ===== МОДАЛ: Создать папку ===== -->
+<div class="modal fade" id="createFolderModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title"><i class="bi bi-folder-plus me-2"></i>Новая папка</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="newFolderName" class="form-control" placeholder="Название папки" maxlength="100">
+        <div id="createFolderError" class="text-danger small mt-1 d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="doCreateFolder()">Создать</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== МОДАЛ: Переименовать папку ===== -->
+<div class="modal fade" id="renameFolderModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title"><i class="bi bi-pencil me-2"></i>Переименовать папку</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="renameFolderId">
+        <input type="text" id="renameFolderName" class="form-control" maxlength="100">
+        <div id="renameFolderError" class="text-danger small mt-1 d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="doRenameFolder()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== МОДАЛ: Переместить дело ===== -->
+<div class="modal fade" id="moveFolderModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title"><i class="bi bi-folder-symlink me-2"></i>Переместить в папку</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="moveCaseId">
+        <select id="moveFolderSelect" class="form-select">
+          <option value="">— Без папки —</option>
+          {% for folder in folders %}
+            <option value="{{ folder.pk }}">{{ folder.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="doMoveCase()">Переместить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_css %}
 <style>
-.avatar-sm {
-  width: 24px;
-  height: 24px;
-  font-size: 12px;
-  font-weight: bold;
-}
 .progress { background-color: #e9ecef; }
+.card-header[data-bs-toggle="collapse"] { user-select: none; }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+const CSRF = '{{ csrf_token }}';
+const URL_FOLDER_CREATE  = "{% url 'cases:folder_create' %}";
+const FOLDER_RENAME_URL  = (pk) => `/cases/folders/${pk}/rename/`;
+const FOLDER_DELETE_URL  = (pk) => `/cases/folders/${pk}/delete/`;
+const CASE_MOVE_URL      = (pk) => `/cases/${pk}/move-folder/`;
+
+// ── Создать папку ──────────────────────────────────────────────────────────
+function openCreateFolder() {
+  document.getElementById('newFolderName').value = '';
+  document.getElementById('createFolderError').classList.add('d-none');
+  new bootstrap.Modal(document.getElementById('createFolderModal')).show();
+  setTimeout(() => document.getElementById('newFolderName').focus(), 300);
+}
+async function doCreateFolder() {
+  const name = document.getElementById('newFolderName').value.trim();
+  if (!name) return;
+  const r = await fetch(URL_FOLDER_CREATE, {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded'},
+    body: new URLSearchParams({name})
+  });
+  const d = await r.json();
+  if (!r.ok) { document.getElementById('createFolderError').textContent = d.error; document.getElementById('createFolderError').classList.remove('d-none'); return; }
+  bootstrap.Modal.getInstance(document.getElementById('createFolderModal')).hide();
+  location.reload();
+}
+
+// ── Переименовать папку ────────────────────────────────────────────────────
+function openRenameFolder(pk, currentName) {
+  document.getElementById('renameFolderId').value = pk;
+  document.getElementById('renameFolderName').value = currentName;
+  document.getElementById('renameFolderError').classList.add('d-none');
+  new bootstrap.Modal(document.getElementById('renameFolderModal')).show();
+  setTimeout(() => document.getElementById('renameFolderName').focus(), 300);
+}
+async function doRenameFolder() {
+  const pk   = document.getElementById('renameFolderId').value;
+  const name = document.getElementById('renameFolderName').value.trim();
+  if (!name) return;
+  const r = await fetch(FOLDER_RENAME_URL(pk), {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded'},
+    body: new URLSearchParams({name})
+  });
+  const d = await r.json();
+  if (!r.ok) { document.getElementById('renameFolderError').textContent = d.error; document.getElementById('renameFolderError').classList.remove('d-none'); return; }
+  bootstrap.Modal.getInstance(document.getElementById('renameFolderModal')).hide();
+  document.querySelectorAll(`.folder-name-display[data-id="${pk}"]`).forEach(el => el.textContent = d.name);
+}
+
+// ── Удалить папку ──────────────────────────────────────────────────────────
+function confirmDeleteFolder(pk, name) {
+  if (!confirm(`Удалить папку «${name}»? Дела останутся, но будут без папки.`)) return;
+  fetch(FOLDER_DELETE_URL(pk), {
+    method: 'POST', headers: {'X-CSRFToken': CSRF}
+  }).then(() => location.reload());
+}
+
+// ── Переместить дело ───────────────────────────────────────────────────────
+function openMoveFolder(caseId, currentFolderId) {
+  document.getElementById('moveCaseId').value = caseId;
+  const sel = document.getElementById('moveFolderSelect');
+  sel.value = currentFolderId || '';
+  new bootstrap.Modal(document.getElementById('moveFolderModal')).show();
+}
+async function doMoveCase() {
+  const caseId   = document.getElementById('moveCaseId').value;
+  const folderId = document.getElementById('moveFolderSelect').value;
+  await fetch(CASE_MOVE_URL(caseId), {
+    method: 'POST', headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded'},
+    body: new URLSearchParams({folder_id: folderId})
+  });
+  bootstrap.Modal.getInstance(document.getElementById('moveFolderModal')).hide();
+  location.reload();
+}
+
+// ── Поиск по таблице без папки ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('searchInput');
-  const searchBtn = document.getElementById('searchBtn');
   const table = document.getElementById('casesTable');
-  const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-
-  function performSearch() {
-    const searchText = (searchInput.value || '').toLowerCase();
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      let found = false;
-
-      // ищем во всех ячейках, кроме последней (действия)
-      for (let j = 0; j < row.cells.length - 1; j++) {
-        const cellText = (row.cells[j].textContent || '').toLowerCase();
-        if (cellText.includes(searchText)) { found = true; break; }
-      }
-      row.style.display = found ? '' : 'none';
-    }
-  }
-
-  if (searchInput) searchInput.addEventListener('keyup', performSearch);
-  if (searchBtn) searchBtn.addEventListener('click', performSearch);
-
-  // Колонки
-  const columnToggles = document.querySelectorAll('.column-toggle');
-  columnToggles.forEach(toggle => {
-    toggle.addEventListener('change', function() {
-      const columnIndex = this.getAttribute('data-column');
-      const columns = table.querySelectorAll(`tr > *:nth-child(${parseInt(columnIndex) + 1})`);
-      columns.forEach(column => { column.style.display = this.checked ? '' : 'none'; });
+  if (!searchInput || !table) return;
+  searchInput.addEventListener('keyup', function() {
+    const q = this.value.toLowerCase();
+    table.querySelectorAll('tbody tr').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
   });
-
-  // Сортировка (через URL)
-  document.querySelectorAll('.sort-option').forEach(option => {
-    option.addEventListener('click', function(e) {
-      e.preventDefault();
-      const sortField = this.getAttribute('data-sort');
-
-      const urlParams = new URLSearchParams(window.location.search);
-      urlParams.set('sort', sortField);
-
-      window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
-    });
-  });
-
-  // Экспорт CSV
-  const exportBtn = document.getElementById('exportBtn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      urlParams.set('export', 'csv');
-      window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
-    });
-  }
 });
 </script>
 {% endblock %}
