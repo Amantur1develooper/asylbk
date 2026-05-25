@@ -65,6 +65,15 @@
         </div>
         {% if day.is_today %}
           <span class="today-badge">Сегодня</span>
+          <script>
+            (function(){
+              var el = document.getElementById('day-{{ day.date }}');
+              if (!el) return;
+              var top = 0, node = el;
+              while (node) { top += node.offsetTop || 0; node = node.offsetParent; }
+              window.scrollTo(0, Math.max(0, top - 130));
+            })();
+          </script>
         {% endif %}
         <div class="ms-auto d-flex align-items-center gap-2">
           {% if day.entries %}
@@ -165,12 +174,13 @@
 
 {% block extra_js %}
 <script>
-// По умолчанию схлопываем дни без событий и прошедшие дни
-// Разворачиваем сегодняшний день автоматически
 document.addEventListener('DOMContentLoaded', function () {
   const today = "{{ today|date:'Y-m-d' }}";
-  const currentMonth = {{ month }};
-  const currentYear = {{ year }};
+
+  // Схлопываем без анимации (чтобы финальная высота страницы была известна сразу)
+  const styleTag = document.createElement('style');
+  styleTag.textContent = '.events-collapse { transition: none !important; }';
+  document.head.appendChild(styleTag);
 
   document.querySelectorAll('.day-card').forEach(card => {
     const dateStr = card.id.replace('day-', '');
@@ -179,23 +189,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const hasEntries = card.querySelectorAll('.event-item').length > 0;
     const isToday = dateStr === today;
 
-    // Collapse дни без событий (кроме сегодня)
     if (!hasEntries && !isToday) {
       eventsEl.style.display = 'none';
       if (icon) icon.style.transform = 'rotate(-90deg)';
     }
   });
 
-  // Мгновенный прыжок к сегодня (или к якорю из URL)
-  const hash = window.location.hash;
-  const hashEl = hash ? document.querySelector(hash) : null;
-  const todayCard = document.getElementById('day-' + today);
-  const target = hashEl || todayCard;
+  // Возвращаем анимацию обратно
+  document.head.removeChild(styleTag);
 
-  if (target) {
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    const top = target.getBoundingClientRect().top + window.pageYOffset - 72;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+  // Скролл к якорю из URL (если явно указан, например после сохранения)
+  const hash = window.location.hash;
+  if (hash) {
+    const target = document.querySelector(hash);
+    if (target) {
+      requestAnimationFrame(function () {
+        target.scrollIntoView({ block: 'start' });
+      });
+    }
   }
 });
 
