@@ -186,22 +186,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Скролл к якорю из URL (приоритет) или к сегодня
-  function scrollToEl(el) {
-    const top = el.getBoundingClientRect().top + window.pageYOffset - 72;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-  }
-
+  // Мгновенный прыжок к сегодня (или к якорю из URL)
   const hash = window.location.hash;
   const hashEl = hash ? document.querySelector(hash) : null;
   const todayCard = document.getElementById('day-' + today);
   const target = hashEl || todayCard;
 
   if (target) {
-    // Отключаем авторестор позиции браузера, чтобы не перебивал наш скролл
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    // requestAnimationFrame гарантирует, что DOM уже отрисован
-    requestAnimationFrame(() => requestAnimationFrame(() => scrollToEl(target)));
+    const top = target.getBoundingClientRect().top + window.pageYOffset - 72;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
   }
 });
 
