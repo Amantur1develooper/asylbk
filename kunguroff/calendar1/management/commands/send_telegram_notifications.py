@@ -71,15 +71,23 @@ class Command(BaseCommand):
                     if notification.sent:
                         continue
 
+                    # Атомарно "забираем" право отправить именно это уведомление: если несколько
+                    # процессов/воркеров запускают эту команду одновременно (например, несколько
+                    # воркеров gunicorn), только один из них получит rowcount=1 и продолжит
+                    # отправку — остальные увидят 0 и пропустят, вместо того чтобы отправить
+                    # то же сообщение повторно.
+                    claimed = EventNotification.objects.filter(
+                        pk=notification.pk, sent=False
+                    ).update(sent=True, sent_at=now)
+                    if not claimed:
+                        continue
+
                     # Отправляем уведомление
                     success = telegram_service.send_event_notification(
                         event, user, notification_type
                     )
 
                     if success:
-                        notification.sent = True
-                        notification.sent_at = now
-                        notification.save(update_fields=['sent', 'sent_at'])
                         sent_count += 1
                         self.stdout.write(
                             self.style.SUCCESS(
@@ -88,6 +96,10 @@ class Command(BaseCommand):
                             )
                         )
                     else:
+                        # Не получилось отправить — снимаем "sent", чтобы попробовать в следующий раз
+                        EventNotification.objects.filter(pk=notification.pk).update(
+                            sent=False, sent_at=None
+                        )
                         self.stdout.write(
                             self.style.ERROR(
                                 f"Ошибка отправки уведомления пользователю {user.username}"

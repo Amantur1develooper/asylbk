@@ -512,6 +512,9 @@
         <a href="/grafik/" class="drawer-link {% if 'grafik' in request.path %}active{% endif %}">
             <i class="bi bi-calendar-week"></i> График дел
         </a>
+        <a href="{% url 'calendar1:reminder_list' %}" class="drawer-link {% if 'reminders' in request.path %}active{% endif %}">
+            <i class="bi bi-bell"></i> Напоминание
+        </a>
 
         <div class="drawer-section-title">Финансы</div>
         <a href="{% url 'finance:dashboard' %}" class="drawer-link {% if 'finance' in request.path %}active{% endif %}">

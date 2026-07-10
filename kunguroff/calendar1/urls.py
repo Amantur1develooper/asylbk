@@ -12,4 +12,9 @@ urlpatterns = [
     path('events/<int:pk>/update/', views.EventUpdateView.as_view(), name='event_update'),
     path('events/<int:pk>/delete/', views.EventDeleteView.as_view(), name='event_delete'),
     path('events/json/', views.CalendarJsonView.as_view(), name='calendar_json'),
+
+    path('reminders/', views.ReminderListView.as_view(), name='reminder_list'),
+    path('reminders/create/', views.ReminderCreateView.as_view(), name='reminder_create'),
+    path('reminders/<int:pk>/update/', views.ReminderUpdateView.as_view(), name='reminder_update'),
+    path('reminders/<int:pk>/delete/', views.ReminderDeleteView.as_view(), name='reminder_delete'),
 ]

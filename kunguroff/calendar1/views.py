@@ -2,6 +2,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
@@ -12,7 +13,7 @@ from django.contrib import messages
 from core.permissions import LawyerRequiredMixin, OwnerOrManagerMixin
 from cases.models import Case
 from .models import CalendarEvent
-from .models import CalendarEvent
+from .forms import QuickReminderForm
 
 from django.views.generic import TemplateView
 from django.utils import timezone
@@ -340,3 +341,66 @@ class QuickEventCreateView(LawyerRequiredMixin, View):
             })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+
+
+class ReminderListView(LoginRequiredMixin, ListView):
+    """Простой список личных напоминаний: текст, дата/время, кому уведомить."""
+    model = CalendarEvent
+    template_name = 'calendar/reminder_list.html'
+    context_object_name = 'reminders'
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            CalendarEvent.objects
+            .filter(event_type='reminder')
+            .filter(Q(owner=user) | Q(participants=user))
+            .distinct()
+            .order_by('start_time')
+        )
+
+
+class ReminderCreateView(LoginRequiredMixin, CreateView):
+    model = CalendarEvent
+    form_class = QuickReminderForm
+    template_name = 'calendar/reminder_form.html'
+    success_url = reverse_lazy('calendar1:reminder_list')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        now = timezone.localtime()
+        initial.setdefault('date', now.date())
+        return initial
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        messages.success(self.request, 'Напоминание создано!')
+        return super().form_valid(form)
+
+
+class ReminderUpdateView(LoginRequiredMixin, UpdateView):
+    model = CalendarEvent
+    form_class = QuickReminderForm
+    template_name = 'calendar/reminder_form.html'
+    success_url = reverse_lazy('calendar1:reminder_list')
+
+    def get_queryset(self):
+        return CalendarEvent.objects.filter(event_type='reminder', owner=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Напоминание обновлено!')
+        return super().form_valid(form)
+
+
+class ReminderDeleteView(LoginRequiredMixin, DeleteView):
+    model = CalendarEvent
+    template_name = 'calendar/reminder_confirm_delete.html'
+    success_url = reverse_lazy('calendar1:reminder_list')
+    context_object_name = 'reminder'
+
+    def get_queryset(self):
+        return CalendarEvent.objects.filter(event_type='reminder', owner=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Напоминание удалено!')
+        return super().delete(request, *args, **kwargs)
