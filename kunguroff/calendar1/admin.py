@@ -33,8 +33,9 @@ class CalendarEventAdmin(admin.ModelAdmin):
                 'enable_notifications', 
                 'notify_1_day', 
                 'notify_12_hours', 
-                'notify_3_hours', 
-                'notify_1_hour', 
+                'notify_3_hours',
+                'notify_2_hours',
+                'notify_1_hour',
                 'notify_30_minutes', 
                 'notify_10_minutes', 
                 'notify_1_minute'

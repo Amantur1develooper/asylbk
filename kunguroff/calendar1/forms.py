@@ -21,7 +21,7 @@ class CalendarEventForm(forms.ModelForm):
             'event_type', 'title', 'description', 'start_time', 'end_time',
             'location', 'priority', 'case', 'trustor', 'participants',
             'enable_notifications', 'notify_1_day', 'notify_12_hours',
-            'notify_3_hours', 'notify_1_hour', 'notify_30_minutes',
+            'notify_3_hours', 'notify_2_hours', 'notify_1_hour', 'notify_30_minutes',
             'notify_10_minutes', 'notify_1_minute'
         ]
         widgets = {
@@ -110,6 +110,17 @@ class QuickReminderForm(forms.ModelForm):
 
         instance.event_type = 'reminder'
         instance.enable_notifications = True
+
+        # Быстрое напоминание всегда шлёт ровно 4 уведомления: за 2ч/1ч/30мин/10мин —
+        # остальные пороги модели (1 день, 12ч, 3ч, 1 мин) для этой формы отключены.
+        instance.notify_1_day = False
+        instance.notify_12_hours = False
+        instance.notify_3_hours = False
+        instance.notify_2_hours = True
+        instance.notify_1_hour = True
+        instance.notify_30_minutes = True
+        instance.notify_10_minutes = True
+        instance.notify_1_minute = False
 
         if commit:
             instance.save()

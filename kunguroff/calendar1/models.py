@@ -41,6 +41,7 @@ class CalendarEvent(models.Model):
     notify_1_day = models.BooleanField(default=True, verbose_name="За 1 день")
     notify_12_hours = models.BooleanField(default=True, verbose_name="За 12 часов")
     notify_3_hours = models.BooleanField(default=True, verbose_name="За 3 часа")
+    notify_2_hours = models.BooleanField(default=True, verbose_name="За 2 часа")
     notify_1_hour = models.BooleanField(default=True, verbose_name="За 1 час")
     notify_30_minutes = models.BooleanField(default=True, verbose_name="За 30 минут")
     notify_10_minutes = models.BooleanField(default=False, verbose_name="За 10 минут")
@@ -117,6 +118,8 @@ class CalendarEvent(models.Model):
             notification_times.append(self.start_time - timedelta(hours=12))
         if self.notify_3_hours:
             notification_times.append(self.start_time - timedelta(hours=3))
+        if self.notify_2_hours:
+            notification_times.append(self.start_time - timedelta(hours=2))
         if self.notify_1_hour:
             notification_times.append(self.start_time - timedelta(hours=1))
         if self.notify_30_minutes:

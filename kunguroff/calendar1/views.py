@@ -222,10 +222,10 @@ class EventUpdateView(OwnerOrManagerMixin, UpdateView):
         'event_type', 'title', 'description', 'start_time', 'end_time',
         'location', 'priority', 'case', 'trustor', 'participants',
         'enable_notifications', 'notify_1_day', 'notify_12_hours',
-        'notify_3_hours', 'notify_1_hour', 'notify_30_minutes',
+        'notify_3_hours', 'notify_2_hours', 'notify_1_hour', 'notify_30_minutes',
         'notify_10_minutes', 'notify_1_minute'
     ]
-    
+
     def get_success_url(self):
         return reverse_lazy('calendar1:event_detail', kwargs={'pk': self.object.pk})
     

@@ -28,6 +28,7 @@ class Command(BaseCommand):
             ('1_day',       'notify_1_day',       timedelta(days=1)),
             ('12_hours',    'notify_12_hours',     timedelta(hours=12)),
             ('3_hours',     'notify_3_hours',      timedelta(hours=3)),
+            ('2_hours',     'notify_2_hours',       timedelta(hours=2)),
             ('1_hour',      'notify_1_hour',       timedelta(hours=1)),
             ('30_minutes',  'notify_30_minutes',   timedelta(minutes=30)),
             ('10_minutes',  'notify_10_minutes',   timedelta(minutes=10)),
