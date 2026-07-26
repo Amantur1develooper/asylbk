@@ -61,6 +61,7 @@ class TelegramService:
             return False
         
         notification_mapping = {
+            '1_week': telegram_account.notify_1_week,
             '1_day': telegram_account.notify_1_day,
             '12_hours': telegram_account.notify_12_hours,
             '3_hours': telegram_account.notify_3_hours,
@@ -79,7 +80,7 @@ class TelegramService:
         
         message = f"🔔 <b>Напоминание</b>\n\n"
         message += f"<b>Событие:</b> {event.title}\n"
-        message += f"<b>Время:</b> {event.start_time.strftime('%d.%m.%Y в %H:%M')}\n"
+        message += f"<b>Время:</b> {timezone.localtime(event.start_time).strftime('%d.%m.%Y в %H:%M')}\n"
         
         if event.location:
             message += f"<b>Место:</b> {event.location}\n"
@@ -97,6 +98,7 @@ class TelegramService:
     def _get_time_until_text(self, notification_type):
         """Возвращает текст о времени до события"""
         time_mapping = {
+            '1_week': 'через 1 неделю',
             '1_day': 'через 1 день',
             '12_hours': 'через 12 часов',
             '3_hours': 'через 3 часа',

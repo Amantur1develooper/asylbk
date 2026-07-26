@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from cases.models import Case
 from clients.models import Trustor
 
@@ -38,6 +39,7 @@ class CalendarEvent(models.Model):
     
     # Настройки уведомлений
     enable_notifications = models.BooleanField(default=True, verbose_name="Включить уведомления")
+    notify_1_week = models.BooleanField(default=False, verbose_name="За 1 неделю")
     notify_1_day = models.BooleanField(default=True, verbose_name="За 1 день")
     notify_12_hours = models.BooleanField(default=True, verbose_name="За 12 часов")
     notify_3_hours = models.BooleanField(default=True, verbose_name="За 3 часа")
@@ -87,7 +89,7 @@ class CalendarEvent(models.Model):
         ordering = ['start_time']
     
     def __str__(self):
-        return f"{self.title} - {self.start_time.strftime('%d.%m.%Y %H:%M')}"
+        return f"{self.title} - {timezone.localtime(self.start_time).strftime('%d.%m.%Y %H:%M')}"
     
     @property
     def is_all_day(self):
@@ -111,7 +113,9 @@ class CalendarEvent(models.Model):
         """Возвращает список времен для уведомлений"""
         from datetime import timedelta
         notification_times = []
-        
+
+        if self.notify_1_week:
+            notification_times.append(self.start_time - timedelta(days=7))
         if self.notify_1_day:
             notification_times.append(self.start_time - timedelta(days=1))
         if self.notify_12_hours:

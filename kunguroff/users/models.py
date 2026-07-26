@@ -150,6 +150,7 @@ class TelegramAccount(models.Model):
     )
     
     # Настройки уведомлений
+    notify_1_week = models.BooleanField(default=True, verbose_name="За 1 неделю")
     notify_1_day = models.BooleanField(default=True, verbose_name="За 1 день")
     notify_12_hours = models.BooleanField(default=True, verbose_name="За 12 часов")
     notify_3_hours = models.BooleanField(default=True, verbose_name="За 3 часа")

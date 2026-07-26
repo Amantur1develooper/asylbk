@@ -16,15 +16,17 @@ class Command(BaseCommand):
         telegram_service = TelegramService()
         now = timezone.now()
         
-        # Находим события, для которых нужно отправить уведомления
+        # Находим события, для которых нужно отправить уведомления.
+        # Окно должно быть не уже самого дальнего порога (сейчас это "за 1 неделю").
         events = CalendarEvent.objects.filter(
             enable_notifications=True,
             start_time__gt=now,  # Только будущие события
-            start_time__lte=now + timedelta(days=1)  # Только в ближайшие 24 часа
+            start_time__lte=now + timedelta(days=7)
         )
-        
+
         # Маппинг типа уведомления -> поле модели и задержка
         notification_types = [
+            ('1_week',      'notify_1_week',       timedelta(days=7)),
             ('1_day',       'notify_1_day',       timedelta(days=1)),
             ('12_hours',    'notify_12_hours',     timedelta(hours=12)),
             ('3_hours',     'notify_3_hours',      timedelta(hours=3)),

@@ -95,6 +95,7 @@
             <div class="col-md-6">
               <h6>{% trans "Время напоминаний:" %}</h6>
               <ul class="list-unstyled">
+                {% if event.notify_1_week %}<li><i class="bi bi-check text-success"></i> {% trans "За 1 неделю" %}</li>{% endif %}
                 {% if event.notify_1_day %}<li><i class="bi bi-check text-success"></i> {% trans "За 1 день" %}</li>{% endif %}
                 {% if event.notify_12_hours %}<li><i class="bi bi-check text-success"></i> {% trans "За 12 часов" %}</li>{% endif %}
                 {% if event.notify_3_hours %}<li><i class="bi bi-check text-success"></i> {% trans "За 3 часа" %}</li>{% endif %}

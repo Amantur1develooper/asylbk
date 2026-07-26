@@ -30,8 +30,9 @@ class CalendarEventAdmin(admin.ModelAdmin):
         }),
         ('Уведомления', {
             'fields': (
-                'enable_notifications', 
-                'notify_1_day', 
+                'enable_notifications',
+                'notify_1_week',
+                'notify_1_day',
                 'notify_12_hours', 
                 'notify_3_hours',
                 'notify_2_hours',
