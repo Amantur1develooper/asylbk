@@ -9,6 +9,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.http import JsonResponse
+from django.db.models import Q
 from .models import Case, CaseCategory, CaseStage, CaseDocument, CaseFolder
 from .forms import CaseForm, CaseDocumentForm
 from django.shortcuts import render, get_object_or_404, redirect
@@ -20,35 +21,79 @@ class CaseListView(LawyerRequiredMixin, ListView):
     template_name = 'cases/case_list.html'
     context_object_name = 'cases'
     paginate_by = 20
-    
+
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-    
+
     def get_queryset(self):
         # Фильтрация по роли пользователя
         user = self.request.user
         if user.role in ['lawyer', 'advocate', 'managing_partner_advocate']:
             # ИЗМЕНЕНИЕ: Юристы видят дела, где они входят в ответственные
-            return Case.objects.filter(responsible_lawyer=user)
-        elif user.role == 'manager':
-            # Менеджеры видят дела своей команды
-            
-            return Case.objects.all()
+            qs = Case.objects.filter(responsible_lawyer=user)
         else:
-            # Директора и админы видят все дела
-            return Case.objects.all()
-    
+            # Менеджеры, директора и админы видят все дела
+            qs = Case.objects.all()
+
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(internal_number__icontains=q) |
+                Q(title__icontains=q) |
+                Q(description__icontains=q) |
+                Q(court_name__icontains=q) |
+                Q(case_number__icontains=q) |
+                Q(judge_name__icontains=q) |
+                Q(participants__trustor__first_name__icontains=q) |
+                Q(participants__trustor__last_name__icontains=q) |
+                Q(participants__trustor__company_name__icontains=q) |
+                Q(responsible_lawyer__first_name__icontains=q) |
+                Q(responsible_lawyer__last_name__icontains=q) |
+                Q(responsible_lawyer__username__icontains=q)
+            ).distinct()
+
+        return qs.select_related('category', 'folder').prefetch_related(
+            'responsible_lawyer', 'participants__trustor'
+        )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = CaseCategory.objects.all()
-        all_folders = CaseFolder.objects.prefetch_related('cases').all()
-        context['folders'] = all_folders
-        # Дела без папки — из уже отфильтрованного queryset
-        base_qs = self.get_queryset()
-        context['unfiled_cases'] = base_qs.filter(folder__isnull=True)
+
+        search_query = self.request.GET.get('q', '').strip()
+
+        # Один запрос (+ prefetch) на все доступные пользователю дела, вместо
+        # отдельного запроса на каждую папку — иначе на N папок уходит N+1 запросов.
+        all_cases = list(self.get_queryset())
+
+        by_folder = {}
+        unfiled_cases = []
+        for case in all_cases:
+            if case.folder_id:
+                by_folder.setdefault(case.folder_id, []).append(case)
+            else:
+                unfiled_cases.append(case)
+
+        all_folders = list(CaseFolder.objects.all())
+        folders_data = []
+        for folder in all_folders:
+            folder_cases = by_folder.get(folder.pk, [])
+            # При активном поиске не показываем папки без совпадений
+            if search_query and not folder_cases:
+                continue
+            folders_data.append({
+                'folder': folder,
+                'cases': folder_cases,
+                'count': len(folder_cases),
+            })
+        context['folders'] = folders_data
+        context['all_folders_list'] = all_folders
+
+        context['unfiled_cases'] = unfiled_cases
+        context['search_query'] = search_query
         return context
-    
+
     
     
     # cases/views.py

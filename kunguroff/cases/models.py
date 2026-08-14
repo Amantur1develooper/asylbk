@@ -200,8 +200,13 @@ class Case(models.Model):
     @property
     def main_trustor(self):
         """Основной доверитель по делу"""
-        main_participant = self.participants.filter(main_participant=True).first()
-        return main_participant.trustor if main_participant else None
+        # Фильтруем уже загруженный (в т.ч. через prefetch_related) список в Python,
+        # а не через .filter() — тот всегда бьёт в БД заново и ломает prefetch-кэш,
+        # порождая N+1 запрос на каждое дело в списке.
+        for participant in self.participants.all():
+            if participant.main_participant and participant.participant_type == 'trustor':
+                return participant.trustor
+        return None
     
     @property
     def all_trustors(self):
@@ -251,12 +256,8 @@ class Case(models.Model):
             self.save(update_fields=['progress', 'updated_at'])
         
         return self.progress
-    @property
-    def main_trustor(self):
-        p = self.participants.filter(main_participant=True, participant_type="trustor").first()
-        return p.trustor if p else None
-    
-    
+
+
 class CaseDocument(models.Model):
     case = models.ForeignKey(
         Case, 

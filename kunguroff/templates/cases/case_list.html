@@ -20,6 +20,19 @@
 {% endblock %}
 
 {% block content %}
+<!-- Поиск -->
+<form method="get" class="mb-3">
+  <div class="input-group">
+    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+    <input type="text" name="q" value="{{ search_query }}" class="form-control"
+           placeholder="{% trans 'Поиск по номеру дела, названию, суду, судье, клиенту или юристу...' %}">
+    {% if search_query %}
+      <a href="{% url 'cases:case_list' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+    {% endif %}
+    <button type="submit" class="btn btn-primary">{% trans "Найти" %}</button>
+  </div>
+</form>
+
 <!-- Фильтры -->
 <div class="card mb-4 collapse" id="filtersCollapse">
   <div class="card-body">
@@ -104,31 +117,31 @@
 
 <!-- ===== ПАПКИ ===== -->
 {% if folders %}
-  {% for folder in folders %}
-    <div class="card mb-2" id="folder-card-{{ folder.pk }}">
+  {% for item in folders %}
+    <div class="card mb-2" id="folder-card-{{ item.folder.pk }}">
       <div class="card-header d-flex align-items-center gap-2 py-2" style="cursor:pointer;"
-           data-bs-toggle="collapse" data-bs-target="#folder-cases-{{ folder.pk }}">
+           data-bs-toggle="collapse" data-bs-target="#folder-cases-{{ item.folder.pk }}">
         <i class="bi bi-folder-fill text-warning fs-5"></i>
-        <span class="fw-semibold folder-name-display" data-id="{{ folder.pk }}">{{ folder.name }}</span>
-        <span class="badge bg-secondary ms-1">{{ folder.cases.count }}</span>
+        <span class="fw-semibold folder-name-display" data-id="{{ item.folder.pk }}">{{ item.folder.name }}</span>
+        <span class="badge bg-secondary ms-1">{{ item.count }}</span>
         <div class="ms-auto d-flex gap-1" onclick="event.stopPropagation();">
           <button class="btn btn-sm btn-outline-secondary py-0 px-2"
-                  onclick="openRenameFolder({{ folder.pk }}, '{{ folder.name|escapejs }}')"
+                  onclick="openRenameFolder({{ item.folder.pk }}, '{{ item.folder.name|escapejs }}')"
                   title="Переименовать">
             <i class="bi bi-pencil"></i>
           </button>
           <button class="btn btn-sm btn-outline-danger py-0 px-2"
-                  onclick="confirmDeleteFolder({{ folder.pk }}, '{{ folder.name|escapejs }}')"
+                  onclick="confirmDeleteFolder({{ item.folder.pk }}, '{{ item.folder.name|escapejs }}')"
                   title="Удалить папку">
             <i class="bi bi-trash"></i>
           </button>
         </div>
       </div>
-      <div class="collapse show" id="folder-cases-{{ folder.pk }}">
-        {% if folder.cases.all %}
+      <div class="collapse{% if search_query %} show{% endif %}" id="folder-cases-{{ item.folder.pk }}">
+        {% if item.cases %}
           <div class="table-responsive">
             <table class="table table-hover mb-0">
-              {% include "cases/_case_rows.html" with case_list=folder.cases.all %}
+              {% include "cases/_case_rows.html" with case_list=item.cases %}
             </table>
           </div>
         {% else %}
@@ -146,12 +159,6 @@
     <i class="bi bi-folder2-open text-secondary fs-5"></i>
     <span class="fw-semibold">Без папки</span>
     <span class="badge bg-secondary ms-1" id="unfiled-count">{{ unfiled_cases|length }}</span>
-    <div class="ms-auto d-flex gap-2 align-items-center" onclick="event.stopPropagation();">
-      <div class="input-group input-group-sm" style="width:220px;">
-        <input type="text" class="form-control" placeholder="Поиск..." id="searchInput">
-        <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
-      </div>
-    </div>
   </div>
   <div class="collapse show" id="unfiled-cases">
     <div class="table-responsive">
@@ -230,7 +237,7 @@
         <input type="hidden" id="moveCaseId">
         <select id="moveFolderSelect" class="form-select">
           <option value="">— Без папки —</option>
-          {% for folder in folders %}
+          {% for folder in all_folders_list %}
             <option value="{{ folder.pk }}">{{ folder.name }}</option>
           {% endfor %}
         </select>
@@ -327,18 +334,5 @@ async function doMoveCase() {
   bootstrap.Modal.getInstance(document.getElementById('moveFolderModal')).hide();
   location.reload();
 }
-
-// ── Поиск по таблице без папки ────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  const searchInput = document.getElementById('searchInput');
-  const table = document.getElementById('casesTable');
-  if (!searchInput || !table) return;
-  searchInput.addEventListener('keyup', function() {
-    const q = this.value.toLowerCase();
-    table.querySelectorAll('tbody tr').forEach(row => {
-      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
-  });
-});
 </script>
 {% endblock %}

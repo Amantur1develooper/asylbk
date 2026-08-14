@@ -529,14 +529,16 @@
             <i class="bi bi-graph-up-arrow"></i> Рейтинги
         </a>
 
-        {% if user.is_superuser or user.role in 'manager,director,deputy_director' %}
+        {% if user.is_superuser or user.role in 'manager,director,deputy_director,hr' %}
         <div class="drawer-section-title">Управление</div>
+        {% if user.is_superuser or user.role in 'manager,director,deputy_director' %}
         <a href="{% url 'hr:employee_list' %}" class="drawer-link {% if '/hr/' in request.path %}active{% endif %}">
             <i class="bi bi-people-fill"></i> Отдел кадров
         </a>
         <a href="{% url 'public:vacancy_manage_list' %}" class="drawer-link {% if 'manage/vacancies' in request.path %}active{% endif %}">
             <i class="bi bi-briefcase-fill"></i> Вакансии
         </a>
+        {% endif %}
         <a href="{% url 'public:outsource_manage_list' %}" class="drawer-link {% if 'manage/outsource' in request.path %}active{% endif %}">
             <i class="bi bi-send-fill"></i> Аутсорс дела
         </a>

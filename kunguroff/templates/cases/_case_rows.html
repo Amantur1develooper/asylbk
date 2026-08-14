@@ -20,7 +20,7 @@
         {% if case.description %}<br><small class="text-muted">{{ case.description|truncatewords:5 }}</small>{% endif %}
       </td>
       <td><span class="badge bg-light text-dark">{{ case.category.get_name_display }}</span></td>
-      <td><small>{{ case.trustor|default:"—" }}</small></td>
+      <td><small>{{ case.main_trustor|default:"—" }}</small></td>
       <td>
         <span class="badge bg-{% if case.status == 'completed' %}success{% elif case.status == 'in_progress' %}primary{% elif case.status == 'paused' %}warning{% else %}secondary{% endif %}">
           {{ case.get_status_display }}

@@ -222,7 +222,8 @@ class OutsourceCaseDetailView(DetailView):
 # ── CRM: управление аутсорс делами ───────────────────────────────
 class OutsourceManageMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
-        if not _can_manage(request.user):
+        user = request.user
+        if not (_can_manage(user) or user.role == 'hr'):
             messages.error(request, "Нет доступа.")
             return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
