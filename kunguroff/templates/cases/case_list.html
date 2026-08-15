@@ -93,24 +93,19 @@
 
 <!-- Статистика -->
 <div class="row mb-4">
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card bg-primary text-white">
       <div class="card-body"><h5 class="card-title">{{ cases_count }}</h5><p class="card-text">{% trans "Всего дел" %}</p></div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card bg-success text-white">
       <div class="card-body"><h5 class="card-title">{{ completed_cases }}</h5><p class="card-text">{% trans "Завершено" %}</p></div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="card bg-warning text-dark">
       <div class="card-body"><h5 class="card-title">{{ in_progress_cases }}</h5><p class="card-text">{% trans "В работе" %}</p></div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card bg-danger text-white">
-      <div class="card-body"><h5 class="card-title">{{ overdue_cases }}</h5><p class="card-text">{% trans "Просрочено" %}</p></div>
     </div>
   </div>
 </div>

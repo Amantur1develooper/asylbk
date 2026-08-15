@@ -92,6 +92,13 @@ class CaseListView(LawyerRequiredMixin, ListView):
 
         context['unfiled_cases'] = unfiled_cases
         context['search_query'] = search_query
+
+        # Статистика — считаем по уже загруженному списку (без доп. запросов),
+        # с учётом текущего поиска и роли пользователя.
+        context['cases_count'] = len(all_cases)
+        context['completed_cases'] = sum(1 for c in all_cases if c.status == 'completed')
+        context['in_progress_cases'] = sum(1 for c in all_cases if c.status == 'in_progress')
+
         return context
 
     
