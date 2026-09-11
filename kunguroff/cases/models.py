@@ -179,6 +179,20 @@ class Case(models.Model):
         related_name='cases',
         verbose_name="Папка"
     )
+
+    # Автоматически формируемое соглашение об оказании юридических услуг
+    agreement_file = models.FileField(
+        upload_to='case_agreements/',
+        blank=True,
+        null=True,
+        verbose_name="Файл соглашения",
+        help_text="Формируется автоматически, когда заполнены категория, сумма договора, "
+                  "ответственный юрист и основной доверитель по делу.",
+    )
+    agreement_generated_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Дата формирования соглашения"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
@@ -212,6 +226,20 @@ class Case(models.Model):
     def all_trustors(self):
         """Все доверители по делу"""
         return [participant.trustor for participant in self.participants.all()]
+
+    @property
+    def agreement_ready(self):
+        """Достаточно ли данных, чтобы автоматически сформировать соглашение по делу."""
+        if not (self.category_id and self.title and self.contract_amount and self.contract_amount > 0):
+            return False
+        if not self.responsible_lawyer.exists():
+            return False
+        trustor = self.main_trustor
+        if not trustor:
+            return False
+        if trustor.entity_type == 'legal':
+            return bool(trustor.company_name)
+        return bool(trustor.first_name and trustor.last_name)
     
     @property
     def participants_by_role(self):

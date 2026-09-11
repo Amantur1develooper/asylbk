@@ -9,12 +9,12 @@ import logging
 
 import requests
 from django.db import transaction
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.conf import settings
 from django.utils import timezone
 
-from cases.models import CaseDocument
+from cases.models import Case, CaseDocument, CaseParticipant
 
 logger = logging.getLogger(__name__)
 
@@ -113,3 +113,40 @@ def archive_document_on_upload(sender, instance, created, **kwargs):
     transaction.on_commit(
         lambda: threading.Thread(target=_run, daemon=True).start()
     )
+
+
+# ── Автоформирование соглашения по делу ─────────────────────────────────────
+
+def _try_regenerate_agreement(case_id: int):
+    """Пересобирает соглашение по делу, если данных уже достаточно."""
+    from cases.agreement import regenerate_case_agreement
+
+    try:
+        case = Case.objects.prefetch_related(
+            'responsible_lawyer', 'participants__trustor'
+        ).get(pk=case_id)
+    except Case.DoesNotExist:
+        return
+
+    try:
+        regenerate_case_agreement(case)
+    except Exception:
+        logger.exception('Не удалось автоматически сформировать соглашение по делу %s', case_id)
+
+
+@receiver(post_save, sender=Case)
+def generate_agreement_on_case_save(sender, instance, **kwargs):
+    """При сохранении дела — если все нужные поля заполнены, формируем соглашение."""
+    transaction.on_commit(lambda: _try_regenerate_agreement(instance.pk))
+
+
+@receiver(post_save, sender=CaseParticipant)
+def generate_agreement_on_participant_save(sender, instance, **kwargs):
+    """Доверитель обычно добавляется отдельным шагом после создания дела —
+    проверяем готовность соглашения и при добавлении/изменении участника."""
+    transaction.on_commit(lambda: _try_regenerate_agreement(instance.case_id))
+
+
+@receiver(post_delete, sender=CaseParticipant)
+def generate_agreement_on_participant_delete(sender, instance, **kwargs):
+    transaction.on_commit(lambda: _try_regenerate_agreement(instance.case_id))

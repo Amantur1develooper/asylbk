@@ -172,6 +172,35 @@
     {% endif %}
 {% endif %}{# end finance access check #}
 
+    {# --- Автоматически сформированное соглашение --- #}
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>{% trans "Соглашение об оказании услуг" %}</h5>
+      </div>
+      <div class="card-body">
+        {% if case.agreement_file %}
+          <p class="mb-2">
+            <i class="bi bi-check-circle-fill text-success me-1"></i>
+            {% trans "Сформировано автоматически" %}
+            {% if case.agreement_generated_at %}
+              {% trans "— " %}{{ case.agreement_generated_at|date:"d.m.Y H:i" }}
+            {% endif %}
+          </p>
+          <a href="{{ case.agreement_file.url }}" class="btn btn-outline-primary" download>
+            <i class="bi bi-download me-1"></i>{% trans "Скачать соглашение (.docx)" %}
+          </a>
+          <p class="text-muted small mt-2 mb-0">
+            {% trans "Документ обновляется автоматически при изменении данных по делу. Перед подписанием проверьте и при необходимости отредактируйте текст." %}
+          </p>
+        {% else %}
+          <p class="text-muted mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            {% trans "Соглашение сформируется автоматически, как только будут заполнены: категория дела, сумма договора, хотя бы один ответственный юрист и основной доверитель." %}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
     {# --- Личная доля юриста/адвоката --- #}
     {% if not request.user.is_superuser and request.user.role in 'lawyer,advocate,managing_partner_advocate' %}
       {% if case.finance %}
