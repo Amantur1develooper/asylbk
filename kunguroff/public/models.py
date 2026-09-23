@@ -46,8 +46,8 @@ class Staff(models.Model):
     order = models.PositiveIntegerField("Сортировка", default=0)
 
     class Meta:
-        verbose_name = "Сотрудник"
-        verbose_name_plural = "Сотрудники"
+        verbose_name = "Публичная карточка команды (сайт)"
+        verbose_name_plural = "Команда на сайте (страница «О нас»)"
         ordering = ["-is_partner", "order", "id"]
 
     def __str__(self):

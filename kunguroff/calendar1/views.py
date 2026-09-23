@@ -13,7 +13,7 @@ from django.contrib import messages
 from core.permissions import LawyerRequiredMixin, OwnerOrManagerMixin
 from cases.models import Case
 from .models import CalendarEvent
-from .forms import QuickReminderForm
+from .forms import QuickReminderForm, _telegram_users
 
 from django.views.generic import TemplateView
 from django.utils import timezone
@@ -159,8 +159,9 @@ class EventCreateView(LawyerRequiredMixin, CreateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
 
-        # Ограничиваем выбор участников сотрудниками фирмы
-        form.fields['participants'].queryset = form.fields['participants'].queryset.exclude(
+        # Участником-получателем уведомления можно выбрать только сотрудника
+        # с привязанным Telegram — иначе выбор есть, а уведомление никуда не уйдёт.
+        form.fields['participants'].queryset = _telegram_users().exclude(
             role='external_lawyer'
         )
 
@@ -233,7 +234,9 @@ class EventUpdateView(OwnerOrManagerMixin, UpdateView):
         form = super().get_form(form_class)
         form.fields['start_time'].widget.attrs.update({'class': 'datetimepicker'})
         form.fields['end_time'].widget.attrs.update({'class': 'datetimepicker'})
-        form.fields['participants'].queryset = form.fields['participants'].queryset.exclude(
+        # Участником-получателем уведомления можно выбрать только сотрудника
+        # с привязанным Telegram — иначе выбор есть, а уведомление никуда не уйдёт.
+        form.fields['participants'].queryset = _telegram_users().exclude(
             role='external_lawyer'
         )
         return form
