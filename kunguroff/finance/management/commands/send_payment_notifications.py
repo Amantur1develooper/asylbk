@@ -18,7 +18,7 @@ from django.utils import timezone
 from django.conf import settings
 
 from finance.models import CaseFinance
-from users.models import User, TelegramAccount
+from users.models import User, TelegramAccount, MANAGER_ROLES
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ class Command(BaseCommand):
                 is_active=True,
                 notifications_enabled=True,
                 user__is_active=True,
-                user__role__in=['manager', 'director', 'deputy_director'],
+                user__role__in=MANAGER_ROLES,
             )
         )
 
