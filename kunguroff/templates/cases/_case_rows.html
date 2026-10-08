@@ -51,6 +51,18 @@
         <div class="btn-group btn-group-sm">
           <a href="{% url 'cases:case_detail' case.pk %}" class="btn btn-outline-primary" title="Просмотр"><i class="bi bi-eye"></i></a>
           <a href="{% url 'cases:case_update' case.pk %}" class="btn btn-outline-secondary" title="Редактировать"><i class="bi bi-pencil"></i></a>
+          {% if case.agreement_download_url %}
+            <a href="{{ case.agreement_download_url }}" class="btn btn-outline-success" title="Открыть соглашение" target="_blank" rel="noopener">
+              <i class="bi bi-file-earmark-text"></i>
+            </a>
+            <a href="{{ case.agreement_download_url }}" class="btn btn-outline-success" title="Скачать соглашение" download>
+              <i class="bi bi-download"></i>
+            </a>
+          {% else %}
+            <button type="button" class="btn btn-outline-secondary disabled" title="Соглашение ещё не готово" disabled>
+              <i class="bi bi-file-earmark-text"></i>
+            </button>
+          {% endif %}
           <button type="button" class="btn btn-outline-secondary"
                   onclick="openMoveFolder({{ case.pk }}, '{{ case.folder_id|default:'' }}')"
                   title="В папку"><i class="bi bi-folder-symlink"></i></button>

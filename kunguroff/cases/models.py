@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from clients.models import Trustor
 from decimal import Decimal
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.validators import RegexValidator
 from django.utils import timezone
 
@@ -72,12 +72,18 @@ class StageField(models.Model):
         verbose_name="Варианты выбора"
     )
     order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
-    
+    is_agreement_document = models.BooleanField(
+        default=False,
+        verbose_name="Это поле — соглашение",
+        help_text="Загруженный сюда файл будет считаться подписанным соглашением по "
+                  "делу — на него будет вести отдельная кнопка «Соглашение» в списке дел.",
+    )
+
     class Meta:
         verbose_name = "Поле этапа"
         verbose_name_plural = "Поля этапов"
         ordering = ['stage', 'order']
-    
+
     def __str__(self):
         return f"{self.stage} - {self.name}"
 
@@ -156,8 +162,18 @@ class Case(models.Model):
         default='open',
         verbose_name="Статус дела"
     )
-    progress = models.PositiveIntegerField(default=0, verbose_name="Прогресс (%)")
-    
+    progress = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Прогресс (%)",
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    manual_progress = models.BooleanField(
+        default=False,
+        verbose_name="Процент заполненности указан вручную",
+        help_text="Если отмечено, процент не пересчитывается автоматически при "
+                  "загрузке документов — значение задаёт сам пользователь.",
+    )
+
     # НОВОЕ: полная стоимость дела (100%)
     contract_amount = models.DecimalField(
         max_digits=12,
@@ -228,6 +244,34 @@ class Case(models.Model):
         return [participant.trustor for participant in self.participants.all()]
 
     @property
+    def signed_agreement_document(self):
+        """Файл, загруженный в поле этапа, помеченное как «это поле — соглашение»
+        (CaseDocument с field.is_agreement_document=True). Это реальный подписанный
+        документ — в отличие от agreement_file, который только черновик.
+
+        Фильтруем уже загруженный (через prefetch_related('documents__field'))
+        список в Python, а не через .filter() — тот всегда бьёт в БД заново и
+        ломает prefetch-кэш, порождая N+1 запрос на каждое дело в списке.
+        """
+        best = None
+        for doc in self.documents.all():
+            if doc.field_id and doc.field.is_agreement_document and doc.file_value:
+                if best is None or doc.created_at > best.created_at:
+                    best = doc
+        return best
+
+    @property
+    def agreement_download_url(self):
+        """Ссылка на скачивание соглашения: приоритет — реально подписанный
+        загруженный документ, иначе — автоматически сформированный черновик."""
+        signed = self.signed_agreement_document
+        if signed and signed.file_value:
+            return signed.file_value.url
+        if self.agreement_file:
+            return self.agreement_file.url
+        return None
+
+    @property
     def agreement_ready(self):
         """Достаточно ли данных, чтобы автоматически сформировать соглашение по делу."""
         if not (self.category_id and self.title and self.contract_amount and self.contract_amount > 0):
@@ -252,27 +296,32 @@ class Case(models.Model):
         return ", ".join([lawyer.get_full_name() or lawyer.username 
                          for lawyer in self.responsible_lawyer.all()])
     def calculate_progress(self):
-        """Метод для расчета прогресса дела на основе заполненных обязательных полей"""
+        """Метод для расчета прогресса дела на основе заполненных обязательных полей.
+
+        Если процент указан вручную (manual_progress=True) — не пересчитываем,
+        пользователь сам управляет значением.
+        """
+        if self.manual_progress:
+            return self.progress
+
         total_required = 0
         completed_required = 0
-        
+
         # Проверяем, что у дела есть категория и связанные этапы
         if not self.category:
             self.progress = 0
             self.save()
             return self.progress
-            
+
         for stage in self.category.stages.all():
             required_fields = stage.fields.filter(is_required=True)
-            
+
             for field in required_fields:
                 total_required += 1
                 # Проверяем, существует ли документ для этого поля
                 if self.documents.filter(stage=stage, field=field).exists():
                     completed_required += 1
-        
-        print(f"DEBUG: total_required={total_required}, completed_required={completed_required}")
-        
+
         if total_required > 0:
             new_progress = int((completed_required / total_required) * 100)
         else:

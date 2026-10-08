@@ -36,4 +36,5 @@ urlpatterns = [
     path('folders/<int:pk>/rename/', views.folder_rename,     name='folder_rename'),
     path('folders/<int:pk>/delete/', views.folder_delete,     name='folder_delete'),
     path('<int:pk>/move-folder/',    views.case_move_folder,  name='case_move_folder'),
+    path('<int:pk>/update-progress/', views.case_update_progress, name='case_update_progress'),
 ]

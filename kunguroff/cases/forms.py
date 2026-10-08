@@ -135,7 +135,8 @@ class CaseForm(forms.ModelForm):
             'internal_number', 'internal_year',  # ✅ ДОБАВИТЬ СЮДА
             'title', 'description', 'category', 'responsible_lawyer',
             'manager', 'current_stage', 'status', 'contract_amount',
-            'court_name', 'case_number', 'judge_name'
+            'court_name', 'case_number', 'judge_name',
+            'manual_progress', 'progress',
         ]
         widgets = {
             'internal_number': forms.TextInput(attrs={
@@ -153,6 +154,10 @@ class CaseForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Подробное описание дела...'}),
             'manager': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
+            'manual_progress': forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'id_manual_progress'}),
+            'progress': forms.NumberInput(attrs={
+                'class': 'form-control', 'min': 0, 'max': 100, 'id': 'id_progress',
+            }),
         }
         labels = {
             'internal_number': 'Номер дела (внутренний)',

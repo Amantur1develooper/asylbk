@@ -76,12 +76,20 @@
           <div class="col-sm-8">
             <div class="d-flex align-items-center">
               <div class="progress flex-grow-1 me-2" style="height: 10px;">
-                <div class="progress-bar" role="progressbar"
+                <div class="progress-bar" id="progressBar" role="progressbar"
                      style="width: {{ case.progress }}%;"
                      aria-valuenow="{{ case.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
-              <small>{{ case.progress }}%</small>
+              <small id="progressLabel">{{ case.progress }}%</small>
             </div>
+            {% if can_edit_progress %}
+              <input type="range" class="form-range mt-2" id="progressSlider"
+                     min="0" max="100" step="1" value="{{ case.progress }}"
+                     data-saved-value="{{ case.progress }}">
+              <div class="form-text">
+                {% trans "Потяните, чтобы вручную изменить процент заполненности." %}
+              </div>
+            {% endif %}
           </div>
         </div>
 
@@ -178,24 +186,42 @@
         <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>{% trans "Соглашение об оказании услуг" %}</h5>
       </div>
       <div class="card-body">
-        {% if case.agreement_file %}
+        {% if case.signed_agreement_document %}
+          <p class="mb-2">
+            <i class="bi bi-patch-check-fill text-success me-1"></i>
+            {% trans "Загружен подписанный документ" %}
+            {% trans "— " %}{{ case.signed_agreement_document.created_at|date:"d.m.Y H:i" }}
+          </p>
+          <a href="{{ case.signed_agreement_document.file_value.url }}" class="btn btn-outline-success" target="_blank" rel="noopener">
+            <i class="bi bi-eye me-1"></i>{% trans "Открыть подписанное соглашение" %}
+          </a>
+          <a href="{{ case.signed_agreement_document.file_value.url }}" class="btn btn-outline-secondary" download>
+            <i class="bi bi-download me-1"></i>{% trans "Скачать" %}
+          </a>
+          <p class="text-muted small mt-2 mb-0">
+            {% trans "Это реальный загруженный документ (этап" %} «{{ case.signed_agreement_document.stage.name }}», {% trans "поле" %} «{{ case.signed_agreement_document.field.name }}»). {% trans "Он используется вместо автоматического черновика." %}
+          </p>
+        {% elif case.agreement_file %}
           <p class="mb-2">
             <i class="bi bi-check-circle-fill text-success me-1"></i>
-            {% trans "Сформировано автоматически" %}
+            {% trans "Сформирован черновик автоматически" %}
             {% if case.agreement_generated_at %}
               {% trans "— " %}{{ case.agreement_generated_at|date:"d.m.Y H:i" }}
             {% endif %}
           </p>
-          <a href="{{ case.agreement_file.url }}" class="btn btn-outline-primary" download>
-            <i class="bi bi-download me-1"></i>{% trans "Скачать соглашение (.docx)" %}
+          <a href="{{ case.agreement_file.url }}" class="btn btn-outline-primary" target="_blank" rel="noopener">
+            <i class="bi bi-eye me-1"></i>{% trans "Открыть черновик (.docx)" %}
+          </a>
+          <a href="{{ case.agreement_file.url }}" class="btn btn-outline-secondary" download>
+            <i class="bi bi-download me-1"></i>{% trans "Скачать" %}
           </a>
           <p class="text-muted small mt-2 mb-0">
-            {% trans "Документ обновляется автоматически при изменении данных по делу. Перед подписанием проверьте и при необходимости отредактируйте текст." %}
+            {% trans "Документ обновляется автоматически при изменении данных по делу. Перед подписанием проверьте и при необходимости отредактируйте текст. Если загрузите подписанный документ в поле этапа, помеченное как «соглашение», здесь и в списке дел будет скачиваться оно." %}
           </p>
         {% else %}
           <p class="text-muted mb-0">
             <i class="bi bi-info-circle me-1"></i>
-            {% trans "Соглашение сформируется автоматически, как только будут заполнены: категория дела, сумма договора, хотя бы один ответственный юрист и основной доверитель." %}
+            {% trans "Черновик соглашения сформируется автоматически, как только будут заполнены: категория дела, сумма договора, хотя бы один ответственный юрист и основной доверитель." %}
           </p>
         {% endif %}
       </div>
@@ -680,10 +706,120 @@
   </div>
 </div>
 
+{% if can_edit_progress %}
+<!-- Модальное окно подтверждения изменения прогресса -->
+<div class="modal fade" id="progressConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title">{% trans "Сохранить прогресс?" %}</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% trans "Установить процент заполненности дела на" %}
+        <strong id="progressConfirmValue">0</strong>%?
+        <div class="form-text mt-1">
+          {% trans "Дальше этот процент не будет пересчитываться автоматически — только вручную." %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="progressCancelBtn">
+          {% trans "Отмена" %}
+        </button>
+        <button type="button" class="btn btn-primary" id="progressSaveBtn">
+          {% trans "Сохранить" %}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}{# end content block #}
 
 {% block extra_js %}
 <script>
+/* ===== РУЧНОЙ ПРОГРЕСС (слайдер + подтверждение) ===== */
+(function () {
+  const slider = document.getElementById('progressSlider');
+  if (!slider) return;
+
+  const bar = document.getElementById('progressBar');
+  const label = document.getElementById('progressLabel');
+  const confirmModalEl = document.getElementById('progressConfirmModal');
+  const confirmModal = new bootstrap.Modal(confirmModalEl);
+  const confirmValue = document.getElementById('progressConfirmValue');
+  const saveBtn = document.getElementById('progressSaveBtn');
+  const cancelBtn = document.getElementById('progressCancelBtn');
+
+  function render(value) {
+    bar.style.width = value + '%';
+    bar.setAttribute('aria-valuenow', value);
+    label.textContent = value + '%';
+  }
+
+  // Двигаем бегунок — сразу показываем визуально, но ничего не сохраняем
+  slider.addEventListener('input', function () {
+    render(slider.value);
+  });
+
+  // Отпустили мышь/палец — спрашиваем подтверждение
+  slider.addEventListener('change', function () {
+    const saved = parseInt(slider.dataset.savedValue, 10);
+    const value = parseInt(slider.value, 10);
+    if (value === saved) return; // не изменилось — ничего не спрашиваем
+    confirmValue.textContent = value;
+    confirmModal.show();
+  });
+
+  // Отмена — возвращаем бегунок на прежнее значение
+  function revert() {
+    const saved = slider.dataset.savedValue;
+    slider.value = saved;
+    render(saved);
+  }
+  cancelBtn.addEventListener('click', revert);
+  confirmModalEl.addEventListener('hidden.bs.modal', function () {
+    // Если закрыли крестиком/Esc без сохранения — тоже откатываем
+    if (parseInt(slider.value, 10) !== parseInt(slider.dataset.savedValue, 10)) {
+      revert();
+    }
+  });
+
+  saveBtn.addEventListener('click', function () {
+    const value = parseInt(slider.value, 10);
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    saveBtn.disabled = true;
+    fetch("{% url 'cases:case_update_progress' case.pk %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ progress: value }),
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        saveBtn.disabled = false;
+        confirmModal.hide();
+        if (!res.ok) {
+          alert(res.data.error || 'Не удалось сохранить прогресс.');
+          revert();
+          return;
+        }
+        slider.dataset.savedValue = res.data.progress;
+        render(res.data.progress);
+      })
+      .catch(function () {
+        saveBtn.disabled = false;
+        confirmModal.hide();
+        alert('Не удалось сохранить прогресс — проверьте соединение.');
+        revert();
+      });
+  });
+})();
+
 /* ===== ПРЕДПРОСМОТР ДОКУМЕНТА ===== */
 function previewDocument(url, filename) {
   const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));

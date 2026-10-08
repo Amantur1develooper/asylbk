@@ -138,6 +138,33 @@
           </div>
         </div>
       </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="mb-3 form-check">
+            {{ form.manual_progress }}
+            <label for="{{ form.manual_progress.id_for_label }}" class="form-check-label">
+              {{ form.manual_progress.label }}
+            </label>
+            <div class="form-text">
+              По умолчанию процент заполненности считается сам — по загруженным
+              обязательным документам дела. Отметьте галочку, чтобы задать его вручную.
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4" id="manualProgressField" style="display:none;">
+          <div class="mb-3">
+            <label for="{{ form.progress.id_for_label }}" class="form-label">{{ form.progress.label }}</label>
+            {{ form.progress }}
+            {% if form.progress.errors %}
+              <div class="invalid-feedback d-block">
+                {{ form.progress.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
       <div class="row">
   <div class="col-md-6">
     <div class="mb-3">
@@ -271,6 +298,17 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+  // ── Ручной процент заполненности ──
+  const manualCheckbox = document.getElementById('id_manual_progress');
+  const manualField = document.getElementById('manualProgressField');
+  if (manualCheckbox && manualField) {
+    function toggleManualProgress() {
+      manualField.style.display = manualCheckbox.checked ? '' : 'none';
+    }
+    toggleManualProgress();
+    manualCheckbox.addEventListener('change', toggleManualProgress);
+  }
 
   // ── Lawyer card picker ──
   const cards = document.querySelectorAll('.lawyer-card');

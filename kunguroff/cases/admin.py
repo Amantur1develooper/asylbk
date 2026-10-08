@@ -32,8 +32,9 @@ class CaseStageAdmin(admin.ModelAdmin):
 
 @admin.register(StageField)
 class StageFieldAdmin(admin.ModelAdmin):
-    list_display = ('stage', 'name', 'field_type', 'is_required', 'order')
-    list_filter = ('stage__category', 'field_type', 'is_required')
+    list_display = ('stage', 'name', 'field_type', 'is_required', 'is_agreement_document', 'order')
+    list_filter = ('stage__category', 'field_type', 'is_required', 'is_agreement_document')
+    list_editable = ('is_agreement_document',)
     ordering = ('stage', 'order')
 
 class CaseDocumentInline(admin.TabularInline):
@@ -51,7 +52,7 @@ class CaseAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'status', 'progress', 'created_at')
     list_filter = ('category', 'status', 'responsible_lawyer', 'created_at')
     search_fields = ('title', 'client__last_name', 'client__first_name')
-    readonly_fields = ('progress', 'created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at')
     filter_horizontal = ['responsible_lawyer']  # Для удобного выбора
     inlines = [CaseParticipantInline, CaseDocumentInline]
     fieldsets = (
@@ -62,7 +63,11 @@ class CaseAdmin(admin.ModelAdmin):
             'fields': ('responsible_lawyer', 'manager')
         }),
         ('Статус', {
-            'fields': ('status', 'current_stage', 'progress')
+            'fields': ('status', 'current_stage', 'progress', 'manual_progress'),
+            'description': 'Процент пересчитывается автоматически по загруженным '
+                           'обязательным документам. Отметьте «указан вручную», '
+                           'чтобы задать значение самостоятельно — тогда система '
+                           'больше не будет его переопределять.',
         }),
         ('Даты', {
             'fields': ('created_at', 'updated_at'),

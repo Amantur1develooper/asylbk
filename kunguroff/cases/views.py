@@ -54,7 +54,7 @@ class CaseListView(LawyerRequiredMixin, ListView):
             ).distinct()
 
         return qs.select_related('category', 'folder').prefetch_related(
-            'responsible_lawyer', 'participants__trustor'
+            'responsible_lawyer', 'participants__trustor', 'documents__field'
         )
 
     def get_context_data(self, **kwargs):
@@ -158,6 +158,7 @@ class CaseDetailView(DetailView):
 
         context['stage_field_rows'] = stage_field_rows
         context['allowed_roles_for_stage_edit'] = ['lawyer', 'advocate', 'managing_partner_advocate', 'director', 'deputy_director', 'manager', 'accountant']
+        context['can_edit_progress'] = user_can_edit_case(self.request.user, self.object)
         return context
 
 
@@ -257,6 +258,11 @@ class CaseUpdateView(OwnerOrManagerMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+
+        # Если процент не переключён в ручной режим — пересчитываем его сами,
+        # чтобы не оставался устаревшим значением от предыдущего ручного ввода.
+        if not self.object.manual_progress:
+            self.object.calculate_progress()
 
         # Обновляем сумму договора в финансовой карточке (если есть / создаём)
         finance, created = CaseFinance.objects.get_or_create(
@@ -557,6 +563,32 @@ def user_can_edit_case(user, case: Case) -> bool:
     if case.responsible_lawyer.filter(pk=user.pk).exists():
         return True
     return False
+
+
+from django.views.decorators.http import require_POST
+
+
+@login_required
+@require_POST
+def case_update_progress(request, pk):
+    """AJAX: ручное изменение процента заполненности дела (слайдер на карточке дела)."""
+    case = get_object_or_404(Case, pk=pk)
+    if not user_can_edit_case(request.user, case):
+        return JsonResponse({'error': 'Нет прав на изменение этого дела.'}, status=403)
+
+    try:
+        value = int(request.POST.get('progress'))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'Некорректное значение процента.'}, status=400)
+
+    if not (0 <= value <= 100):
+        return JsonResponse({'error': 'Процент должен быть от 0 до 100.'}, status=400)
+
+    case.progress = value
+    case.manual_progress = True
+    case.save(update_fields=['progress', 'manual_progress', 'updated_at'])
+
+    return JsonResponse({'ok': True, 'progress': case.progress})
 
 
 class CaseDocumentDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
