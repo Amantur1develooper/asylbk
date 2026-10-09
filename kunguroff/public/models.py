@@ -45,6 +45,11 @@ class Staff(models.Model):
     is_partner = models.BooleanField("Партнёр", default=False)
     order = models.PositiveIntegerField("Сортировка", default=0)
 
+    # Фото на странице команды показывается крупно, поэтому исходники с телефона
+    # (3–5 МБ) сжимаем при сохранении — иначе страница грузится десятки секунд.
+    PHOTO_MAX_SIDE = 1000
+    PHOTO_JPEG_QUALITY = 85
+
     class Meta:
         verbose_name = "Публичная карточка команды (сайт)"
         verbose_name_plural = "Команда на сайте (страница «О нас»)"
@@ -52,6 +57,54 @@ class Staff(models.Model):
 
     def __str__(self):
         return self.full_name
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self._optimize_photo()
+
+    def _optimize_photo(self):
+        """Уменьшает и пережимает загруженное фото в JPEG. Любая ошибка здесь не
+        должна ломать сохранение карточки сотрудника — поэтому всё в try/except."""
+        if not self.photo:
+            return
+
+        try:
+            import os
+            from io import BytesIO
+
+            from django.core.files.base import ContentFile
+            from PIL import Image
+
+            path = self.photo.path  # для нелокального хранилища бросит исключение
+            image = Image.open(path)
+            image.load()
+
+            already_small = max(image.size) <= self.PHOTO_MAX_SIDE
+            already_jpeg = (image.format or "").upper() in ("JPEG", "JPG")
+            if already_small and already_jpeg:
+                return
+
+            if image.mode not in ("RGB", "L"):
+                image = image.convert("RGB")
+            image.thumbnail((self.PHOTO_MAX_SIDE, self.PHOTO_MAX_SIDE), Image.LANCZOS)
+
+            buffer = BytesIO()
+            image.save(buffer, format="JPEG", quality=self.PHOTO_JPEG_QUALITY,
+                       optimize=True, progressive=True)
+
+            old_name = self.photo.name
+            new_name = f"{os.path.splitext(os.path.basename(old_name))[0]}.jpg"
+
+            self.photo.save(new_name, ContentFile(buffer.getvalue()), save=False)
+            super().save(update_fields=["photo"])
+
+            if old_name != self.photo.name:
+                self.photo.storage.delete(old_name)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception(
+                "Не удалось оптимизировать фото сотрудника %s", self.pk
+            )
 
 
 class PublicCase(models.Model):
