@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'directory',
     'knowledge',
     'retainer',
+    'surveys',
 ]
 
 from django.utils.translation import gettext_lazy as _

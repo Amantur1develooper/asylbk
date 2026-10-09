@@ -1,0 +1,17 @@
+{% extends 'public/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Спасибо" %} — {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6 text-center">
+    <div class="kp-card p-5">
+      <i class="fa-solid fa-circle-check fs-1 mb-3" style="color:var(--kp-primary);"></i>
+      <h1 class="kp-section-title mb-3">{{ survey.title }}</h1>
+      <p class="text-muted">{{ survey.thank_you_text|default:"Спасибо! Ваш ответ сохранён."|linebreaksbr }}</p>
+      <a href="{% url 'public:home' %}" class="btn kp-btn kp-btn-primary mt-3">{% trans "На главную" %}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

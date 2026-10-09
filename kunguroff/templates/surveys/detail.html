@@ -1,0 +1,93 @@
+{% extends 'public/base.html' %}
+{% load i18n %}
+{% load survey_extras %}
+
+{% block title %}{{ survey.title }} — {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+
+    <div class="kp-card p-4 p-md-5 mb-4">
+      <h1 class="kp-section-title mb-2">{{ survey.title }}</h1>
+      {% if survey.description %}
+        <p class="text-muted mb-0">{{ survey.description|linebreaksbr }}</p>
+      {% endif %}
+    </div>
+
+    <form method="post" class="kp-card p-4 p-md-5">
+      {% csrf_token %}
+
+      {% for question in questions %}
+        <div class="mb-4">
+          <label class="form-label fw-semibold">
+            {{ question.text }}{% if question.is_required %} <span class="text-danger">*</span>{% endif %}
+          </label>
+          {% if question.help_text %}
+            <div class="form-text mb-2">{{ question.help_text }}</div>
+          {% endif %}
+
+          {% if question.field_type == 'short_text' %}
+            <input type="text" class="form-control" name="{{ question.field_name }}"
+                   value="{% if posted %}{{ posted|dictkey:question.field_name }}{% endif %}">
+
+          {% elif question.field_type == 'long_text' %}
+            <textarea class="form-control" rows="4" name="{{ question.field_name }}">{% if posted %}{{ posted|dictkey:question.field_name }}{% endif %}</textarea>
+
+          {% elif question.field_type == 'email' %}
+            <input type="email" class="form-control" name="{{ question.field_name }}"
+                   value="{% if posted %}{{ posted|dictkey:question.field_name }}{% endif %}">
+
+          {% elif question.field_type == 'phone' %}
+            <input type="tel" class="form-control" name="{{ question.field_name }}"
+                   value="{% if posted %}{{ posted|dictkey:question.field_name }}{% endif %}">
+
+          {% elif question.field_type == 'date' %}
+            <input type="date" class="form-control" name="{{ question.field_name }}"
+                   value="{% if posted %}{{ posted|dictkey:question.field_name }}{% endif %}">
+
+          {% elif question.field_type == 'rating' %}
+            <div class="d-flex gap-3 flex-wrap">
+              {% for i in "12345" %}
+                <label class="d-flex align-items-center gap-1" style="cursor:pointer;">
+                  <input type="radio" name="{{ question.field_name }}" value="{{ i }}"
+                         {% if posted and posted|dictkey:question.field_name == i %}checked{% endif %}>
+                  {{ i }}
+                </label>
+              {% endfor %}
+            </div>
+
+          {% elif question.field_type == 'choice' %}
+            <div class="d-flex flex-column gap-1">
+              {% for option in question.options_list %}
+                <label class="d-flex align-items-center gap-2" style="cursor:pointer;">
+                  <input type="radio" name="{{ question.field_name }}" value="{{ option }}"
+                         {% if posted and posted|dictkey:question.field_name == option %}checked{% endif %}>
+                  {{ option }}
+                </label>
+              {% endfor %}
+            </div>
+
+          {% elif question.field_type == 'checkbox' %}
+            <div class="d-flex flex-column gap-1">
+              {% for option in question.options_list %}
+                <label class="d-flex align-items-center gap-2" style="cursor:pointer;">
+                  <input type="checkbox" name="{{ question.field_name }}" value="{{ option }}">
+                  {{ option }}
+                </label>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if errors|dictkey:question.field_name %}
+            <div class="text-danger small mt-1">{{ errors|dictkey:question.field_name }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn kp-btn kp-btn-primary px-4">{% trans "Отправить" %}</button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
