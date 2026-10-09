@@ -528,6 +528,9 @@
         <a href="{% url 'ratings:dashboard' %}" class="drawer-link {% if 'ratings' in request.path %}active{% endif %}">
             <i class="bi bi-graph-up-arrow"></i> Рейтинги
         </a>
+        <a href="{% url 'surveys:manage_list' %}" class="drawer-link {% if 'surveys/manage' in request.path %}active{% endif %}">
+            <i class="bi bi-clipboard-data"></i> Опросники
+        </a>
 
         {% if user.is_superuser or user.role in 'manager,director,deputy_director,hr' %}
         <div class="drawer-section-title">Управление</div>

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ survey.title }} — Результаты{% endblock %}
+{% block page_title %}📋 {{ survey.title }}{% endblock %}
+
+{% block page_actions %}
+  <div class="btn-group">
+    <a href="{% url 'surveys:detail' survey.slug %}" target="_blank" class="btn btn-outline-secondary">
+      <i class="bi bi-box-arrow-up-right"></i> Открыть опросник
+    </a>
+    <a href="{% url 'surveys:manage_export' survey.pk %}" class="btn btn-outline-primary">
+      <i class="bi bi-download"></i> Экспорт в CSV
+    </a>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Статистика -->
+<div class="row mb-4 g-3">
+  <div class="col-md-3">
+    <div class="card bg-primary text-white">
+      <div class="card-body"><h5 class="card-title">{{ responses_count }}</h5><p class="card-text mb-0">Всего ответов</p></div>
+    </div>
+  </div>
+  {% for stat in rating_stats %}
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">{{ stat.average|default:"—" }}{% if stat.average %}/5{% endif %}</h5>
+          <p class="card-text mb-0 small">{{ stat.question.text }} (ср., {{ stat.count }} оценок)</p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Таблица ответов -->
+<div class="card">
+  <div class="card-header"><h6 class="mb-0">Все ответы</h6></div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="text-nowrap">Дата</th>
+          {% for q in questions %}
+            <th>{{ q.text }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td class="text-muted small text-nowrap">{{ row.response.submitted_at|date:"d.m.Y H:i" }}</td>
+            {% for value in row.values %}
+              <td>{{ value|default:"—"|truncatechars:120 }}</td>
+            {% endfor %}
+          </tr>
+        {% empty %}
+          <tr><td colspan="{{ questions|length|add:1 }}" class="text-center text-muted py-4">
+            <i class="bi bi-inbox me-2"></i>Ответов пока нет
+          </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
