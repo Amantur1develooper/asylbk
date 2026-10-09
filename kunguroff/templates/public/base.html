@@ -228,10 +228,6 @@ body{
           <a class="nav-link {% if 'contacts' in request.path %}active-link{% endif %}"
              href="{% url 'public:contacts' %}">{% trans "Контакты" %}</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link {% if 'surveys' in request.path %}active-link{% endif %}"
-             href="{% url 'surveys:detail' slug='otzyv-ot-klienta' %}">{% trans "Отзыв" %}</a>
-        </li>
       </ul>
 
       <!-- Правая часть: язык + войти + кнопка -->
