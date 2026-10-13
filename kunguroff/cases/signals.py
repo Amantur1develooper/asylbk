@@ -118,18 +118,22 @@ def archive_document_on_upload(sender, instance, created, **kwargs):
 # ── Автоформирование соглашения по делу ─────────────────────────────────────
 
 def _try_regenerate_agreement(case_id: int):
-    """Пересобирает соглашение по делу, если данных уже достаточно."""
-    from cases.agreement import regenerate_case_agreement
+    """Пересобирает соглашение по делу, если данных уже достаточно.
 
+    Всё целиком обёрнуто в try/except, включая импорт: формирование черновика
+    соглашения — вспомогательная функция, и ничто в ней (отсутствующая
+    библиотека python-docx, кривые данные, проблемы с диском) не должно
+    ронять сохранение самого дела.
+    """
     try:
+        from cases.agreement import regenerate_case_agreement
+
         case = Case.objects.prefetch_related(
             'responsible_lawyer', 'participants__trustor'
         ).get(pk=case_id)
+        regenerate_case_agreement(case)
     except Case.DoesNotExist:
         return
-
-    try:
-        regenerate_case_agreement(case)
     except Exception:
         logger.exception('Не удалось автоматически сформировать соглашение по делу %s', case_id)
 
